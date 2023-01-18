@@ -1,0 +1,8 @@
+raw/error.json;raw/error.json
+raw/loading.json;raw/loading.json
+layout/activity_pgw_home.xml;layout/activity_pgw_home.xml
+layout/error_popup.xml;layout/error_popup.xml
+layout/error_popup_old.xml;layout/error_popup_old.xml
+layout/loading_popup.xml;layout/loading_popup.xml
+layout/loading_popup_old.xml;layout/loading_popup_old.xml
+values/colors.xml;values/colors.xml
