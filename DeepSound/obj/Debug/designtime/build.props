@@ -18,10 +18,10 @@ iyzipay
 aamarpay
 androidsdkbuildtoolsversion=32.0.0
 androidsdkpath=/users/ojo/library/android/sdk/
-androidndkpath=
+androidndkpath=/users/ojo/library/android/sdk/ndk/25.2.9519653/
 javasdkpath=/library/java/javavirtualmachines/microsoft-11.jdk/contents/home/
 androidsequencepointsmode=none
-xamarinandroidversion=13.1.0-1
+xamarinandroidversion=13.2.0-0
 monosymbolarchive=false
 androiduselatestplatformsdk=false
 targetframeworkversion=v12.0
@@ -30,10 +30,11 @@ androidgeneratejnimarshalmethods=false
 os=unix
 androidincludedebugsymbols=true
 androidpackagenamingpolicy=lowercasecrc64
-_nugetassetstimestamp=638095771566057135
+_nugetassetstimestamp=638106861677236164
 typemapkind=strings-asm
 androidsupportedabis=arm64-v8a
 armeabi-v7a
 x86
 x86_64
 androidmanifestplaceholders=
+projectfullpath=/users/ojo/developer/lwandroid/deepsound/deepsound.csproj

@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "2WPxdYccSnR9YauhzyiU9jCycB/Nk+0k9iEGQhWG2xcYlMHDmGILdb0Sb0N5HVtxqd1jIPJqQT9/NzmJ7E/zKw==",
+  "dgSpecHash": "C0qVcsT8RsxVgXFulMku257ZYoWeHCOqHvei1incPWrlidfxx9AHiEucL0P9kH9iudDDIZxPpo+9HoUVOWUKOA==",
   "success": true,
-  "projectFilePath": "/Users/ojo/Developer/work/Loveworld Worship/AndroidDeep/DeepSound/DeepSound.csproj",
+  "projectFilePath": "/Users/ojo/Developer/LWANDROID/DeepSound/DeepSound.csproj",
   "expectedPackageFiles": [
     "/Users/ojo/.nuget/packages/andhud/1.5.0/andhud.1.5.0.nupkg.sha512",
     "/Users/ojo/.nuget/packages/automapper/11.0.1/automapper.11.0.1.nupkg.sha512",

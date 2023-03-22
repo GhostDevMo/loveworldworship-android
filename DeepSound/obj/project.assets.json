@@ -11535,11 +11535,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/ojo/Developer/work/Loveworld Worship/AndroidDeep/DeepSound/DeepSound.csproj",
+      "projectUniqueName": "/Users/ojo/Developer/LWANDROID/DeepSound/DeepSound.csproj",
       "projectName": "DeepSound",
-      "projectPath": "/Users/ojo/Developer/work/Loveworld Worship/AndroidDeep/DeepSound/DeepSound.csproj",
+      "projectPath": "/Users/ojo/Developer/LWANDROID/DeepSound/DeepSound.csproj",
       "packagesPath": "/Users/ojo/.nuget/packages/",
-      "outputPath": "/Users/ojo/Developer/work/Loveworld Worship/AndroidDeep/DeepSound/obj/",
+      "outputPath": "/Users/ojo/Developer/LWANDROID/DeepSound/obj/",
       "projectStyle": "PackageReference",
       "skipContentFileWrite": true,
       "configFilePaths": [
