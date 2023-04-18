@@ -209,6 +209,7 @@
       </intent-filter>
     </activity>
     <service android:name="com.loveworld.worship.AppApiService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
+    <activity android:name="crc646380db0424104db8.PgwHome" />
     <service android:name="crc6454fbe090b0e24443.AppApiService" android:exported="false" android:permission="android.permission.BIND_JOB_SERVICE" />
     <activity android:name="crc64426ed992fe60a822.AuthorizeNetPaymentActivity" android:configChanges="locale|orientation|smallestScreenSize|screenLayout|screenSize|uiMode" android:icon="@mipmap/icon" android:theme="@style/MyTheme" />
     <activity android:name="crc64426ed992fe60a822.PaymentCardDetailsActivity" android:configChanges="locale|orientation|smallestScreenSize|screenLayout|screenSize|uiMode" android:icon="@mipmap/icon" android:theme="@style/MyTheme" />
@@ -272,7 +273,6 @@
     <activity android:name="crc6467fa3a29f5f921b7.AddressActivity" android:configChanges="locale|orientation|screenSize|uiMode" android:icon="@mipmap/icon" android:theme="@style/MyTheme" />
     <activity android:name="crc6467fa3a29f5f921b7.CreateAddressActivity" android:configChanges="locale|orientation|screenSize|uiMode" android:icon="@mipmap/icon" android:theme="@style/MyTheme" />
     <activity android:name="crc6467fa3a29f5f921b7.EditAddressActivity" android:configChanges="locale|orientation|screenSize|uiMode" android:icon="@mipmap/icon" android:theme="@style/MyTheme" />
-    <activity android:name="crc646380db0424104db8.PgwHome" />
     <provider android:name="mono.MonoRuntimeProvider" android:authorities="com.loveworld.worship.mono.MonoRuntimeProvider.__mono_init__" android:exported="false" android:initOrder="1999999999" />
     <meta-data android:name="com.google.android.play.billingclient.version" android:value="4.0.0" />
     <activity android:name="com.android.billingclient.api.ProxyBillingActivity" android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation" android:exported="false" android:theme="@android:style/Theme.Translucent.NoTitleBar" />

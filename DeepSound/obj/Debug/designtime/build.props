@@ -30,11 +30,11 @@ androidgeneratejnimarshalmethods=false
 os=unix
 androidincludedebugsymbols=true
 androidpackagenamingpolicy=lowercasecrc64
-_nugetassetstimestamp=638150880839557419
+_nugetassetstimestamp=638106861677236164
 typemapkind=strings-asm
 androidsupportedabis=arm64-v8a
 armeabi-v7a
 x86
 x86_64
 androidmanifestplaceholders=
-projectfullpath=/users/ojo/developer/lwandroid/loveworldworship-android/loveworldworship-android/deepsound/deepsound.csproj
+projectfullpath=/users/ojo/developer/lwandroid/deepsound/deepsound.csproj
