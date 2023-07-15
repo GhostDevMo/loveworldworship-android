@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Content;
+﻿using Android.Content;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -14,18 +9,23 @@ using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
-using DeepSound.Library.Anjo.Share.Abstractions;
 using DeepSound.Library.Anjo.Share;
+using DeepSound.Library.Anjo.Share.Abstractions;
 using DeepSoundClient.Classes.Albums;
 using DeepSoundClient.Requests;
 using Google.Android.Material.BottomSheet;
-using MaterialDialogsCore;
+using Google.Android.Material.Dialog;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Exception = System.Exception;
 
 namespace DeepSound.Activities.Albums
 {
-    public class OptionsAlbumBottomSheet : BottomSheetDialogFragment, MaterialDialog.ISingleButtonCallback
+    public class OptionsAlbumBottomSheet : BottomSheetDialogFragment
     {
         #region Variables Basic
 
@@ -63,7 +63,7 @@ namespace DeepSound.Activities.Albums
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -212,14 +212,68 @@ namespace DeepSound.Activities.Albums
 
                 if (Methods.CheckConnectivity())
                 {
-                    var dialog = new MaterialDialog.Builder(Activity).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                    dialog.Title(GlobalContext.GetText(Resource.String.Lbl_DeleteAlbum));
-                    dialog.Content(GlobalContext.GetText(Resource.String.Lbl_AreYouSureDeleteAlbum));
-                    dialog.PositiveText(Activity.GetText(Resource.String.Lbl_YesButKeepSongs)).OnPositive(this);
-                    dialog.NegativeText(Activity.GetText(Resource.String.Lbl_YesDeleteEverything)).OnNegative(this);
-                    dialog.NegativeText(Activity.GetText(Resource.String.Lbl_No)).OnNegative(new MyMaterialDialog());
-                    dialog.AlwaysCallSingleChoiceCallback();
-                    dialog.Build().Show();
+                    var dialog = new MaterialAlertDialogBuilder(Activity);
+                    dialog.SetTitle(GlobalContext.GetText(Resource.String.Lbl_DeleteAlbum));
+                    dialog.SetMessage(GlobalContext.GetText(Resource.String.Lbl_AreYouSureDeleteAlbum));
+                    dialog.SetPositiveButton(Activity.GetText(Resource.String.Lbl_YesButKeepSongs), (sender, args) =>
+                    {
+                        try
+                        {
+                            var dataAlbumFragment = GlobalContext?.HomeFragment?.LatestHomeTab?.AlbumsAdapter;
+                            var list2 = dataAlbumFragment?.AlbumsList;
+                            var dataMyAlbum = list2?.FirstOrDefault(a => a.Id == AlbumsObject?.Id);
+                            if (dataMyAlbum != null)
+                            {
+                                int index = list2.IndexOf(dataMyAlbum);
+                                if (index >= 0)
+                                {
+                                    list2?.Remove(dataMyAlbum);
+                                    dataAlbumFragment?.NotifyItemRemoved(index);
+                                }
+                            }
+
+                            Toast.MakeText(GlobalContext, GlobalContext.GetText(Resource.String.Lbl_AlbumSuccessfullyDeleted), ToastLength.Short)?.Show();
+
+                            //Sent Api >>
+                            PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Albums.DeleteAlbumAsync("single", AlbumsObject?.Id.ToString()) });
+                            Dismiss();
+                        }
+                        catch (Exception e)
+                        {
+                            Methods.DisplayReportResultTrack(e);
+                        }
+                    });
+                    dialog.SetNegativeButton(Activity.GetText(Resource.String.Lbl_YesDeleteEverything), (sender, args) =>
+                    {
+                        try
+                        {
+                            var dataAlbumFragment = GlobalContext?.HomeFragment?.LatestHomeTab?.AlbumsAdapter;
+                            var list2 = dataAlbumFragment?.AlbumsList;
+                            var dataMyAlbum = list2?.FirstOrDefault(a => a.Id == AlbumsObject?.Id);
+                            if (dataMyAlbum != null)
+                            {
+                                int index = list2.IndexOf(dataMyAlbum);
+                                if (index >= 0)
+                                {
+                                    list2?.Remove(dataMyAlbum);
+                                    dataAlbumFragment?.NotifyItemRemoved(index);
+                                }
+                            }
+
+                            Toast.MakeText(GlobalContext, GlobalContext.GetText(Resource.String.Lbl_AlbumSuccessfullyDeleted), ToastLength.Short)?.Show();
+
+                            //Sent Api >>
+                            PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Albums.DeleteAlbumAsync("all", AlbumsObject?.Id.ToString()) });
+                            Dismiss();
+                        }
+                        catch (Exception e)
+                        {
+                            Methods.DisplayReportResultTrack(e);
+                        }
+                    });
+                    dialog.SetNegativeButton(Activity.GetText(Resource.String.Lbl_No), new MaterialDialogUtils());
+
+                    dialog.Show();
                 }
                 else
                 {
@@ -265,65 +319,6 @@ namespace DeepSound.Activities.Albums
 
         #endregion
 
-
-        public void OnClick(MaterialDialog p0, DialogAction p1)
-        {
-            try
-            {
-                if (p1 == DialogAction.Positive)
-                {
-                    var dataAlbumFragment = GlobalContext?.HomeFragment?.LatestHomeTab?.AlbumsAdapter;
-                    var list2 = dataAlbumFragment?.AlbumsList;
-                    var dataMyAlbum = list2?.FirstOrDefault(a => a.Id == AlbumsObject?.Id);
-                    if (dataMyAlbum != null)
-                    {
-                        int index = list2.IndexOf(dataMyAlbum);
-                        if (index >= 0)
-                        {
-                            list2?.Remove(dataMyAlbum);
-                            dataAlbumFragment?.NotifyItemRemoved(index);
-                        }
-                    }
-
-                    Toast.MakeText(GlobalContext, GlobalContext.GetText(Resource.String.Lbl_AlbumSuccessfullyDeleted), ToastLength.Short)?.Show();
-
-                    //Sent Api >>
-                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Albums.DeleteAlbumAsync("single", AlbumsObject?.Id.ToString()) });
-                    Dismiss();
-                }
-                else if (p1 == DialogAction.Negative) //Yes, Delete Everything
-                {
-                    var dataAlbumFragment = GlobalContext?.HomeFragment?.LatestHomeTab?.AlbumsAdapter;
-                    var list2 = dataAlbumFragment?.AlbumsList;
-                    var dataMyAlbum = list2?.FirstOrDefault(a => a.Id == AlbumsObject?.Id);
-                    if (dataMyAlbum != null)
-                    {
-                        int index = list2.IndexOf(dataMyAlbum);
-                        if (index >= 0)
-                        {
-                            list2?.Remove(dataMyAlbum);
-                            dataAlbumFragment?.NotifyItemRemoved(index);
-                        }
-                    }
-
-                    Toast.MakeText(GlobalContext, GlobalContext.GetText(Resource.String.Lbl_AlbumSuccessfullyDeleted), ToastLength.Short)?.Show();
-
-                    //Sent Api >>
-                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Albums.DeleteAlbumAsync("all", AlbumsObject?.Id.ToString()) });
-                    Dismiss();
-                }
-                else if (p1 == DialogAction.Negative)
-                { 
-                    p0.Dismiss();
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-
         private void LoadDataChat()
         {
             try
@@ -341,7 +336,7 @@ namespace DeepSound.Activities.Albums
                         text = text + " - " + AlbumsObject.Purchases + " " + Context.GetText(Resource.String.Lbl_Purchases);
 
                     TxtSeconderText.Text = text;
-                     
+
                     if (AlbumsObject.IsOwner != null && AlbumsObject.IsOwner.Value && UserDetails.IsLogin)
                     {
                         MAdapter.ItemOptionList.Add(new Classes.ItemOptionObject()

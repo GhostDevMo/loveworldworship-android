@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -13,6 +10,9 @@ using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.User;
 using Java.Util;
 using Refractored.Controls;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 
 namespace DeepSound.Activities.Tabbes.Adapters
@@ -33,8 +33,8 @@ namespace DeepSound.Activities.Tabbes.Adapters
             {
                 ActivityContext = context;
                 HasStableIds = true;
-                ClickListeners = new SocialIoClickListeners(context); 
-                GlobalContext = HomeActivity.GetInstance(); 
+                ClickListeners = new SocialIoClickListeners(context);
+                GlobalContext = HomeActivity.GetInstance();
             }
             catch (Exception e)
             {
@@ -55,7 +55,7 @@ namespace DeepSound.Activities.Tabbes.Adapters
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -78,12 +78,12 @@ namespace DeepSound.Activities.Tabbes.Adapters
                         if (item.TrackData?.TrackDataClass != null)
                         {
                             holder.SongLayout.Visibility = ViewStates.Visible;
-                            
+
                             holder.TxtTitleSong.Text = Methods.FunString.SubStringCutOf(Methods.FunString.DecodeString(item.TrackData?.TrackDataClass.Title), 80);
                             holder.TxtTime.Text = item.TrackData?.TrackDataClass.Duration;
-                              
+
                             if (!holder.MoreButton.HasOnClickListeners)
-                                holder.MoreButton.Click += (sender, e) => ClickListeners.OnMoreClick(new MoreClickEventArgs {View = holder.MainView, SongsClass = item.TrackData?.TrackDataClass });
+                                holder.MoreButton.Click += (sender, e) => ClickListeners.OnMoreClick(new MoreClickEventArgs { View = holder.MainView, SongsClass = item.TrackData?.TrackDataClass });
                         }
                         else
                         {
@@ -92,7 +92,7 @@ namespace DeepSound.Activities.Tabbes.Adapters
                         }
 
                         if (!holder.TxtTitle.HasOnClickListeners)
-                            holder.TxtTitle.Click += (sender, e) => { GlobalContext?.OpenProfile(item.UserData.Id, item.UserData); }; 
+                            holder.TxtTitle.Click += (sender, e) => { GlobalContext?.OpenProfile(item.UserData.Id, item.UserData); };
                     }
                 }
             }
@@ -165,9 +165,9 @@ namespace DeepSound.Activities.Tabbes.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString())
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString())
                 .Apply(new RequestOptions().CircleCrop());
-        } 
+        }
     }
 
     public class ActivitiesAdapterViewHolder : RecyclerView.ViewHolder
@@ -183,7 +183,7 @@ namespace DeepSound.Activities.Tabbes.Adapters
         public TextView TxtTime { get; private set; }
         public ImageButton MoreButton { get; private set; }
         public RelativeLayout SongLayout { get; private set; }
-         
+
         #endregion
 
         public ActivitiesAdapterViewHolder(View itemView, Action<ActivitiesAdapterClickEventArgs> clickListener, Action<ActivitiesAdapterClickEventArgs> longClickListener) : base(itemView)
@@ -194,12 +194,12 @@ namespace DeepSound.Activities.Tabbes.Adapters
 
                 ImageUser = MainView.FindViewById<CircleImageView>(Resource.Id.imageUser);
                 TxtName = MainView.FindViewById<TextView>(Resource.Id.name);
-                TxtTitle = MainView.FindViewById<TextView>(Resource.Id.title);  
+                TxtTitle = MainView.FindViewById<TextView>(Resource.Id.title);
                 MoreButton = MainView.FindViewById<ImageButton>(Resource.Id.more);
 
                 SongLayout = MainView.FindViewById<RelativeLayout>(Resource.Id.songLayout);
                 ImageSong = MainView.FindViewById<ImageView>(Resource.Id.imageSong);
-                TxtTitleSong = MainView.FindViewById<TextView>(Resource.Id.titleSong); 
+                TxtTitleSong = MainView.FindViewById<TextView>(Resource.Id.titleSong);
                 TxtTime = MainView.FindViewById<TextView>(Resource.Id.time);
 
                 MoreButton.Visibility = ViewStates.Visible;

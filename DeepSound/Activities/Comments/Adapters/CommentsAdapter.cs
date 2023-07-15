@@ -1,20 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Graphics;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using Bumptech.Glide;
 using Bumptech.Glide.Request;
-using DeepSound.Library.Anjo.SuperTextLibrary;
 using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Fonts;
 using DeepSound.Helpers.Utils;
+using DeepSound.Library.Anjo.SuperTextLibrary;
 using DeepSoundClient.Classes.Comments;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 using Object = Java.Lang.Object;
 
@@ -31,7 +31,7 @@ namespace DeepSound.Activities.Comments.Adapters
         private readonly string Type;
         public ObservableCollection<CommentsDataObject> CommentList = new ObservableCollection<CommentsDataObject>();
 
-        public CommentsAdapter(Activity context , string type)
+        public CommentsAdapter(Activity context, string type)
         {
             try
             {
@@ -51,14 +51,14 @@ namespace DeepSound.Activities.Comments.Adapters
             try
             {
                 //Setup your layout here >> Style_CommentView
-                View itemView = LayoutInflater.From(parent.Context)?.Inflate(Resource.Layout.Style_CommentView, parent, false); 
+                View itemView = LayoutInflater.From(parent.Context)?.Inflate(Resource.Layout.Style_CommentView, parent, false);
                 var vh = new CommentAdapterViewHolder(itemView, Click, AvatarClick, LikeClick, LongClick);
                 return vh;
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -119,7 +119,7 @@ namespace DeepSound.Activities.Comments.Adapters
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         public override int ItemCount => CommentList?.Count ?? 0;
 
         public CommentsDataObject GetItem(int position)
@@ -190,7 +190,7 @@ namespace DeepSound.Activities.Comments.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString())
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString())
                 .Apply(new RequestOptions().CircleCrop());
         }
     }
@@ -208,10 +208,10 @@ namespace DeepSound.Activities.Comments.Adapters
         public TextView LikeiconView { get; private set; }
         public TextView LikeNumber { get; private set; }
         public LinearLayout LikeButton { get; private set; }
-     
+
         #endregion
 
-        public CommentAdapterViewHolder(View itemView, Action<CommentAdapterClickEventArgs> clickListener,Action<CommentAdapterClickEventArgs> avatarClickListener,Action<CommentAdapterClickEventArgs> likeClickListener, Action<CommentAdapterClickEventArgs> longClickListener) : base(itemView)
+        public CommentAdapterViewHolder(View itemView, Action<CommentAdapterClickEventArgs> clickListener, Action<CommentAdapterClickEventArgs> avatarClickListener, Action<CommentAdapterClickEventArgs> likeClickListener, Action<CommentAdapterClickEventArgs> longClickListener) : base(itemView)
         {
             try
             {
@@ -223,7 +223,7 @@ namespace DeepSound.Activities.Comments.Adapters
                 LikeiconView = MainView.FindViewById<TextView>(Resource.Id.Likeicon);
                 LikeNumber = MainView.FindViewById<TextView>(Resource.Id.LikeNumber);
                 LikeButton = MainView.FindViewById<LinearLayout>(Resource.Id.LikeButton);
-                 
+
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, LikeiconView, IonIconsFonts.IosHeartEmpty);
 
                 //Event
@@ -244,5 +244,5 @@ namespace DeepSound.Activities.Comments.Adapters
         public View View { get; set; }
         public int Position { get; set; }
         public CommentAdapterViewHolder Holder { get; set; }
-    } 
+    }
 }

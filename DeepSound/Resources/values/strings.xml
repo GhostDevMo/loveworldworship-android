@@ -40,8 +40,8 @@
 	<string name="Lbl_Help_feedback">Help &amp; Feedback</string>
 	<string name="Lbl_Make_video_offline">Make video offline</string>
 	<string name="Lbl_Share">Share</string>
-	<string name="Lbl_InviteSMSText_1">Hi listen to great Christian songs from Loveworld Worship</string>
-	<string name="Lbl_InviteSMSText_2">on your smart phone</string>
+	<string name="Lbl_InviteSMSText_1">Hi, join me on Loveworld Worship</string>
+	<string name="Lbl_InviteSMSText_2">Get started by visiting the Google Playstore</string>
 	<string name="Lbl_Success">Success</string>
 	<string name="Lbl_Offline_Mode">Offline Mode</string>
 	<string name="Lbl_Cover">Cover</string>
@@ -87,14 +87,14 @@
 	<string name="Lbl_Music">Music</string>
 	<!--===============================================================-->
 	<!--First Page -->
-	<string name="Lbl_FirstTitle">Create an atmosphere of worship &amp; with Loveworld Worship!</string>
-	<string name="Lbl_FirstSubTitle">Find all your favorite worship songs in one place</string>
+	<string name="Lbl_FirstTitle">Listen to the best worship songs with Loveworld Worship</string>
+	<string name="Lbl_FirstSubTitle">Enjoy Every Moment Of Worship</string>
 	<!--===============================================================-->
 	<!--Login && Register -->
 	<string name="Lbl_FirstName">First Name</string>
 	<string name="Lbl_LastName">Last Name</string>
 	<string name="Lbl_Username">Username</string>
-	<string name="Lbl_Email">Email or Username</string>
+	<string name="Lbl_Email">Email</string>
 	<string name="Lbl_Login">Login</string>
 	<string name="Lbl_Log_In">Login to Your Account</string>
 	<string name="Lbl_Register">Sign up</string>
@@ -136,7 +136,7 @@
 	<!--WalkTroutPage-->
 	<string name="Lbl_FinishButton_WalkTroutPage">Get Started</string>
 	<string name="Lbl_Title_page1">Music</string>
-	<string name="Lbl_Description_page1">Listen Music Everywhere, Anytime</string>
+	<string name="Lbl_Description_page1">Listen To Music Everywhere, Anytime</string>
 	<string name="Lbl_Title_page2">Playlist</string>
 	<string name="Lbl_Description_page2">Create Playlist with any song, On-The-Go</string>
 	<string name="Lbl_Title_page3">Calling all creators</string>
@@ -192,7 +192,7 @@
 	<string name="Lbl_Permission_is_denied">"Sorry: You cannot proceed with your action if you don&apos;t allow"</string>
 	<string name="Lbl_something_went_wrong">Check your credentials something went wrong</string>
 	<string name="Lbl_CheckYourInternetConnection">Please check your internet connection</string>
-	<string name="Lbl_VerificationFailed">Verification Sent</string>
+	<string name="Lbl_VerificationFailed">Email Sent!</string>
 	<string name="Lbl_You_will_be_logged">You will be logged out now, see you later</string>
 	<string name="Lbl_Are_you_logout">Are you sure you went to log out?</string>
 	<string name="Lbl_Text_copied">Text copied to clipboard</string>
@@ -223,9 +223,9 @@
 	<string name="Btn_Continue">Continue</string>
 	<!--===============================================================-->
 	<!--Genres-->
-	<string name="Lbl_Genres">Genres</string>
+	<string name="Lbl_Genres">Categories</string>
 	<string name="Lbl_Interest">Interest</string>
-	<string name="Lbl_ChooseGenres">Choose Genres</string>
+	<string name="Lbl_ChooseGenres">Choose Categories</string>
 	<string name="Lbl_SelectYourMusicPreference">Select your music preference</string>
 	<string name="Lbl_YouCanChangeTheseLater">You can change these later</string>
 	<string name="Lbl_PleaseSelectInterest">Please select at least one interest</string>
@@ -279,7 +279,7 @@
 	<string name="Lbl_PleaseEnterTitleSong">Error, Please Write title song</string>
 	<string name="Lbl_PleaseEnterDescriptionSong">Error, Please Write description song</string>
 	<string name="Lbl_PleaseEnterTags">Error, Please Write tags</string>
-	<string name="Lbl_PleaseChooseGenres">Error, Please choose genres</string>
+	<string name="Lbl_PleaseChooseGenres">Error, Please choose categories</string>
 	<string name="Lbl_PleaseChooseAgeRestriction">Error, Please choose age restriction</string>
 	<!--===============================================================-->
 	<!--Upload Album-->
@@ -400,12 +400,12 @@
 	<string name="Lbl_Night_Mode">Night Mode</string>
 	<!--===============================================================-->
 	<!--Social Links-->
-	<string name="Lbl_Facebook">Kingschat</string>
+	<string name="Lbl_Facebook">Facebook</string>
 	<string name="Lbl_Twitter">Twitter</string>
 	<string name="Lbl_GooglePlus">Google Plus</string>
 	<string name="Lbl_Instagram">Instagram</string>
 	<string name="Lbl_LinkedIn">LinkedIn</string>
-	<string name="Lbl_Website">Website</string>
+	<string name="Lbl_Website">Kingschat Profile</string>
 	<!--===============================================================-->
 	<!--Block Users-->
 	<string name="Lbl_BlockedUsers">Blocked Users</string>
@@ -620,7 +620,7 @@
 
 	<!--InAppReview-->
 	<string name="Lbl_Rate">Rate</string>
-	<string name="Lbl_RateOurAppContent">If you love our app, please take a moment to rare it.</string>
+	<string name="Lbl_RateOurAppContent">If you love the app, please take a moment to rate it.</string>
 	<!--===============================================================-->
 
 	<!-- V1.7 String translate -->
@@ -877,9 +877,15 @@
 	<string name="Lbl_Edit">Edit</string>
 	<string name="Lbl_EnjoyAllBenefits">Enjoy All Benefits!</string>
 	<string name="Lbl_EnjoyListening">Enjoy listening to songs with better audio quality, without restrictions, and without ads.</string>
-	<string name="Lbl_GetPremium">More Worship</string>
+	<string name="Lbl_GetPremium">Get Premium</string>
 	<string name="Lbl_SubscribeToPremium">Subscribe to Premium</string>
 	<string name="Lbl_SongRemoved">Song removed</string>
-
+	<string name="Lbl_NotAvailable">not available</string>
+	<string name="Lbl_FileNotFoundInDownload">The file is not found in download folder, please try downloading again.</string>
+	<string name="Lbl_ResetPassword">Reset Password</string>
+	<string name="Lbl_YourDetailsWasUpdated">Your details were updated</string>
+	<string name="Lbl_MyAffiliates">My Affiliates</string>
+	<string name="Lbl_EarnUpTo">Earn up to</string>
+	<string name="Lbl_forEachUserYourReferToUs">for each user your refer to us</string>
 
 </resources>

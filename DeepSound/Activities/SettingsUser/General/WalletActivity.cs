@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
@@ -13,7 +9,6 @@ using Android.Widget;
 using AndroidHUD;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.AppCompat.Widget;
-using Com.Braintreepayments.Api.Dropin;
 using Com.Razorpay;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.CacheLoaders;
@@ -25,17 +20,21 @@ using DeepSound.Payment;
 using DeepSoundClient;
 using DeepSoundClient.Classes.Payment;
 using DeepSoundClient.Requests;
+using Google.Android.Material.Dialog;
 using IyziPay;
 using IyziPay.Lib.Model;
-using MaterialDialogsCore;
 using SecurionPay;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using BaseActivity = DeepSound.Activities.Base.BaseActivity;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser.General
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class WalletActivity : BaseActivity, MaterialDialog.IListCallback, IPaymentResultWithDataListener, ISecurionPayPaymentListener, IIyziPayPaymentListener
+    public class WalletActivity : BaseActivity, IDialogListCallBack, IPaymentResultWithDataListener, ISecurionPayPaymentListener, IIyziPayPaymentListener, IDialogInputCallBack
     {
         #region Variables Basic
 
@@ -77,7 +76,7 @@ namespace DeepSound.Activities.SettingsUser.General
 
                 //Get Value And Set Toolbar
                 InitBuy();
-                InitComponent(); 
+                InitComponent();
                 InitToolbar();
                 Get_Data_User();
 
@@ -147,11 +146,10 @@ namespace DeepSound.Activities.SettingsUser.General
             {
                 if (AppSettings.ShowRazorPay) InitRazorPay?.StopRazorPay();
                 if (AppSettings.ShowPayStack) PayStackPayment?.StopPayStack();
-                if (AppSettings.ShowCashFree) CashFreePayment?.StopCashFree();
                 if (AppSettings.ShowPaySera) PaySeraPayment?.StopPaySera();
                 if (AppSettings.ShowSecurionPay) SecurionPayPayment?.StopSecurionPay();
-                if (AppSettings.ShowIyziPay) IyziPayPayment?.StopIyziPay();  
-                
+                if (AppSettings.ShowIyziPay) IyziPayPayment?.StopIyziPay();
+
                 base.OnDestroy();
             }
             catch (Exception exception)
@@ -187,7 +185,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 if (AppSettings.ShowRazorPay) InitRazorPay ??= new InitRazorPayPayment(this);
                 if (AppSettings.ShowPayStack) PayStackPayment ??= new InitPayStackPayment(this);
                 if (AppSettings.ShowCashFree) CashFreePayment ??= new InitCashFreePayment(this);
-                if (AppSettings.ShowPaySera) PaySeraPayment ??= new InitPaySeraPayment(this); 
+                if (AppSettings.ShowPaySera) PaySeraPayment ??= new InitPaySeraPayment(this);
                 if (AppSettings.ShowSecurionPay) SecurionPayPayment ??= new InitSecurionPayPayment(this, this, ListUtils.SettingsSiteList?.SecurionpayPublicKey);
                 if (AppSettings.ShowAamarPay) AamarPayPayment ??= new InitAamarPayPayment(this);
             }
@@ -211,7 +209,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 BtnReplenish = FindViewById<AppCompatButton>(Resource.Id.ReplenishButton);
 
                 Methods.SetColorEditText(TxtAmount, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
-                 
+
             }
             catch (Exception e)
             {
@@ -245,7 +243,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void AddOrRemoveEvent(bool addEvent)
         {
             try
@@ -275,7 +273,7 @@ namespace DeepSound.Activities.SettingsUser.General
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -298,11 +296,11 @@ namespace DeepSound.Activities.SettingsUser.General
                     Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
                     return;
                 }
-                 
+
                 Price = TxtAmount.Text;
 
                 var arrayAdapter = new List<string>();
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
                 if (AppSettings.ShowPaypal) arrayAdapter.Add(GetString(Resource.String.Btn_Paypal));
                 if (AppSettings.ShowCreditCard) arrayAdapter.Add(GetString(Resource.String.Lbl_CreditCard));
@@ -317,10 +315,10 @@ namespace DeepSound.Activities.SettingsUser.General
                 if (AppSettings.ShowIyziPay) arrayAdapter.Add(GetString(Resource.String.Lbl_IyziPay));
                 if (AppSettings.ShowAamarPay) arrayAdapter.Add(GetString(Resource.String.Lbl_AamarPay));
 
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -330,10 +328,10 @@ namespace DeepSound.Activities.SettingsUser.General
         }
 
         #endregion
-         
+
         #region MaterialDialog
 
-        public async void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+        public async void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
             {
@@ -389,6 +387,31 @@ namespace DeepSound.Activities.SettingsUser.General
                 else if (text == GetString(Resource.String.Lbl_AamarPay))
                 {
                     AamarPayPayment.BtnAamarPayOnClick(Price);
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+         
+        public async void OnInput(IDialogInterface dialog, string input)
+        {
+            try
+            {
+                if (!string.IsNullOrEmpty(input))
+                {
+                    if (input.Length <= 0) return;
+                    var check = Methods.FunString.IsEmailValid(input.Replace(" ", ""));
+                    if (!check)
+                    {
+                        Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_VerificationFailed), GetText(Resource.String.Lbl_IsEmailValid), GetText(Resource.String.Lbl_Ok));
+                        return;
+                    }
+
+                    Toast.MakeText(this, GetText(Resource.String.Lbl_Please_wait), ToastLength.Long)?.Show();
+
+                    await PayStack(input);
                 }
             }
             catch (Exception e)
@@ -457,58 +480,8 @@ namespace DeepSound.Activities.SettingsUser.General
 
         #endregion
 
-        #region Result
-
-        //Result 
-        protected override async void OnActivityResult(int requestCode, Result resultCode, Intent data)
-        {
-            try
-            {
-                base.OnActivityResult(requestCode, resultCode, data);
-                if (requestCode == InitPayPalPayment.PayPalDataRequestCode)
-                    switch (resultCode)
-                    {
-                        case Result.Ok:
-                        {
-                            DropInResult dropInResult = (DropInResult)data.GetParcelableExtra(DropInResult.ExtraDropInResult);
-                            if (dropInResult != null)
-                            {
-                                InitPayPalPayment.DisplayResult(dropInResult.PaymentMethodNonce, dropInResult.DeviceData);
-                                if (Methods.CheckConnectivity())
-                                {
-                                    var (apiStatus, respond) = await RequestsAsync.Payments.TopWalletPaypalAsync(TxtAmount.Text);
-                                    if (apiStatus == 200)
-                                    {
-                                        TxtAmount.Text = string.Empty;
-
-                                        Toast.MakeText(this, GetText(Resource.String.Lbl_PaymentSuccessfully), ToastLength.Long)?.Show();
-                                    }
-                                    else
-                                        Methods.DisplayReportResult(this, respond);
-                                }
-                                else
-                                {
-                                    Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
-                                }
-                            }
-
-                            break;
-                        }
-                        case Result.Canceled:
-                            Toast.MakeText(this, GetText(Resource.String.Lbl_Canceled), ToastLength.Long)?.Show();
-                            break;
-                    }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-        #endregion
-
         #region RazorPay
-         
+
         public void OnPaymentError(int code, string response, PaymentData p2)
         {
             try
@@ -559,7 +532,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #endregion
 
         #region CashFree
@@ -569,53 +542,55 @@ namespace DeepSound.Activities.SettingsUser.General
         {
             try
             {
-                var dialog = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light)
-                    .Title(GetText(Resource.String.Lbl_CashFree)).TitleColorRes(Resource.Color.primary)
-                    .CustomView(Resource.Layout.CashFreePaymentLayout, true)
-                    .PositiveText(GetText(Resource.String.Lbl_PayNow)).OnPositive(async (materialDialog, action) =>
+                var dialog = new MaterialAlertDialogBuilder(this);
+
+                dialog.SetTitle(Resource.String.Lbl_CashFree);
+
+                View view = LayoutInflater.Inflate(Resource.Layout.CashFreePaymentLayout, null);
+                dialog.SetView(view);
+                dialog.SetPositiveButton(GetText(Resource.String.Lbl_PayNow), async (o, args) =>
+                {
+                    try
                     {
-                        try
+                        if (string.IsNullOrEmpty(TxtName.Text) || string.IsNullOrWhiteSpace(TxtName.Text))
                         {
-                            if (string.IsNullOrEmpty(TxtName.Text) || string.IsNullOrWhiteSpace(TxtName.Text))
-                            {
-                                Toast.MakeText(this, GetText(Resource.String.Lbl_PleaseEnterName), ToastLength.Short)?.Show();
-                                return;
-                            }
-
-                            var check = Methods.FunString.IsEmailValid(TxtEmail.Text.Replace(" ", ""));
-                            switch (check)
-                            {
-                                case false:
-                                    Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_VerificationFailed), GetText(Resource.String.Lbl_IsEmailValid), GetText(Resource.String.Lbl_Ok));
-                                    return;
-                            }
-
-                            if (string.IsNullOrEmpty(TxtPhone.Text) || string.IsNullOrWhiteSpace(TxtPhone.Text))
-                            {
-                                Toast.MakeText(this, GetText(Resource.String.Lbl_Please_enter_your_data), ToastLength.Short)?.Show();
-                                return;
-                            }
-
-                            Toast.MakeText(this, GetText(Resource.String.Lbl_Please_wait), ToastLength.Short)?.Show();
-
-                            await CashFree(TxtName.Text, TxtEmail.Text, TxtPhone.Text);
+                            Toast.MakeText(this, GetText(Resource.String.Lbl_PleaseEnterName), ToastLength.Short)?.Show();
+                            return;
                         }
-                        catch (Exception e)
+
+                        var check = Methods.FunString.IsEmailValid(TxtEmail.Text.Replace(" ", ""));
+                        switch (check)
                         {
-                            Methods.DisplayReportResultTrack(e);
+                            case false:
+                                Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_VerificationFailed), GetText(Resource.String.Lbl_IsEmailValid), GetText(Resource.String.Lbl_Ok));
+                                return;
                         }
-                    })
-                    .NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog())
-                    .Build();
 
-                var iconName = dialog.CustomView.FindViewById<TextView>(Resource.Id.IconName);
-                TxtName = dialog.CustomView.FindViewById<EditText>(Resource.Id.NameEditText);
+                        if (string.IsNullOrEmpty(TxtPhone.Text) || string.IsNullOrWhiteSpace(TxtPhone.Text))
+                        {
+                            Toast.MakeText(this, GetText(Resource.String.Lbl_Please_enter_your_data), ToastLength.Short)?.Show();
+                            return;
+                        }
 
-                var iconEmail = dialog.CustomView.FindViewById<TextView>(Resource.Id.IconEmail);
-                TxtEmail = dialog.CustomView.FindViewById<EditText>(Resource.Id.EmailEditText);
+                        Toast.MakeText(this, GetText(Resource.String.Lbl_Please_wait), ToastLength.Short)?.Show();
 
-                var iconPhone = dialog.CustomView.FindViewById<TextView>(Resource.Id.IconPhone);
-                TxtPhone = dialog.CustomView.FindViewById<EditText>(Resource.Id.PhoneEditText);
+                        await CashFree(TxtName.Text, TxtEmail.Text, TxtPhone.Text);
+                    }
+                    catch (Exception e)
+                    {
+                        Methods.DisplayReportResultTrack(e);
+                    }
+                });
+                dialog.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                var iconName = view.FindViewById<TextView>(Resource.Id.IconName);
+                TxtName = view.FindViewById<EditText>(Resource.Id.NameEditText);
+
+                var iconEmail = view.FindViewById<TextView>(Resource.Id.IconEmail);
+                TxtEmail = view.FindViewById<EditText>(Resource.Id.EmailEditText);
+
+                var iconPhone = view.FindViewById<TextView>(Resource.Id.IconPhone);
+                TxtPhone = view.FindViewById<EditText>(Resource.Id.PhoneEditText);
 
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeLight, iconName, FontAwesomeIcon.User);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeLight, iconEmail, FontAwesomeIcon.PaperPlane);
@@ -640,7 +615,6 @@ namespace DeepSound.Activities.SettingsUser.General
                 Methods.DisplayReportResultTrack(e);
             }
         }
-
         private async Task CashFree(string name, string email, string phone)
         {
             try
@@ -655,7 +629,7 @@ namespace DeepSound.Activities.SettingsUser.General
                         {"price", Price},
                     };
 
-                    var (apiStatus, respond) = await RequestsAsync.Payments.InitializeCashFreeAsync("initialize", AppSettings.CashFreeCurrency, ListUtils.SettingsSiteList?.CashfreeSecretKey ?? "", ListUtils.SettingsSiteList?.CashfreeMode, keyValues);
+                    var (apiStatus, respond) = await RequestsAsync.Payments.InitializeCashFreeAsync("initialize", AppSettings.CashFreeCurrency,UserDetails.UserId.ToString(), ListUtils.SettingsSiteList?.CashfreeSecretKey ?? "", ListUtils.SettingsSiteList?.CashfreeMode, keyValues);
                     switch (apiStatus)
                     {
                         case 200:
@@ -694,44 +668,20 @@ namespace DeepSound.Activities.SettingsUser.General
         {
             try
             {
-                var dialogBuilder = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                dialogBuilder.Title(Resource.String.Lbl_PayStack).TitleColorRes(Resource.Color.primary);
-                dialogBuilder.Input(Resource.String.Lbl_Email, 0, false, async (materialDialog, s) =>
-                {
-                    try
-                    {
-                        switch (s.Length)
-                        {
-                            case <= 0:
-                                return;
-                        }
+                var dialogBuilder = new MaterialAlertDialogBuilder(this);
+                dialogBuilder.SetTitle(Resource.String.Lbl_PayStack);
 
-                        var check = Methods.FunString.IsEmailValid(s.ToString().Replace(" ", ""));
-                        switch (check)
-                        {
-                            case false:
-                                Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_VerificationFailed), GetText(Resource.String.Lbl_IsEmailValid), GetText(Resource.String.Lbl_Ok));
-                                return;
-                            default:
-                                Toast.MakeText(this, GetText(Resource.String.Lbl_Please_wait), ToastLength.Long)?.Show(); 
+                EditText input = new EditText(this);
+                input.SetHint(Resource.String.Lbl_Email);
+                input.InputType = InputTypes.TextVariationEmailAddress;
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+                input.LayoutParameters = lp;
 
-                                await PayStack(s.ToString());
-                                break;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Methods.DisplayReportResultTrack(e);
-                    }
-                });
-                dialogBuilder.InputType(InputTypes.TextVariationEmailAddress);
-                dialogBuilder.PositiveText(GetText(Resource.String.Lbl_PayNow)).OnPositive((materialDialog, action) =>
-                {
+                dialogBuilder.SetView(input);
 
-                });
-                dialogBuilder.NegativeText(GetText(Resource.String.Lbl_Cancel)).OnNegative(new MyMaterialDialog());
-                dialogBuilder.AlwaysCallSingleChoiceCallback();
-                dialogBuilder.Build().Show();
+                dialogBuilder.SetPositiveButton(GetText(Resource.String.Lbl_PayNow), new MaterialDialogUtils(input, this));
+                dialogBuilder.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+                dialogBuilder.Show();
             }
             catch (Exception e)
             {
@@ -757,17 +707,17 @@ namespace DeepSound.Activities.SettingsUser.General
                     switch (apiStatus)
                     {
                         case 200:
-                        {
-                            switch (respond)
                             {
-                                case InitializePaymentObject result:
-                                    PayStackPayment ??= new InitPayStackPayment(this);
-                                    PayStackPayment.DisplayPayStackPayment(result.Url, Price);
-                                    break;
-                            }
+                                switch (respond)
+                                {
+                                    case InitializePaymentObject result:
+                                        PayStackPayment ??= new InitPayStackPayment(this);
+                                        PayStackPayment.DisplayPayStackPayment(result.Url, Price);
+                                        break;
+                                }
 
-                            break;
-                        }
+                                break;
+                            }
                         default:
                             Methods.DisplayReportResult(this, respond);
                             break;
@@ -803,17 +753,17 @@ namespace DeepSound.Activities.SettingsUser.General
                     switch (apiStatus)
                     {
                         case 200:
-                        {
-                            switch (respond)
                             {
-                                case InitializePaymentObject result:
-                                    PaySeraPayment ??= new InitPaySeraPayment(this);
-                                    PaySeraPayment.DisplayPaySeraPayment(result.Url, Price);
-                                    break;
-                            }
+                                switch (respond)
+                                {
+                                    case InitializePaymentObject result:
+                                        PaySeraPayment ??= new InitPaySeraPayment(this);
+                                        PaySeraPayment.DisplayPaySeraPayment(result.Url, Price);
+                                        break;
+                                }
 
-                            break;
-                        }
+                                break;
+                            }
                         default:
                             Methods.DisplayReportResult(this, respond);
                             break;
@@ -839,22 +789,22 @@ namespace DeepSound.Activities.SettingsUser.General
             try
             {
                 if (Methods.CheckConnectivity())
-                { 
+                {
                     var (apiStatus, respond) = await RequestsAsync.Payments.InitializeSecurionPayAsync("initialize", Price);
                     switch (apiStatus)
                     {
-                        case 200: 
-                        {
-                            switch (respond)
+                        case 200:
                             {
-                                case InitializeSecurionPayObject result:
-                                    SecurionPayPayment ??= new InitSecurionPayPayment(this, this, ListUtils.SettingsSiteList?.SecurionpayPublicKey);
-                                    SecurionPayPayment.DisplaySecurionPayPayment(result.Token, Price , DeepSoundTools.IsTabDark() ? Resource.Style.MyDialogThemeDark : Resource.Style.MyDialogTheme);
-                                    break;
-                            }
+                                switch (respond)
+                                {
+                                    case InitializeSecurionPayObject result:
+                                        SecurionPayPayment ??= new InitSecurionPayPayment(this, this, ListUtils.SettingsSiteList?.SecurionpayPublicKey);
+                                        SecurionPayPayment.DisplaySecurionPayPayment(result.Token, Price, DeepSoundTools.IsTabDark() ? Resource.Style.MyDialogThemeDark : Resource.Style.MyDialogTheme);
+                                        break;
+                                }
 
-                            break;
-                        }
+                                break;
+                            }
                         default:
                             Methods.DisplayReportResult(this, respond);
                             break;
@@ -870,8 +820,8 @@ namespace DeepSound.Activities.SettingsUser.General
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
-        private async Task SecurionPay(string request , string charge)
+
+        private async Task SecurionPay(string request, string charge)
         {
             try
             {
@@ -881,7 +831,7 @@ namespace DeepSound.Activities.SettingsUser.General
                     switch (apiStatus)
                     {
                         case 200:
-                            Toast.MakeText(this, this.GetText(Resource.String.Lbl_PaymentSuccessfully), ToastLength.Long)?.Show();
+                            Toast.MakeText(this, GetText(Resource.String.Lbl_PaymentSuccessfully), ToastLength.Long)?.Show();
 
                             break;
                         default:
@@ -891,7 +841,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 }
                 else
                 {
-                    Toast.MakeText(this, this.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
+                    Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
                 }
             }
             catch (Exception e)
@@ -899,7 +849,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 Methods.DisplayReportResultTrack(e);
             }
         }
-           
+
         public void OnPaymentError(string error)
         {
             try
@@ -928,7 +878,7 @@ namespace DeepSound.Activities.SettingsUser.General
         }
 
         #endregion
-         
+
         #region IyziPay
 
         private void IyziPay()
@@ -1013,7 +963,7 @@ namespace DeepSound.Activities.SettingsUser.General
         }
 
         #endregion
- 
+        
         private async void Get_Data_User()
         {
             try

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Gms.Ads;
@@ -25,6 +20,11 @@ using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Blog;
 using DeepSoundClient.Requests;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Blog
@@ -305,7 +305,7 @@ namespace DeepSound.Activities.Blog
 
                 MRecycler.Visibility = ViewStates.Visible;
                 EmptyStateLayout.Visibility = ViewStates.Gone;
-               
+
                 MainScrollEvent.IsLoading = false;
 
                 StartApiService();
@@ -337,7 +337,7 @@ namespace DeepSound.Activities.Blog
                 MainScrollEvent.IsLoading = true;
 
                 int countList = MAdapter.BlogList.Count;
-                 var (apiStatus, respond) = await RequestsAsync.Articles.GetArticlesAsync("15", offset);
+                var (apiStatus, respond) = await RequestsAsync.Articles.GetArticlesAsync("15", offset);
                 if (apiStatus == 200)
                 {
                     if (respond is GetArticlesObject result)
@@ -347,7 +347,7 @@ namespace DeepSound.Activities.Blog
                         {
                             if (countList > 0)
                             {
-                                foreach (var item in from item in result.ArticleList  let check = MAdapter.BlogList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
+                                foreach (var item in from item in result.ArticleList let check = MAdapter.BlogList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
                                 {
                                     MAdapter.BlogList.Add(item);
                                 }
@@ -382,7 +382,7 @@ namespace DeepSound.Activities.Blog
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -413,7 +413,7 @@ namespace DeepSound.Activities.Blog
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoArtists);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }

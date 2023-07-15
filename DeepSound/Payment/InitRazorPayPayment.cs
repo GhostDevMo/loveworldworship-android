@@ -1,8 +1,8 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Com.Razorpay;
-using Org.Json;
 using DeepSound.Helpers.Utils;
+using Org.Json;
+using System;
 
 namespace DeepSound.Payment
 {
@@ -42,7 +42,7 @@ namespace DeepSound.Payment
                 JSONObject options = new JSONObject();
 
                 options.Put("name", "Add to balance");
-                 
+
                 options.Put("description", "");
 
                 //options.Put("image", "https://demo.wowonder.com/themes/default/img/logo.png");
@@ -51,7 +51,7 @@ namespace DeepSound.Payment
                 options.Put("theme.color", AppSettings.MainColor);
                 options.Put("currency", AppSettings.RazorPayCurrency);
 
-                var priceInt = Convert.ToInt32(price) * 100; 
+                var priceInt = Convert.ToInt32(price) * 100;
                 options.Put("amount", priceInt.ToString());//pass amount in currency subunits
 
                 options.Put("prefill.email", "");
@@ -64,7 +64,7 @@ namespace DeepSound.Payment
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private bool InitRazorPay()
         {
             try
@@ -99,11 +99,11 @@ namespace DeepSound.Payment
             {
                 if (CheckOut != null)
                 {
-                    #pragma warning disable 618
+#pragma warning disable 618
                     CheckOut.OnDestroy();
-                    #pragma warning restore 618
+#pragma warning restore 618
                     CheckOut = null!;
-                } 
+                }
             }
             catch (Exception e)
             {

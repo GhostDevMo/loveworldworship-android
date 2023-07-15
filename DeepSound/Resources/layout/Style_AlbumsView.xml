@@ -12,7 +12,7 @@
         android:layout_gravity="fill"
         android:layout_width="145dp"
         android:layout_height="135dp" 
-        app:cardBackgroundColor="@color/gnt_white"
+        app:cardBackgroundColor="?attr/colorFill"
         app:cardCornerRadius="30dp"
         android:background="?attr/selectableItemBackground"
         android:layout_margin="1dp"

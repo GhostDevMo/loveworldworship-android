@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -11,8 +7,11 @@ using Bumptech.Glide.Request;
 using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Albums;
-using DeepSoundClient.Classes.Global;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using IList = System.Collections.IList;
 
 namespace DeepSound.Activities.Albums.Adapters
@@ -24,7 +23,6 @@ namespace DeepSound.Activities.Albums.Adapters
         public event EventHandler<AlbumsAdapterClickEventArgs> ItemLongClick;
 
         public ObservableCollection<DataAlbumsObject> AlbumsList = new ObservableCollection<DataAlbumsObject>();
-        internal ObservableCollection<SoundDataObject> SoundsList;
 
         public AlbumsAdapter(Activity context)
         {
@@ -54,7 +52,7 @@ namespace DeepSound.Activities.Albums.Adapters
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -86,7 +84,7 @@ namespace DeepSound.Activities.Albums.Adapters
 
                 var count = !string.IsNullOrEmpty(item.CountSongs) ? item.CountSongs : item.SongsCount ?? "0";
                 holder.TxtCountSound.Text = count + " " + ActivityContext.GetText(Resource.String.Lbl_Songs);
-               
+
                 holder.TxtSecondaryText.Text = DeepSoundTools.GetNameFinal(item.Publisher ?? item.UserData);
 
             }
@@ -162,7 +160,7 @@ namespace DeepSound.Activities.Albums.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString()).Apply(new RequestOptions().CenterCrop());
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString()).Apply(new RequestOptions().CenterCrop());
         }
 
     }
@@ -177,7 +175,7 @@ namespace DeepSound.Activities.Albums.Adapters
         public TextView TxtSecondaryText { get; private set; }
         public TextView TxtCountSound { get; private set; }
         public TextView price { get; private set; }
-         
+
         #endregion
 
         public AlbumsAdapterViewHolder(View itemView, Action<AlbumsAdapterClickEventArgs> clickListener, Action<AlbumsAdapterClickEventArgs> longClickListener) : base(itemView)
@@ -192,7 +190,7 @@ namespace DeepSound.Activities.Albums.Adapters
                 TxtSecondaryText = MainView.FindViewById<TextView>(Resource.Id.seconderyText);
                 TxtCountSound = MainView.FindViewById<TextView>(Resource.Id.image_countSound);
                 price = MainView.FindViewById<TextView>(Resource.Id.price);
-               
+
                 //Event
                 itemView.Click += (sender, e) => clickListener(new AlbumsAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition, Image = Image });
                 itemView.LongClick += (sender, e) => longClickListener(new AlbumsAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition, Image = Image });

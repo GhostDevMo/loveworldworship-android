@@ -1,5 +1,3 @@
-using System;
-using System.Collections.ObjectModel;
 using Android.App;
 using Android.Views;
 using Android.Widget;
@@ -7,6 +5,8 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.RecyclerView.Widget;
 using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Utils;
+using System;
+using System.Collections.ObjectModel;
 
 namespace DeepSound.Activities.SettingsUser.InviteFriends.Adapter
 {
@@ -68,19 +68,19 @@ namespace DeepSound.Activities.SettingsUser.InviteFriends.Adapter
                 switch (viewHolder)
                 {
                     case InviteFriendsAdapterViewHolder holder:
-                    {
-                        var item = MUsersPhoneContacts[position];
-                        if (item != null)
                         {
-                            GlideImageLoader.LoadImage(ActivityContext, "no_profile_image_circle", holder.Image, ImageStyle.CircleCrop, ImagePlaceholders.DrawableUser);
+                            var item = MUsersPhoneContacts[position];
+                            if (item != null)
+                            {
+                                GlideImageLoader.LoadImage(ActivityContext, "no_profile_image_circle", holder.Image, ImageStyle.CircleCrop, ImagePlaceholders.DrawableUser);
 
-                            string name = Methods.FunString.DecodeString(item.UserDisplayName);
-                            holder.Name.Text = name;
-                            holder.About.Text = item.PhoneNumber;
+                                string name = Methods.FunString.DecodeString(item.UserDisplayName);
+                                holder.Name.Text = name;
+                                holder.About.Text = item.PhoneNumber;
+                            }
+
+                            break;
                         }
-
-                        break;
-                    }
                 }
             }
             catch (Exception e)

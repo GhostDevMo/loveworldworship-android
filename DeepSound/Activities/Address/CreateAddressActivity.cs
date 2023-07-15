@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Gms.Ads.DoubleClick;
@@ -17,13 +15,15 @@ using DeepSound.Helpers.Fonts;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Address;
 using DeepSoundClient.Requests;
-using MaterialDialogsCore;
+using Google.Android.Material.Dialog;
+using System;
+using System.Linq;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Address
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class CreateAddressActivity : BaseActivity, MaterialDialog.IListCallback
+    public class CreateAddressActivity : BaseActivity, IDialogListCallBack
     {
         #region Variables Basic
 
@@ -124,7 +124,7 @@ namespace DeepSound.Activities.Address
         protected override void OnDestroy()
         {
             try
-            { 
+            {
                 PublisherAdView?.Destroy();
                 base.OnDestroy();
             }
@@ -156,15 +156,15 @@ namespace DeepSound.Activities.Address
         private void InitComponent()
         {
             try
-            { 
+            {
                 LayoutName = FindViewById<LinearLayout>(Resource.Id.LayoutName);
                 IconName = FindViewById<TextView>(Resource.Id.IconName);
                 TxtName = FindViewById<EditText>(Resource.Id.NameEditText);
-                  
+
                 LayoutPhone = FindViewById<LinearLayout>(Resource.Id.LayoutPhone);
                 IconPhone = FindViewById<TextView>(Resource.Id.IconPhone);
                 TxtPhone = FindViewById<EditText>(Resource.Id.PhoneEditText);
-                 
+
                 LayoutCountry = FindViewById<LinearLayout>(Resource.Id.LayoutCountry);
                 IconCountry = FindViewById<TextView>(Resource.Id.IconCountry);
                 TxtCountry = FindViewById<EditText>(Resource.Id.CountryEditText);
@@ -180,23 +180,23 @@ namespace DeepSound.Activities.Address
                 LayoutAddress = FindViewById<LinearLayout>(Resource.Id.LayoutAddress);
                 IconAddress = FindViewById<TextView>(Resource.Id.IconAddress);
                 TxtAddress = FindViewById<EditText>(Resource.Id.AddressEditText);
-               
+
                 BtnApply = FindViewById<AppCompatButton>(Resource.Id.ApplyButton);
-                 
+
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeRegular, IconName, FontAwesomeIcon.AddressCard);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeRegular, IconPhone, FontAwesomeIcon.MobileAlt);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeRegular, IconCountry, FontAwesomeIcon.Flag);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeRegular, IconCity, FontAwesomeIcon.GlobeAmericas);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeRegular, IconZip, FontAwesomeIcon.SortNumericDown);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeRegular, IconAddress, FontAwesomeIcon.MapMarkedAlt);
-                 
+
                 Methods.SetColorEditText(TxtName, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(TxtPhone, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(TxtCountry, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(TxtCity, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(TxtZip, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(TxtAddress, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
-                 
+
                 Methods.SetFocusable(TxtCountry);
             }
             catch (Exception e)
@@ -262,25 +262,25 @@ namespace DeepSound.Activities.Address
         {
             try
             {
-                if (e.Event?.Action != MotionEventActions.Down) return;
+                if (e.Event?.Action != MotionEventActions.Up) return;
 
                 var countriesArray = DeepSoundTools.GetCountryList(this);
                 var arrayAdapter = countriesArray.Select(item => item.Value).ToList();
-                
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                
-                dialogList.Title(GetText(Resource.String.Lbl_Country));
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+
+                var dialogList = new MaterialAlertDialogBuilder(this);
+
+                dialogList.SetTitle(GetText(Resource.String.Lbl_Country));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         //Click Save data Address 
         private async void BtnApplyOnClick(object sender, EventArgs e)
         {
@@ -297,16 +297,16 @@ namespace DeepSound.Activities.Address
                         Toast.MakeText(this, GetText(Resource.String.Lbl_PleaseEnterName), ToastLength.Short)?.Show();
                         return;
                     }
-                   
-                    if (string.IsNullOrEmpty(TxtPhone.Text) || string.IsNullOrEmpty(TxtCountry.Text) || string.IsNullOrEmpty(TxtCity.Text) || string.IsNullOrEmpty(TxtZip.Text)|| string.IsNullOrEmpty(TxtAddress.Text))
+
+                    if (string.IsNullOrEmpty(TxtPhone.Text) || string.IsNullOrEmpty(TxtCountry.Text) || string.IsNullOrEmpty(TxtCity.Text) || string.IsNullOrEmpty(TxtZip.Text) || string.IsNullOrEmpty(TxtAddress.Text))
                     {
                         Toast.MakeText(this, GetText(Resource.String.Lbl_Please_enter_your_data), ToastLength.Short)?.Show();
                         return;
                     }
-                       
+
                     //Show a progress
                     AndHUD.Shared.Show(this, GetText(Resource.String.Lbl_Loading));
-                    var (apiStatus, respond) = await RequestsAsync.Address.CreateAddressAsync(TxtName.Text, TxtPhone.Text, TxtCountry.Text , TxtCity.Text , TxtZip.Text , TxtAddress.Text); //Sent api 
+                    var (apiStatus, respond) = await RequestsAsync.Address.CreateAddressAsync(TxtName.Text, TxtPhone.Text, TxtCountry.Text, TxtCity.Text, TxtZip.Text, TxtAddress.Text); //Sent api 
                     if (apiStatus.Equals(200))
                     {
                         if (respond is CreateAddressObject result)
@@ -333,11 +333,11 @@ namespace DeepSound.Activities.Address
         #endregion
 
         #region MaterialDialog
-         
-        public void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+
+        public void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
-            {  
+            {
                 TxtCountry.Text = itemString;
             }
             catch (Exception e)

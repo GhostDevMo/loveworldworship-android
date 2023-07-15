@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Content;
+﻿using Android.Content;
+using Android.Content.Res;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -22,14 +19,19 @@ using DeepSound.Library.Anjo.Share.Abstractions;
 using DeepSound.Library.Anjo.SuperTextLibrary;
 using DeepSoundClient.Classes.Event;
 using DeepSoundClient.Requests;
-using MaterialDialogsCore;
+using Google.Android.Material.Dialog;
+using Java.IO;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Exception = System.Exception;
 using Uri = Android.Net.Uri;
 
 namespace DeepSound.Activities.Event
 {
-    public class EventProfileFragment : Fragment, MaterialDialog.IListCallback
+    public class EventProfileFragment : Fragment, IDialogListCallBack
     {
         #region Variables Basic
 
@@ -66,7 +68,7 @@ namespace DeepSound.Activities.Event
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -186,7 +188,7 @@ namespace DeepSound.Activities.Event
         }
 
         #endregion
-         
+
         #region Event
 
         private void ButtonBuyTicketOnClick(object sender, EventArgs e)
@@ -201,10 +203,10 @@ namespace DeepSound.Activities.Event
                         return;
                     }
 
-                    var dialogBuilder = new MaterialDialog.Builder(Activity).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                    dialogBuilder.Title(GetText(Resource.String.Lbl_BuyTicket));
-                    dialogBuilder.Content(GetText(Resource.String.Lbl_AreYouSureBuyTicket));
-                    dialogBuilder.PositiveText(GetText(Resource.String.Lbl_Buy)).OnPositive(async (materialDialog, action) =>
+                    var dialogBuilder = new MaterialAlertDialogBuilder(Activity);
+                    dialogBuilder.SetTitle(GetText(Resource.String.Lbl_BuyTicket));
+                    dialogBuilder.SetMessage(GetText(Resource.String.Lbl_AreYouSureBuyTicket));
+                    dialogBuilder.SetPositiveButton(GetText(Resource.String.Lbl_Buy), async (materialDialog, action) =>
                     {
                         try
                         {
@@ -215,62 +217,39 @@ namespace DeepSound.Activities.Event
                                 {
                                     Toast.MakeText(Activity, Activity.GetString(Resource.String.Lbl_PaymentSuccessfully), ToastLength.Long)?.Show();
 
-                                    //wael after update fix Download Ticket
+                                    //Download Ticket
+                                    var (apiStatus, respond) = await RequestsAsync.Event.DownloadTicketEventAsync(result?.PurchaseId);
+                                    if (apiStatus == 200)
+                                    {
+                                        if (respond is DownloadTicketEventObject downloadTicketResult)
+                                        {
+                                            PdfConverter converter = PdfConverter.Instance;
+                                            File file = new File(Methods.Path.FolderDcimMyApp, EventObject.Name + ".pdf");
 
-                                    //var (apiStatus, respond) = await RequestsAsync.Event.DownloadTicketEventAsync(result?.PurchaseId);
-                                    //if (apiStatus == 200)
-                                    //{
-                                    //    if (respond is DownloadTicketEventObject downloadTicketResult)
-                                    //    {
-                                    //        Activity?.RunOnUiThread(() =>
-                                    //        {
-                                    //            try
-                                    //            {
-                                    //                PdfConverter converter = PdfConverter.Instance;
-                                    //                File file = new File(Methods.Path.FolderDcimMyApp, EventObject.Name + ".pdf");
-
-                                    //                var content = Html.FromHtml(downloadTicketResult.Html, FromHtmlOptions.ModeCompact)?.ToString();
-                                    //                var DataWebHtml = "<!DOCTYPE html>";
-                                    //                DataWebHtml += "<head>" +
-                                    //                               "<meta charset='utf-8'>" +
-                                    //                               "<meta http-equiv='X-UA-Compatible' content='IE=edge'>" +
-                                    //                               "<title></title>" +
-                                    //                               "<meta name='viewport' content='width=device-width, initial-scale=1'>" +
-                                    //                               "</head>";
-                                    //                DataWebHtml += "<body>" + content + "</body>";
-                                    //                DataWebHtml += "</html>";
-
-                                    //                converter.Convert(Context, DataWebHtml, file);
-                                    //                // By now the pdf has been printed in the file.
-                                    //            }
-                                    //            catch (Exception exception)
-                                    //            {
-                                    //                Methods.DisplayReportResultTrack(exception);
-                                    //            }
-                                    //        });
-                                    //    }
-                                    //}
-                                    //else Methods.DisplayReportResult(Activity, respond);
+                                            converter.Convert(Context, downloadTicketResult.Link, file);
+                                            // By now the pdf has been printed in the file.
+                                        }
+                                    }
+                                    else Methods.DisplayReportResult(Activity, respond);
                                 }
                             }
                             else Methods.DisplayReportResult(Activity, respondBuy);
-
                         }
                         catch (Exception exception)
                         {
                             Methods.DisplayReportResultTrack(exception);
                         }
                     });
-                    dialogBuilder.NegativeText(GetText(Resource.String.Lbl_Cancel)).OnNegative(new MyMaterialDialog());
-                    dialogBuilder.AlwaysCallSingleChoiceCallback();
-                    dialogBuilder.Build().Show();
+                    dialogBuilder.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+
+                    dialogBuilder.Show();
                 }
                 else
                 {
-                    var dialogBuilder = new MaterialDialog.Builder(Activity).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                    dialogBuilder.Title(GetText(Resource.String.Lbl_Wallet));
-                    dialogBuilder.Content(GetText(Resource.String.Lbl_Error_NoWallet));
-                    dialogBuilder.PositiveText(GetText(Resource.String.Lbl_AddWallet)).OnPositive((materialDialog, action) =>
+                    var dialogBuilder = new MaterialAlertDialogBuilder(Activity);
+                    dialogBuilder.SetTitle(GetText(Resource.String.Lbl_Wallet));
+                    dialogBuilder.SetMessage(GetText(Resource.String.Lbl_Error_NoWallet));
+                    dialogBuilder.SetPositiveButton(GetText(Resource.String.Lbl_AddWallet), (materialDialog, action) =>
                     {
                         try
                         {
@@ -281,9 +260,9 @@ namespace DeepSound.Activities.Event
                             Methods.DisplayReportResultTrack(exception);
                         }
                     });
-                    dialogBuilder.NegativeText(GetText(Resource.String.Lbl_Cancel)).OnNegative(new MyMaterialDialog());
-                    dialogBuilder.AlwaysCallSingleChoiceCallback();
-                    dialogBuilder.Build().Show();
+                    dialogBuilder.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+
+                    dialogBuilder.Show();
                 }
             }
             catch (Exception exception)
@@ -309,6 +288,7 @@ namespace DeepSound.Activities.Event
                         ButtonJoin.Tag = "true";
                         ButtonJoin.SetBackgroundResource(Resource.Drawable.round_button_pressed);
                         ButtonJoin.SetTextColor(Color.White);
+                        ButtonJoin.SupportCompoundDrawablesTintList = ColorStateList.ValueOf(Color.White);
 
                         EventObject.IsJoined = 1;
                         PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Event.JoinEventAsync(EventObject.Id?.ToString(), "join") });
@@ -318,6 +298,7 @@ namespace DeepSound.Activities.Event
                         ButtonJoin.Tag = "false";
                         ButtonJoin.SetBackgroundResource(Resource.Drawable.round_button_normal);
                         ButtonJoin.SetTextColor(Color.ParseColor(AppSettings.MainColor));
+                        ButtonJoin.SupportCompoundDrawablesTintList = ColorStateList.ValueOf(Color.ParseColor(AppSettings.MainColor));
 
                         EventObject.IsJoined = 0;
 
@@ -359,7 +340,7 @@ namespace DeepSound.Activities.Event
             try
             {
                 var arrayAdapter = new List<string>();
-                var dialogList = new MaterialDialog.Builder(Activity).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(Activity);
 
                 if (EventObject.UserId == UserDetails.UserId && UserDetails.IsLogin)
                 {
@@ -370,11 +351,11 @@ namespace DeepSound.Activities.Event
                 arrayAdapter.Add(GetText(Resource.String.Lbl_Share));
                 arrayAdapter.Add(GetText(Resource.String.Lbl_Copy));
 
-                dialogList.Title(GetText(Resource.String.Lbl_Event));
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetTitle(GetText(Resource.String.Lbl_Event));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -476,6 +457,7 @@ namespace DeepSound.Activities.Event
                             ButtonJoin.Tag = "true";
                             ButtonJoin.SetBackgroundResource(Resource.Drawable.round_button_pressed);
                             ButtonJoin.SetTextColor(Color.White);
+                            ButtonJoin.SupportCompoundDrawablesTintList = ColorStateList.ValueOf(Color.White);
                         }
                         else
                         {
@@ -483,6 +465,7 @@ namespace DeepSound.Activities.Event
                             ButtonJoin.Tag = "false";
                             ButtonJoin.SetBackgroundResource(Resource.Drawable.round_button_normal);
                             ButtonJoin.SetTextColor(Color.ParseColor(AppSettings.MainColor));
+                            ButtonJoin.SupportCompoundDrawablesTintList = ColorStateList.ValueOf(Color.ParseColor(AppSettings.MainColor));
                         }
 
                         if (EventObject.TicketPrice is > 0 && EventObject.TicketPrice is > 0)
@@ -507,7 +490,7 @@ namespace DeepSound.Activities.Event
 
         #region MaterialDialog
 
-        public async void OnSelection(MaterialDialog dialog, View itemView, int position, string text)
+        public async void OnSelection(IDialogInterface dialog, int position, string text)
         {
             try
             {
@@ -522,10 +505,10 @@ namespace DeepSound.Activities.Event
 
                     if (Methods.CheckConnectivity())
                     {
-                        var dialogBuilder = new MaterialDialog.Builder(Activity).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                        dialogBuilder.Title(GetText(Resource.String.Lbl_DeleteEvent));
-                        dialogBuilder.Content(GetText(Resource.String.Lbl_AreYouSureDeleteEvent));
-                        dialogBuilder.PositiveText(GetText(Resource.String.Lbl_YesButKeepSongs)).OnPositive((materialDialog, action) =>
+                        var dialogBuilder = new MaterialAlertDialogBuilder(Activity);
+                        dialogBuilder.SetTitle(GetText(Resource.String.Lbl_DeleteEvent));
+                        dialogBuilder.SetMessage(GetText(Resource.String.Lbl_AreYouSureDeleteEvent));
+                        dialogBuilder.SetPositiveButton(GetText(Resource.String.Lbl_YesButKeepSongs), (materialDialog, action) =>
                         {
                             try
                             {
@@ -552,9 +535,9 @@ namespace DeepSound.Activities.Event
                                 Methods.DisplayReportResultTrack(exception);
                             }
                         });
-                        dialogBuilder.NegativeText(GetText(Resource.String.Lbl_YesDeleteEverything)).OnNegative(new MyMaterialDialog());
-                        dialogBuilder.AlwaysCallSingleChoiceCallback();
-                        dialogBuilder.Build().Show();
+                        dialogBuilder.SetNegativeButton(GetText(Resource.String.Lbl_YesDeleteEverything), new MaterialDialogUtils());
+
+                        dialogBuilder.Show();
                     }
                     else
                     {

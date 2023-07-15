@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.App.Job;
 using Android.Content;
 using Android.OS;
@@ -15,6 +11,10 @@ using DeepSoundClient.Classes.Chat;
 using DeepSoundClient.Requests;
 using Java.Lang;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Exception = System.Exception;
 
 namespace DeepSound.Service
@@ -171,8 +171,8 @@ namespace DeepSound.Service
                 {
                     var instance = HomeActivity.GetInstance();
                     if (Methods.AppLifecycleObserver.AppState == "Foreground" && instance != null)
-                    { 
-                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> {instance.GetCountNotifications });
+                    {
+                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { instance.GetCountNotifications });
                     }
 
                     PollyController.RunRetryPolicyFunction(new List<Func<Task>> { LoadChatAsync });
@@ -189,7 +189,7 @@ namespace DeepSound.Service
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private async Task LoadChatAsync()
         {
             try
@@ -197,9 +197,9 @@ namespace DeepSound.Service
                 //Toast.MakeText(Application.Context, "StartApiService", ToastLength.Short)?.Show();
                 if (ApiRun || !Methods.CheckConnectivity())
                     return;
-                 
+
                 ApiRun = true;
-                 
+
                 var (apiStatus, respond) = await RequestsAsync.Chat.GetConversationListAsync();
                 if (apiStatus != 200 || respond is not GetConversationListObject result || result.Data == null)
                 {
@@ -220,7 +220,7 @@ namespace DeepSound.Service
                         else
                         {
                             ListUtils.ChatList = new ObservableCollection<DataConversation>(result.Data);
-                             
+
                             //Insert All data users to database
                             SqLiteDatabase dbDatabase = new SqLiteDatabase();
                             dbDatabase.InsertOrReplaceLastChatTable(ListUtils.ChatList);

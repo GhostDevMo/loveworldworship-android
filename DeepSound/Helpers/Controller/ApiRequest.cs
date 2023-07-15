@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Gms.Auth.Api;
 using DeepSound.Activities.Albums;
@@ -26,6 +20,12 @@ using DeepSoundClient.Requests;
 using Java.IO;
 using Java.Lang;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Xamarin.Facebook;
 using Xamarin.Facebook.Login;
 using Exception = System.Exception;
@@ -33,28 +33,27 @@ using Exception = System.Exception;
 namespace DeepSound.Helpers.Controller
 {
     internal static class ApiRequest
-    { 
+    {
         public static async Task GetSettings_Api(Activity context)
         {
             if (Methods.CheckConnectivity())
             {
-                 var (apiStatus, respond) = await Current.GetOptionsAsync();
+                var (apiStatus, respond) = await Current.GetOptionsAsync();
                 if (apiStatus == 200)
                 {
                     if (respond is OptionsObject result)
                     {
-                        ListUtils.SettingsSiteList = null!;
+                        ListUtils.SettingsSiteList = null;
                         ListUtils.SettingsSiteList = result.DataOptions;
 
                         AppSettings.OneSignalAppId = result.DataOptions.AndroidMPushId;
-                        OneSignalNotification.Instance.RegisterNotificationDevice(context);
-
+                         
                         //Blog Categories
                         var listBlog = result.DataOptions.BlogCategories?.Select(cat => new Classes.Categories
                         {
                             CategoriesId = cat.Key,
                             CategoriesName = Methods.FunString.DecodeString(cat.Value),
-                            CategoriesColor = "#ffffff", 
+                            CategoriesColor = "#ffffff",
                         }).ToList();
 
                         CategoriesController.ListCategoriesBlog.Clear();
@@ -69,7 +68,7 @@ namespace DeepSound.Helpers.Controller
                         {
                             CategoriesId = cat.Key,
                             CategoriesName = Methods.FunString.DecodeString(cat.Value),
-                            CategoriesColor = "#ffffff", 
+                            CategoriesColor = "#ffffff",
                         }).ToList();
 
                         CategoriesController.ListCategoriesProducts.Clear();
@@ -78,7 +77,7 @@ namespace DeepSound.Helpers.Controller
                             > 0 => new ObservableCollection<Classes.Categories>(listProducts),
                             _ => CategoriesController.ListCategoriesProducts
                         };
-                         
+
                         SqLiteDatabase dbDatabase = new SqLiteDatabase();
                         dbDatabase.InsertOrUpdateSettings(result.DataOptions);
                     }
@@ -86,11 +85,11 @@ namespace DeepSound.Helpers.Controller
                 }
             }
         }
-         
-        public static async Task<ProfileObject> GetInfoData(Activity context,string userId)
+
+        public static async Task<ProfileObject> GetInfoData(Activity context, string userId)
         {
             if (!UserDetails.IsLogin || userId == "0")
-                return null!;
+                return null;
 
             if (Methods.CheckConnectivity())
             {
@@ -113,11 +112,11 @@ namespace DeepSound.Helpers.Controller
                                 UserDetails.Url = result.Data.Url;
                                 UserDetails.FullName = result.Data.Name;
 
-                                ListUtils.MyUserInfoList = new ObservableCollection<UserDataObject> { result.Data }; 
+                                ListUtils.MyUserInfoList = new ObservableCollection<UserDataObject> { result.Data };
 
                                 SqLiteDatabase dbDatabase = new SqLiteDatabase();
                                 dbDatabase.InsertOrUpdate_DataMyInfo(result.Data);
-                                 
+
                                 //HomeActivity.GetInstance()?.RunOnUiThread(() =>
                                 //{
                                 //    try
@@ -143,9 +142,9 @@ namespace DeepSound.Helpers.Controller
                 else Methods.DisplayReportResult(context, respond);
             }
 
-            return null!;
+            return null;
         }
-         
+
         public static async Task<(int?, int?)> GetCountNotifications()
         {
             var (respondCode, respondString) = await RequestsAsync.Common.GetCountNotificationsAsync(UserDetails.DeviceId);
@@ -158,7 +157,7 @@ namespace DeepSound.Helpers.Controller
             }
             return (0, 0);
         }
-         
+
         public static async Task GetGenres_Api()
         {
             try
@@ -172,7 +171,7 @@ namespace DeepSound.Helpers.Controller
                         {
                             ListUtils.GenresList.Clear();
                             ListUtils.GenresList = new ObservableCollection<GenresObject.DataGenres>(result.Data);
-                             
+
                             SqLiteDatabase dbDatabase = new SqLiteDatabase();
                             dbDatabase.InsertOrUpdate_Genres(ListUtils.GenresList);
                         }
@@ -193,8 +192,8 @@ namespace DeepSound.Helpers.Controller
                     return;
 
                 if (Methods.CheckConnectivity())
-                { 
-                     var (apiStatus, respond) = await RequestsAsync.Playlist.GetPlaylistAsync(UserDetails.UserId.ToString());
+                {
+                    var (apiStatus, respond) = await RequestsAsync.Playlist.GetPlaylistAsync(UserDetails.UserId.ToString());
                     if (apiStatus.Equals(200))
                     {
                         if (respond is PlaylistObject result)
@@ -209,7 +208,7 @@ namespace DeepSound.Helpers.Controller
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         public static async Task GetMyAlbums_Api()
         {
             try
@@ -218,10 +217,10 @@ namespace DeepSound.Helpers.Controller
                     return;
 
                 if (Methods.CheckConnectivity())
-                { 
-                     var (apiStatus, respond) = await RequestsAsync.User.GetUserAlbumsAsync(UserDetails.UserId.ToString());
+                {
+                    var (apiStatus, respond) = await RequestsAsync.User.GetUserAlbumsAsync(UserDetails.UserId.ToString());
                     if (apiStatus.Equals(200))
-                    { 
+                    {
                         if (respond is AlbumsObject result)
                         {
                             ListUtils.AlbumList = new ObservableCollection<DataAlbumsObject>(result.Data);
@@ -234,21 +233,21 @@ namespace DeepSound.Helpers.Controller
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         public static async Task GetPrices_Api()
         {
             try
             {
                 if (Methods.CheckConnectivity())
                 {
-                     var (apiStatus, respond) = await RequestsAsync.Common.GetPricesAsync();
+                    var (apiStatus, respond) = await RequestsAsync.Common.GetPricesAsync();
                     if (apiStatus == 200)
                     {
                         if (respond is PricesObject result)
                         {
                             ListUtils.PriceList.Clear();
                             ListUtils.PriceList = new ObservableCollection<PricesObject.DataPrice>(result.Data);
-                             
+
                             SqLiteDatabase dbDatabase = new SqLiteDatabase();
                             dbDatabase.InsertOrUpdate_Price(ListUtils.PriceList);
                         }
@@ -260,7 +259,7 @@ namespace DeepSound.Helpers.Controller
                 Methods.DisplayReportResultTrack(e);
             }
         }
-          
+
         public static async Task<string> GetTimeZoneAsync()
         {
             try
@@ -277,7 +276,7 @@ namespace DeepSound.Helpers.Controller
                 return "UTC";
             }
         }
-        
+
         public static async Task LoadFavorites()
         {
             try
@@ -297,7 +296,7 @@ namespace DeepSound.Helpers.Controller
                                 ListUtils.FavoritesList = result.Data?.SoundList;
                             }
                         }
-                    } 
+                    }
                 }
             }
             catch (Exception e)
@@ -323,7 +322,7 @@ namespace DeepSound.Helpers.Controller
                                 ListUtils.LikedSongs = result.Data?.SoundList;
                             }
                         }
-                    } 
+                    }
                 }
             }
             catch (Exception e)
@@ -331,7 +330,7 @@ namespace DeepSound.Helpers.Controller
                 Methods.DisplayReportResultTrack(e);
             }
         }
-          
+
         private static bool RunLogout;
 
         public static async void Delete(Activity context)
@@ -355,7 +354,7 @@ namespace DeepSound.Helpers.Controller
                         Runtime.GetRuntime()?.RunFinalization();
                         Runtime.GetRuntime()?.Gc();
                         TrimCache(context);
-                         
+
                         ListUtils.ClearAllList();
 
                         UserDetails.ClearAllValueUserDetails();
@@ -385,7 +384,7 @@ namespace DeepSound.Helpers.Controller
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         public static async void Logout(Activity context)
         {
             try
@@ -407,13 +406,13 @@ namespace DeepSound.Helpers.Controller
                         Runtime.GetRuntime()?.RunFinalization();
                         Runtime.GetRuntime()?.Gc();
                         TrimCache(context);
-                         
+
                         ListUtils.ClearAllList();
 
                         UserDetails.ClearAllValueUserDetails();
 
                         dbDatabase.CheckTablesStatus();
-                         
+
                         context.StopService(new Intent(context, typeof(AppApiService)));
 
                         SharedPref.SharedData?.Edit()?.Clear()?.Commit();
@@ -506,7 +505,7 @@ namespace DeepSound.Helpers.Controller
                         if (Auth.GoogleSignInApi != null)
                         {
                             LoginActivity.MGoogleSignInClient.SignOut();
-                            LoginActivity.MGoogleSignInClient = null!;
+                            LoginActivity.MGoogleSignInClient = null;
                         }
 
                     if (AppSettings.ShowFacebookLogin)
@@ -514,16 +513,16 @@ namespace DeepSound.Helpers.Controller
                         var accessToken = AccessToken.CurrentAccessToken;
                         var isLoggedIn = accessToken != null && !accessToken.IsExpired;
                         if (isLoggedIn && Profile.CurrentProfile != null)
-                        { 
+                        {
                             LoginManager.Instance.LogOut();
                         }
                     }
 
                     AlbumsFragment.Instance?.MAdapter?.SoundsList?.Clear();
 
-                    OneSignalNotification.Instance.UnRegisterNotificationDevice(); 
-                    UserDetails.ClearAllValueUserDetails(); 
-                    
+                    OneSignalNotification.Instance.UnRegisterNotificationDevice();
+                    UserDetails.ClearAllValueUserDetails();
+
                     Constant.Player?.Release();
 
                     GC.Collect();

@@ -1,9 +1,9 @@
-﻿using System;
-using AutoMapper;
+﻿using AutoMapper;
 using DeepSound.SQLite;
 using DeepSoundClient.Classes.Common;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.User;
+using System;
 
 namespace DeepSound.Helpers.Utils
 {
@@ -35,7 +35,7 @@ namespace DeepSound.Helpers.Utils
                 // only during development, validate your mappings; remove it before release
                 //configuration.AssertConfigurationIsValid();
 
-                Mapper = configuration.CreateMapper(); 
+                Mapper = configuration.CreateMapper();
             }
             catch (Exception e)
             {

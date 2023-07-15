@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Content;
+﻿using Android.Content;
 using Android.Gms.Ads.DoubleClick;
 using Android.OS;
 using Android.Views;
@@ -20,6 +15,11 @@ using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.User;
 using DeepSoundClient.Requests;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DeepSound.Activities.Tabbes.Fragments
 {
@@ -28,7 +28,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
         #region Variables Basic
 
         private HomeActivity GlobalContext;
-        
+
         private ImageView IconMessages;
 
         public HSoundAdapter MAdapter;
@@ -36,15 +36,13 @@ namespace DeepSound.Activities.Tabbes.Fragments
         private View RecentlyInflated;
         private PublisherAdView PublisherAdView;
 
-        private LinearLayout PlayListsLayout, LikedLayout, DownloadsLayout, SharedLayout, PurchasesLayout;
+        private LinearLayout PlayListsLayout, LikedLayout, DownloadsLayout, SharedLayout;
         public LikedFragment LikedFragment;
         public RecentlyPlayedFragment RecentlyPlayedFragment;
         public FavoritesFragment FavoritesFragment;
         public LatestDownloadsFragment LatestDownloadsFragment;
         public MyPlaylistFragment MyPlaylistFragment;
         public SharedFragment SharedFragment;
-        public PurchasesFragment PurchasesFragment;
-
 
         #endregion
 
@@ -75,7 +73,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -100,7 +98,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
         {
             try
             {
-                base.OnResume(); 
+                base.OnResume();
                 PublisherAdView?.Resume();
             }
             catch (Exception e)
@@ -113,7 +111,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
         {
             try
             {
-                base.OnPause(); 
+                base.OnPause();
                 PublisherAdView?.Pause();
             }
             catch (Exception e)
@@ -134,7 +132,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         public override void OnDestroy()
         {
             try
@@ -147,7 +145,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
 
         #region Functions
@@ -171,10 +169,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 DownloadsLayout.Click += DownloadsLayoutOnClick;
 
                 SharedLayout = view.FindViewById<LinearLayout>(Resource.Id.SharedLayout);
-                SharedLayout.Click += SharedLayoutOnClick; 
-
-                PurchasesLayout = view.FindViewById<LinearLayout>(Resource.Id.PurchasesLayout);
-                PurchasesLayout.Click += PurchasesLayoutOnClick;
+                SharedLayout.Click += SharedLayoutOnClick;
 
                 PublisherAdView = view.FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
                 AdsGoogle.InitPublisherAdView(PublisherAdView);
@@ -204,7 +199,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
         #endregion
 
         #region Events
-    
+
         //open last chat 
         private void IconMessagesOnClick(object sender, EventArgs e)
         {
@@ -231,21 +226,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
 
                     Constant.PlayPos = e.Position;
                     GlobalContext?.SoundController?.StartPlaySound(item, MAdapter.SoundsList);
-                } 
-            }
-            catch (Exception exception)
-            {
-                Methods.DisplayReportResultTrack(exception);
-            }
-        }
-
-
-        private void PurchasesLayoutOnClick(object sender, EventArgs e)
-        {
-            try
-            {
-                PurchasesFragment = new PurchasesFragment();
-                GlobalContext.FragmentBottomNavigator.DisplayFragment(PurchasesFragment);
+                }
             }
             catch (Exception exception)
             {
@@ -295,7 +276,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
         private void PlayListsLayoutOnClick(object sender, EventArgs e)
         {
             try
-            { 
+            {
                 MyPlaylistFragment = new MyPlaylistFragment();
                 GlobalContext.FragmentBottomNavigator.DisplayFragment(MyPlaylistFragment);
             }
@@ -310,7 +291,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
         #region Load Data Api 
 
         private void StartApiService()
-        { 
+        {
             if (!Methods.CheckConnectivity())
                 Toast.MakeText(Context, Context.GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
             else
@@ -355,18 +336,18 @@ namespace DeepSound.Activities.Tabbes.Fragments
                                     recyclerInflater.InflateLayout<UserDataObject>(Activity, RecentlyInflated, MAdapter, TemplateRecyclerInflater.TypeLayoutManager.LinearLayoutManagerHorizontal, 0, true, Context.GetText(Resource.String.Lbl_RecentlyPlayed));
                                     if (!recyclerInflater.MainLinear.HasOnClickListeners)
                                     {
-                                        recyclerInflater.MainLinear.Click += null!;
+                                        recyclerInflater.MainLinear.Click += null;
                                         recyclerInflater.MainLinear.Click += RecentlyMoreOnClick;
                                     }
                                 });
                             }
-                        } 
+                        }
                     }
                 }
                 else
                 {
                     Methods.DisplayReportResult(Activity, respond);
-                } 
+                }
             }
             else
             {
@@ -386,8 +367,8 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
-         
+
     }
 }

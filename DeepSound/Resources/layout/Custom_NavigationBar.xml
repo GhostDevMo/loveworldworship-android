@@ -46,34 +46,6 @@
 	            android:gravity="center" />
         </LinearLayout>
         <LinearLayout
-            android:id="@+id/llcustom2"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="@drawable/custom_ripple"
-            android:orientation="vertical">
-            <ImageView
-	            android:layout_width="40dp"
-	            android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:layout_gravity="center"
-                android:id="@+id/ivcustom2"
-                android:tint="@color/secondaryText"
-                android:src="@drawable/icon_trending_vector" />
-            <TextView
-	            android:id="@+id/txtcustom2"
-	            android:layout_width="wrap_content"
-	            android:layout_height="wrap_content"
-	            android:text="@string/Lbl_Trending"
-	            android:textSize="13sp"
-	            android:layout_marginTop="-5dp"
-	            android:textColor="@color/secondaryText"
-	            android:gravity="center" />
-        </LinearLayout>
-        <LinearLayout
             android:id="@+id/llcustom3"
             android:layout_width="0dp"
             android:layout_height="match_parent"

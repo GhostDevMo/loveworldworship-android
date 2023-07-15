@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
@@ -9,24 +7,26 @@ using Android.Text;
 using Android.Views;
 using Android.Widget;
 using AndroidHUD;
-using AndroidX.AppCompat.Content.Res;
+using AndroidX.Activity;
 using AndroidX.AppCompat.Widget;
 using Com.Stripe.Android;
+using Com.Stripe.Android.Model;
+using Com.Stripe.Android.Payments.Paymentlauncher;
 using Com.Stripe.Android.View;
-using DeepSound.Activities.Base;
 using DeepSound.Activities.SettingsUser.General;
+using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Utils;
+using DeepSoundClient.Classes.Payment;
 using DeepSoundClient.Requests;
-using Card = Com.Stripe.Android.Model.Card;
-using Exception = System.Exception;
-using Math = System.Math;
-using Token = Com.Stripe.Android.Model.Token;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Payment
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
-    public class PaymentCardDetailsActivity : BaseActivity, ITokenCallback
+    public class PaymentCardDetailsActivity : ComponentActivity, IPaymentLauncherPaymentResultCallback
     {
         #region Variables Basic
 
@@ -35,8 +35,9 @@ namespace DeepSound.Payment
         private AppCompatButton BtnApply;
         private CardMultilineWidget MultilineWidget;
 
+        private IPaymentLauncher StripePaymentLauncher;
         private Stripe Stripe;
-        private string Price, TokenId;
+        private string Price, TokenId, ClientSecret, HashId, SessionId;
 
         #endregion
 
@@ -149,7 +150,7 @@ namespace DeepSound.Payment
                 CardCvv = (TextView)FindViewById(Resource.Id.card_cvv);
                 CardName = (TextView)FindViewById(Resource.Id.card_name);
 
-                MultilineWidget = (CardMultilineWidget)FindViewById(Resource.Id.card_multiline_widget);
+                MultilineWidget = FindViewById<CardMultilineWidget>(Resource.Id.card_multiline_widget);
 
                 EtName = (EditText)FindViewById(Resource.Id.et_name);
                 BtnApply = (AppCompatButton)FindViewById(Resource.Id.ApplyButton);
@@ -166,21 +167,11 @@ namespace DeepSound.Payment
         {
             try
             {
-                var toolBar = FindViewById<Toolbar>(Resource.Id.toolbar);
-                if (toolBar != null)
+                var toolbar = FindViewById<Toolbar>(Resource.Id.toolbar);
+                if (toolbar != null)
                 {
-                    toolBar.Title = GetString(Resource.String.Lbl_CreditCard);
-                    toolBar.SetTitleTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
-                    SetSupportActionBar(toolBar);
-                    SupportActionBar.SetDisplayShowCustomEnabled(true);
-                    SupportActionBar.SetDisplayHomeAsUpEnabled(true);
-                    SupportActionBar.SetHomeButtonEnabled(true);
-                    SupportActionBar.SetDisplayShowHomeEnabled(true);
-
-                    var icon = AppCompatResources.GetDrawable(this, AppSettings.FlowDirectionRightToLeft ? Resource.Drawable.icon_back_arrow_right : Resource.Drawable.icon_back_arrow_left);
-                    icon?.SetTint(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
-                    SupportActionBar.SetHomeAsUpIndicator(icon);
-
+                    toolbar.Title = GetString(Resource.String.Lbl_CreditCard);
+                    toolbar.SetTitleTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 }
             }
             catch (Exception e)
@@ -196,13 +187,13 @@ namespace DeepSound.Payment
                 // true +=  // false -=
                 if (addEvent)
                 {
-                    MultilineWidget.CvcComplete += MultilineWidgetOnCvcComplete;
+                    MultilineWidget.CvcEditText.AfterTextChanged += CvcEditTextOnAfterTextChanged;
                     EtName.TextChanged += EtNameOnTextChanged;
                     BtnApply.Click += BtnApplyOnClick;
                 }
                 else
                 {
-                    MultilineWidget.CvcComplete -= MultilineWidgetOnCvcComplete;
+                    MultilineWidget.CvcEditText.AfterTextChanged -= CvcEditTextOnAfterTextChanged;
                     EtName.TextChanged -= EtNameOnTextChanged;
                     BtnApply.Click -= BtnApplyOnClick;
                 }
@@ -217,32 +208,19 @@ namespace DeepSound.Payment
 
         #region Events
 
-        private void MultilineWidgetOnCvcComplete(object sender, EventArgs e)
+        private void CvcEditTextOnAfterTextChanged(object sender, AfterTextChangedEventArgs e)
         {
             try
             {
-                if (MultilineWidget.Card != null && MultilineWidget.Card.ValidateCard() && MultilineWidget.ValidateAllFields())
+                if (MultilineWidget.CardParams != null && MultilineWidget.ValidateAllFields())
                 {
-                    if (MultilineWidget.Card.Number.Trim().Length == 0)
-                    {
-                        CardNumber.Text = "**** **** **** ****";
-                    }
-                    else
-                    {
-                        string number = InsertPeriodically(MultilineWidget.Card.Number.Trim(), " ", 4);
-                        CardNumber.Text = number;
-                    }
+                    var cardNumber = MultilineWidget.CardNumberEditText.Text;
+                    var cardExpire = MultilineWidget.ExpiryDateEditText.Text;
+                    var cardCvv = MultilineWidget.CvcEditText.Text;
 
-                    if (MultilineWidget.Card.ExpMonth.ToString().Trim().Length == 0 && MultilineWidget.Card.ExpYear.ToString().Trim().Length == 0)
-                    {
-                        CardExpire.Text = "MM/YY";
-                    }
-                    else
-                    {
-                        CardExpire.Text = MultilineWidget.Card.ExpMonth + "/" + MultilineWidget.Card.ExpYear;
-                    }
-
-                    CardCvv.Text = MultilineWidget.Card.CVC.Trim().Length == 0 ? "***" : MultilineWidget.Card.CVC.Trim();
+                    CardNumber.Text = cardNumber.Trim().Length == 0 ? "**** **** **** ****" : InsertPeriodically(cardNumber.Trim(), " ", 4);
+                    CardExpire.Text = cardExpire.Trim().Length == 0 ? "MM/YY" : cardExpire;
+                    CardCvv.Text = cardCvv.Trim().Length == 0 ? "***" : cardCvv.Trim();
                 }
             }
             catch (Exception exception)
@@ -255,7 +233,7 @@ namespace DeepSound.Payment
         {
             try
             {
-                CardName.Text = e?.Text?.ToString().Trim().Length == 0 ? GetString(Resource.String.Lbl_YourName) : e?.Text?.ToString().Trim();
+                CardName.Text = e?.Text?.ToString()?.Trim().Length == 0 ? GetString(Resource.String.Lbl_YourName) : e?.Text?.ToString()?.Trim();
             }
             catch (Exception exception)
             {
@@ -268,13 +246,17 @@ namespace DeepSound.Payment
         {
             try
             {
-                if (MultilineWidget.Card.ValidateCard() && !string.IsNullOrEmpty(EtName.Text))
+                //Show a progress
+                PaymentMethodCreateParams createParams = MultilineWidget.PaymentMethodCreateParams;
+                if (createParams != null && MultilineWidget.ValidateAllFields() && !string.IsNullOrEmpty(EtName.Text))
                 {
-                    //Show a progress
                     AndHUD.Shared.Show(this, GetText(Resource.String.Lbl_Loading));
 
-                    Card card = MultilineWidget.Card;
-                    Stripe.CreateToken(card, PaymentConfiguration.Instance.PublishableKey, this);
+                    var token = Stripe.CreateCardTokenSynchronous(MultilineWidget.CardParams);
+                    TokenId = token.Id;
+
+                    ConfirmPaymentIntentParams confirmParams = ConfirmPaymentIntentParams.CreateWithPaymentMethodCreateParams(createParams, ClientSecret);
+                    StripePaymentLauncher.Confirm(confirmParams);
                 }
                 else
                 {
@@ -322,11 +304,16 @@ namespace DeepSound.Payment
         {
             try
             {
-                var stripePublishableKey = ListUtils.SettingsSiteList?.StripeId ?? "";
+                string stripePublishableKey = ListUtils.SettingsSiteList?.StripeId ?? "";
                 if (!string.IsNullOrEmpty(stripePublishableKey))
                 {
-                    PaymentConfiguration.Init(stripePublishableKey);
+                    PaymentConfiguration.Init(this, stripePublishableKey);
+
+                    PaymentConfiguration paymentConfiguration = PaymentConfiguration.GetInstance(this);
+                    StripePaymentLauncher = PaymentLauncher.Companion.Create(this, paymentConfiguration.PublishableKey, paymentConfiguration.StripeAccountId, this);
                     Stripe = new Stripe(this, stripePublishableKey);
+
+                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { StripeCreatePayment, CreateStripeHash });
                 }
                 else
                 {
@@ -340,37 +327,17 @@ namespace DeepSound.Payment
             }
         }
 
-        public void OnError(Java.Lang.Exception error)
+        private async void OnSuccess()
         {
             try
             {
-                AndHUD.Shared.Dismiss(this);
-                Toast.MakeText(this, error.Message, ToastLength.Long)?.Show();
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-        public async void OnSuccess(Token token)
-        {
-            try
-            {
-                // Send token to your own web service
-                //var stripeBankAccount = token.BankAccount;
-                //var stripeCard = token.Card;
-                //var stripeCreated = token.Created;
-                TokenId = token.Id;
-                //var stripeLiveMode = token.Livemode;
-                //var stripeType = token.Type;
-                //var stripeUsed = token.Used;
-
                 if (Methods.CheckConnectivity())
                 {
                     var tabbedWallet = WalletActivity.GetInstance();
                     if (tabbedWallet != null)
                     {
+                        //var priceInt = Convert.ToInt32(Price) * 100;
+
                         var (apiStatus, respond) = await RequestsAsync.Payments.TopWalletStripeAsync(TokenId, Price);
                         switch (apiStatus)
                         {
@@ -385,20 +352,117 @@ namespace DeepSound.Payment
                                 Methods.DisplayAndHudErrorResult(this, respond);
                                 break;
                         }
-                    } 
-                } 
+                    }
+                }
                 else
                 {
                     Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
+                    AndHUD.Shared.Dismiss(this);
                 }
             }
             catch (Exception e)
             {
+                Methods.DisplayReportResultTrack(e);
                 AndHUD.Shared.Dismiss(this);
+            }
+        }
+
+        public void OnPaymentResult(PaymentResult paymentResult)
+        {
+            try
+            {
+                string message = "";
+                if (paymentResult is PaymentResult.Completed completed)
+                {
+                    OnSuccess();
+                }
+                else if (paymentResult is PaymentResult.Canceled canceled)
+                {
+                    AndHUD.Shared.Dismiss(this);
+                    message = "Canceled!";
+                }
+                else if (paymentResult is PaymentResult.Failed failed)
+                {
+                    // This string comes from the PaymentIntent's error message.
+                    // See here: https://stripe.com/docs/api/payment_intents/object#payment_intent_object-last_payment_error-message
+                    message = "Failed: " + failed.Throwable.Message;
+
+                    AndHUD.Shared.Dismiss(this);
+                }
+
+                if (!string.IsNullOrEmpty(message))
+                {
+                    Toast.MakeText(this, message, ToastLength.Long)?.Show();
+                }
+                Console.WriteLine("PaymentResult: " + message);
+            }
+            catch (Exception e)
+            {
                 Methods.DisplayReportResultTrack(e);
             }
         }
 
-        #endregion  
+        private async Task StripeCreatePayment()
+        {
+            try
+            {
+                if (!Methods.CheckConnectivity())
+                {
+                    Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
+                }
+                else
+                {
+                    var currency = ListUtils.SettingsSiteList?.StripeCurrency ?? "USD";
+                    var stripeSecretKey = ListUtils.SettingsSiteList?.StripeSecret ?? "";
+                    var priceInt = Convert.ToInt32(Price) * 100;
+                    var (apiStatus, respond) = await RequestsAsync.Payments.StripeCreatePaymentIntentsAsync(stripeSecretKey, priceInt.ToString(), currency);
+                    if (apiStatus == 200)
+                    {
+                        if (respond is StripeCreatePaymentObject result)
+                        {
+                            if (!string.IsNullOrEmpty(result?.ClientSecret))
+                            {
+                                ClientSecret = result.ClientSecret;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (respond is StripeCreatePaymentObject result)
+                        {
+                            Toast.MakeText(this, result.Error?.Message, ToastLength.Long)?.Show();
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        private async Task CreateStripeHash()
+        {
+            if (!Methods.CheckConnectivity())
+            {
+                Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
+            }
+            else
+            {
+                //var (apiStatus, respond) = await RequestsAsync.Payments.CreateStripeAsync(Price);
+                //if (apiStatus == 200)
+                //{
+                //    if (respond is CreateStripeObject result)
+                //    {
+                //        HashId = result.Hash;
+                //        SessionId = result.SessionId;
+                //    }
+                //}
+                //else Methods.DisplayAndHudErrorResult(this, respond);
+            }
+        }
+
+        #endregion
+
     }
 }

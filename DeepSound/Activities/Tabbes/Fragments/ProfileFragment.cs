@@ -1,40 +1,40 @@
-﻿using MaterialDialogsCore;
-using Android.Content;
+﻿using Android.Content;
+using Android.Graphics;
 using Android.OS;
 using Android.Views;
+using Android.Widget;
+using AndroidX.AppCompat.Widget;
+using AndroidX.Core.View;
+using AndroidX.ViewPager2.Widget;
 using DeepSound.Activities.MyContacts;
 using DeepSound.Activities.MyProfile;
 using DeepSound.Activities.SettingsUser;
 using DeepSound.Activities.UserProfile.Fragments;
 using DeepSound.Adapters;
+using DeepSound.Helpers.CacheLoaders;
+using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Graphics;
-using Android.Widget;
-using AndroidX.AppCompat.Widget;
-using DeepSound.Helpers.Controller;
 using DeepSound.SQLite;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.User;
 using DeepSoundClient.Requests;
-using Refractored.Controls;
-using Exception = System.Exception;
 using Google.Android.Material.AppBar;
-using Google.Android.Material.Tabs;
+using Google.Android.Material.Dialog;
 using Google.Android.Material.FloatingActionButton;
+using Google.Android.Material.Tabs;
+using Newtonsoft.Json;
+using Refractored.Controls;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Exception = System.Exception;
 using Fragment = AndroidX.Fragment.App.Fragment;
-using AndroidX.Core.View;
-using AndroidX.ViewPager2.Widget;
-using DeepSound.Helpers.CacheLoaders;
 
 namespace DeepSound.Activities.Tabbes.Fragments
 {
-    public class ProfileFragment : Fragment, AppBarLayout.IOnOffsetChangedListener, MaterialDialog.IListCallback, MaterialDialog.ISingleButtonCallback, TabLayoutMediator.ITabConfigurationStrategy
+    public class ProfileFragment : Fragment, AppBarLayout.IOnOffsetChangedListener, IDialogListCallBack, TabLayoutMediator.ITabConfigurationStrategy
     {
         #region Variables Basic
 
@@ -78,13 +78,13 @@ namespace DeepSound.Activities.Tabbes.Fragments
         {
             try
             {
-                View view = inflater.Inflate(Resource.Layout.TProfileLayout, container, false); 
+                View view = inflater.Inflate(Resource.Layout.TProfileLayout, container, false);
                 return view;
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -234,7 +234,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 ViewPagerView.Adapter = Adapter;
                 ViewPagerView.Adapter.NotifyDataSetChanged();
 
-                Tabs.SetTabTextColors(Color.White , Color.ParseColor(AppSettings.MainColor));
+                Tabs.SetTabTextColors(Color.White, Color.ParseColor(AppSettings.MainColor));
                 new TabLayoutMediator(Tabs, ViewPagerView, this).Attach();
             }
             catch (Exception exception)
@@ -254,7 +254,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-     
+
         private class MyOnPageChangeCallback : ViewPager2.OnPageChangeCallback
         {
             private readonly ProfileFragment Activity;
@@ -282,7 +282,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                     {
                         //Songs
                         case 1:
-                            Activity.SongsFragment?.StartApiServiceWithOffset(); 
+                            Activity.SongsFragment?.StartApiServiceWithOffset();
                             break;
                         //Albums
                         case 2:
@@ -320,13 +320,13 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 }
             }
         }
-         
+
         private int GetSelectedTab(int number)
         {
             try
             {
                 var tabName = Tabs.GetTabAt(number)?.Text;
-                if (tabName == Resources.GetText(Resource.String.Lbl_Songs)) 
+                if (tabName == Resources.GetText(Resource.String.Lbl_Songs))
                 {
                     return 1;
                 }
@@ -391,14 +391,14 @@ namespace DeepSound.Activities.Tabbes.Fragments
             try
             {
                 var arrayAdapter = new List<string>();
-                var dialogList = new MaterialDialog.Builder(Context).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(Context);
                 arrayAdapter.Add(Context.GetText(Resource.String.Lbl_ChangeCoverImage));
                 arrayAdapter.Add(Context.GetText(Resource.String.Lbl_Settings));
                 arrayAdapter.Add(Context.GetText(Resource.String.Lbl_CopyLinkToProfile));
-                dialogList.Items(arrayAdapter);
-                dialogList.PositiveText(Context.GetText(Resource.String.Lbl_Close)).OnPositive(this);
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetPositiveButton(Context.GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -482,7 +482,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
         }
 
         #endregion
-          
+
         #region Load Data User
 
         private void GetMyInfoData()
@@ -522,27 +522,27 @@ namespace DeepSound.Activities.Tabbes.Fragments
 
                     if (dataUser.Verified == 1)
                         TxtFullName.SetCompoundDrawablesWithIntrinsicBounds(0, 0, Resource.Drawable.icon_checkmark_small_vector, 0);
-                     
+
                     if (SongsFragment?.IsCreated == true)
-                        SongsFragment.PopulateData(dataUser.Latestsongs);
+                        SongsFragment.PopulateData(dataUser.Latestsongs?.FirstOrDefault());
 
                     if (AlbumsFragment?.IsCreated == true)
-                        AlbumsFragment.PopulateData(dataUser.Albums);
+                        AlbumsFragment.PopulateData(dataUser.Albums?.FirstOrDefault());
 
                     if (PlaylistFragment?.IsCreated == true)
-                        PlaylistFragment.PopulateData(dataUser.Playlists);
+                        PlaylistFragment.PopulateData(dataUser.Playlists?.FirstOrDefault());
 
                     if (LikedFragment?.IsCreated == true)
-                        LikedFragment.PopulateData(dataUser.Liked);
+                        LikedFragment.PopulateData(dataUser.Liked?.FirstOrDefault());
 
                     if (ActivitiesFragment?.IsCreated == true)
-                        ActivitiesFragment.PopulateData(dataUser.Activities);
+                        ActivitiesFragment.PopulateData(dataUser.Activities?.FirstOrDefault());
 
                     if (StationsFragment?.IsCreated == true)
                         StationsFragment.PopulateData(dataUser.Stations);
 
                     if (StoreFragment?.IsCreated == true)
-                        StoreFragment.PopulateData(dataUser.Store);
+                        StoreFragment.PopulateData(dataUser.Store?.FirstOrDefault());
 
                     if (EventFragment?.IsCreated == true)
                         EventFragment.PopulateData(dataUser.Events);
@@ -644,7 +644,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
 
         #region MaterialDialog
 
-        public void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+        public void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
             {
@@ -673,24 +673,6 @@ namespace DeepSound.Activities.Tabbes.Fragments
         {
             //open settings
             Context.StartActivity(new Intent(Context, typeof(SettingsActivity)));
-        }
-
-        public void OnClick(MaterialDialog p0, DialogAction p1)
-        {
-            try
-            {
-                if (p1 == DialogAction.Positive)
-                {
-                }
-                else if (p1 == DialogAction.Negative)
-                {
-                    p0.Dismiss();
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
         }
 
         #endregion

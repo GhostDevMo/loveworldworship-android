@@ -1,1 +1,0 @@
-<menu xmlns:app="http://schemas.android.com/apk/res-auto" xmlns:android="http://schemas.android.com/apk/res/android"><item android:id="@+id/menu_block" android:title="@string/Lbl_Block" app:showAsAction="never" /><item android:id="@+id/menu_clear_chat" android:title="@string/Lbl_Clear_chat" app:showAsAction="never" /></menu>

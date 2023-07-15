@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
@@ -25,6 +21,10 @@ using DeepSound.SQLite;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.User;
 using DeepSoundClient.Requests;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Genres
@@ -146,7 +146,7 @@ namespace DeepSound.Activities.Genres
             {
                 GenresRecycler = FindViewById<RecyclerView>(Resource.Id.genresRecyclerView);
                 BtnNext = FindViewById<AppCompatButton>(Resource.Id.btnNext);
-                
+
                 switch (TypeBtn)
                 {
                     case "Save":
@@ -236,12 +236,12 @@ namespace DeepSound.Activities.Genres
         }
 
         private void SaveInterestedGenres()
-        { 
+        {
             SharedPref.StoreInterestedGenresValue(GenresAdapter.AlreadySelectedGenres);
         }
 
         private List<int> LoadInterestedGenres()
-        { 
+        {
             return SharedPref.GetInterestedGenresValue();
         }
 
@@ -273,7 +273,7 @@ namespace DeepSound.Activities.Genres
                     //Sent Api
                     if (!string.IsNullOrEmpty(totalIdChecked))
                     {
-                         var (apiStatus, respond) = await RequestsAsync.Common.UpdateInterestAsync(UserDetails.UserId.ToString(), totalIdChecked.Remove(totalIdChecked.Length - 1, 1)).ConfigureAwait(false);
+                        var (apiStatus, respond) = await RequestsAsync.Common.UpdateInterestAsync(UserDetails.UserId.ToString(), totalIdChecked.Remove(totalIdChecked.Length - 1, 1)).ConfigureAwait(false);
                         if (apiStatus == 200)
                         {
                             SaveInterestedGenres();
@@ -341,7 +341,7 @@ namespace DeepSound.Activities.Genres
                     {
                         GenresAdapter.AlreadySelectedGenres.Add(item.Id);
                     }
-                    
+
                     GenresAdapter.NotifyItemChanged(e.Position);
                 }
             }

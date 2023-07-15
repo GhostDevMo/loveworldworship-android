@@ -1,10 +1,10 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using Bumptech.Glide.Util;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
+using System;
 
 namespace DeepSound.Helpers.Utils
 {
@@ -29,11 +29,11 @@ namespace DeepSound.Helpers.Utils
         {
             try
             {
-                MainLinear = (LinearLayout) inflated.FindViewById(Resource.Id.mainLinear);
-                TitleText = (TextView) inflated.FindViewById(Resource.Id.textTitle);
-                TextMore = (TextView) inflated.FindViewById(Resource.Id.textMore);
-               // DescriptionText = (TextView) inflated.FindViewById(Resource.Id.textSecondery);
-                Recyler = (RecyclerView) inflated.FindViewById(Resource.Id.recyler);
+                MainLinear = (LinearLayout)inflated.FindViewById(Resource.Id.mainLinear);
+                TitleText = (TextView)inflated.FindViewById(Resource.Id.textTitle);
+                TextMore = (TextView)inflated.FindViewById(Resource.Id.textMore);
+                // DescriptionText = (TextView) inflated.FindViewById(Resource.Id.textSecondery);
+                Recyler = (RecyclerView)inflated.FindViewById(Resource.Id.recyler);
 
                 //FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeLight, IconTitle, FontAwesomeIcon.AngleLeft);
             }
@@ -43,7 +43,7 @@ namespace DeepSound.Helpers.Utils
             }
         }
 
-        public void InflateLayout<T>(Activity activity, View inflated, dynamic mAdapter, TypeLayoutManager manager,int spanCount = 0, bool showTitle = true, string titleText = "", bool showMore = true) where T : class
+        public void InflateLayout<T>(Activity activity, View inflated, dynamic mAdapter, TypeLayoutManager manager, int spanCount = 0, bool showTitle = true, string titleText = "", bool showMore = true) where T : class
         {
             try
             {
@@ -104,7 +104,7 @@ namespace DeepSound.Helpers.Utils
                 var preLoader = new RecyclerViewPreloader<T>(activity, mAdapter, sizeProvider, 10);
                 Recyler.AddOnScrollListener(preLoader);
 
-                Recyler.SetAdapter(mAdapter); 
+                Recyler.SetAdapter(mAdapter);
             }
             catch (Exception e)
             {

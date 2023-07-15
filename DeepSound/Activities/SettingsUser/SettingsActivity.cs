@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Android;
+﻿using Android;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
@@ -26,16 +23,21 @@ using DeepSound.Activities.Tabbes.Fragments;
 using DeepSound.Activities.Upgrade;
 using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Controller;
+using DeepSound.Helpers.MediaPlayerController;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient;
-using MaterialDialogsCore;
+using Google.Android.Material.Dialog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using AndroidX.Core.Content;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/SettingsTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.Orientation)]
-    public class SettingsActivity : BaseActivity, MaterialDialog.IListCallback
+    public class SettingsActivity : BaseActivity, IDialogListCallBack
     {
         #region Variables Basic
 
@@ -45,7 +47,7 @@ namespace DeepSound.Activities.SettingsUser
         private TextView Name, Email;
 
         public CardView GoProLayout;
-        private LinearLayout EditProfileLayout, MyAccountLayout, MyAddressesLayout, NotificationsLayout, WithdrawalsLayout, WalletLayout, BlockedUsersLayout;
+        private LinearLayout EditProfileLayout, MyAccountLayout, MyAddressesLayout, NotificationsLayout, WithdrawalsLayout, MyAffiliatesLayout, BlockedUsersLayout;
         private LinearLayout PasswordLayout, TwoFactorLayout, ManageSessionsLayout;
         private LinearLayout ThemeLayout;
 
@@ -194,7 +196,7 @@ namespace DeepSound.Activities.SettingsUser
                 MyAddressesLayout = FindViewById<LinearLayout>(Resource.Id.layoutMyAddresses);
                 NotificationsLayout = FindViewById<LinearLayout>(Resource.Id.layoutNotifications);
                 WithdrawalsLayout = FindViewById<LinearLayout>(Resource.Id.layoutWithdrawals);
-                WalletLayout = FindViewById<LinearLayout>(Resource.Id.layoutWallet);
+                MyAffiliatesLayout = FindViewById<LinearLayout>(Resource.Id.layoutMyAffiliates);
                 BlockedUsersLayout = FindViewById<LinearLayout>(Resource.Id.layoutBlockedUsers);
 
                 PasswordLayout = FindViewById<LinearLayout>(Resource.Id.layoutPassword);
@@ -204,8 +206,8 @@ namespace DeepSound.Activities.SettingsUser
                 ThemeLayout = FindViewById<LinearLayout>(Resource.Id.layoutTheme);
 
                 InterestLayout = FindViewById<LinearLayout>(Resource.Id.layoutInterest);
-               
-                  
+
+
                 RateOurAppLayout = FindViewById<LinearLayout>(Resource.Id.layoutRateOurApp);
                 InviteFriendsLayout = FindViewById<LinearLayout>(Resource.Id.layoutInviteFriends);
                 TermsOfUseLayout = FindViewById<LinearLayout>(Resource.Id.layoutTermsOfUse);
@@ -260,7 +262,7 @@ namespace DeepSound.Activities.SettingsUser
                     NotificationsLayout.Click += NotificationsLayoutOnClick;
                     MyAddressesLayout.Click += MyAddressesLayoutOnClick;
                     WithdrawalsLayout.Click += WithdrawalsLayoutOnClick;
-                    WalletLayout.Click += WalletLayoutOnClick;
+                    MyAffiliatesLayout.Click += MyAffiliatesLayoutOnClick;
                     GoProLayout.Click += GoProLayoutOnClick;
                     BlockedUsersLayout.Click += BlockedUsersLayoutOnClick;
                     PasswordLayout.Click += PasswordLayoutOnClick;
@@ -283,7 +285,7 @@ namespace DeepSound.Activities.SettingsUser
                     NotificationsLayout.Click -= NotificationsLayoutOnClick;
                     MyAddressesLayout.Click -= MyAddressesLayoutOnClick;
                     WithdrawalsLayout.Click -= WithdrawalsLayoutOnClick;
-                    WalletLayout.Click -= WalletLayoutOnClick;
+                    MyAffiliatesLayout.Click -= MyAffiliatesLayoutOnClick;
                     GoProLayout.Click -= GoProLayoutOnClick;
                     BlockedUsersLayout.Click -= BlockedUsersLayoutOnClick;
                     PasswordLayout.Click -= PasswordLayoutOnClick;
@@ -342,18 +344,18 @@ namespace DeepSound.Activities.SettingsUser
             }
         }
 
-
-        private void WalletLayoutOnClick(object sender, EventArgs e)
+        private void MyAffiliatesLayoutOnClick(object sender, EventArgs e)
         {
             try
             {
-                StartActivity(new Intent(this, typeof(WalletActivity)));
+                StartActivity(new Intent(this, typeof(MyAffiliatesActivity)));
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
+
 
         private void WithdrawalsLayoutOnClick(object sender, EventArgs e)
         {
@@ -378,7 +380,7 @@ namespace DeepSound.Activities.SettingsUser
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void BlockedUsersLayoutOnClick(object sender, EventArgs e)
         {
             try
@@ -432,9 +434,9 @@ namespace DeepSound.Activities.SettingsUser
             try
             {
                 var arrayAdapter = new List<string>();
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
-                dialogList.Title(Resource.String.Lbl_Night_Mode);
+                dialogList.SetTitle(Resource.String.Lbl_Night_Mode);
 
                 arrayAdapter.Add(GetText(Resource.String.Lbl_Light));
                 arrayAdapter.Add(GetText(Resource.String.Lbl_Dark));
@@ -442,17 +444,17 @@ namespace DeepSound.Activities.SettingsUser
                 if ((int)Build.VERSION.SdkInt >= 29)
                     arrayAdapter.Add(GetText(Resource.String.Lbl_SetByBattery));
 
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-        
+
         private void InterestLayoutOnClick(object sender, EventArgs e)
         {
             try
@@ -466,7 +468,7 @@ namespace DeepSound.Activities.SettingsUser
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void MyAddressesLayoutOnClick(object sender, EventArgs e)
         {
             try
@@ -484,7 +486,7 @@ namespace DeepSound.Activities.SettingsUser
         {
             try
             {
-                StartActivity(new Intent(this, typeof(NotificationsSettingsActivity))); 
+                StartActivity(new Intent(this, typeof(NotificationsSettingsActivity)));
             }
             catch (Exception exception)
             {
@@ -517,7 +519,7 @@ namespace DeepSound.Activities.SettingsUser
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void InviteFriendsLayoutOnClick(object sender, EventArgs e)
         {
             try
@@ -525,26 +527,26 @@ namespace DeepSound.Activities.SettingsUser
                 switch ((int)Build.VERSION.SdkInt)
                 {
                     case < 23:
-                    {
-                        var intent = new Intent(this, typeof(InviteFriendsActivity));
-                        StartActivity(intent);
-                        break;
-                    }
-                    default:
-                    {
-                        //Check to see if any permission in our group is available, if one, then all are
-                        if (CheckSelfPermission(Manifest.Permission.ReadContacts) == Permission.Granted)
                         {
                             var intent = new Intent(this, typeof(InviteFriendsActivity));
                             StartActivity(intent);
+                            break;
                         }
-                        else
+                    default:
                         {
-                            new PermissionsController(this).RequestPermission(101);
-                        }
+                            //Check to see if any permission in our group is available, if one, then all are
+                            if (ContextCompat.CheckSelfPermission(this, Manifest.Permission.ReadContacts) == Permission.Granted)
+                            {
+                                var intent = new Intent(this, typeof(InviteFriendsActivity));
+                                StartActivity(intent);
+                            }
+                            else
+                            {
+                                new PermissionsController(this).RequestPermission(101);
+                            }
 
-                        break;
-                    }
+                            break;
+                        }
                 }
             }
             catch (Exception exception)
@@ -588,7 +590,7 @@ namespace DeepSound.Activities.SettingsUser
             try
             {
                 var intent = new Intent(this, typeof(LocalWebViewActivity));
-                intent.PutExtra("URL", InitializeDeepSound.WebsiteUrl + "/contact-us");
+                intent.PutExtra("URL", InitializeDeepSound.WebsiteUrl + "/contact");
                 intent.PutExtra("Type", GetText(Resource.String.Lbl_Help));
                 StartActivity(intent);
             }
@@ -624,7 +626,7 @@ namespace DeepSound.Activities.SettingsUser
         }
 
         #endregion
-    
+
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
         {
             try
@@ -636,7 +638,7 @@ namespace DeepSound.Activities.SettingsUser
                     var intent = new Intent(this, typeof(InviteFriendsActivity));
                     StartActivity(intent);
                 }
-                else 
+                else
                 {
                     Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
                 }
@@ -649,7 +651,7 @@ namespace DeepSound.Activities.SettingsUser
 
         #region MaterialDialog
 
-        public void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+        public void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
             {
@@ -661,6 +663,7 @@ namespace DeepSound.Activities.SettingsUser
                 {
                     //Set Light Mode   
                     //NightMode.Summary = this.GetString(Resource.String.Lbl_Light);
+                    Constant.IsChangingTheme = true;
 
                     AppCompatDelegate.DefaultNightMode = AppCompatDelegate.ModeNightNo;
                     SharedPref.ApplyTheme(SharedPref.LightMode);
@@ -684,6 +687,7 @@ namespace DeepSound.Activities.SettingsUser
                 else if (text == GetString(Resource.String.Lbl_Dark) && getValue != SharedPref.DarkMode)
                 {
                     //NightMode.Summary = this.GetString(Resource.String.Lbl_Dark);
+                    Constant.IsChangingTheme = true;
 
                     AppCompatDelegate.DefaultNightMode = AppCompatDelegate.ModeNightYes;
                     SharedPref.ApplyTheme(SharedPref.DarkMode);
@@ -707,6 +711,8 @@ namespace DeepSound.Activities.SettingsUser
                 else if (text == GetString(Resource.String.Lbl_SetByBattery) && getValue != SharedPref.DefaultMode)
                 {
                     //NightMode.Summary = this.GetString(Resource.String.Lbl_SetByBattery);
+                    Constant.IsChangingTheme = true;
+                    
                     SharedPref.SharedData?.Edit()?.PutString("Night_Mode_key", SharedPref.DefaultMode)?.Commit();
 
                     if ((int)Build.VERSION.SdkInt >= 29)
@@ -783,7 +789,7 @@ namespace DeepSound.Activities.SettingsUser
 
                     Email.Text = dataUser.Email;
                 }
-                 
+
                 //Delete Preference
                 //============== Account_Profile ===================
 
@@ -793,12 +799,9 @@ namespace DeepSound.Activities.SettingsUser
                 var isPro = dataUser?.IsPro ?? 0;
                 if (!AppSettings.ShowGoPro || isPro != 0)
                     GoProLayout.Visibility = ViewStates.Gone;
-                 
+
                 if (!AppSettings.ShowBlockedUsers)
                     BlockedUsersLayout.Visibility = ViewStates.Gone;
-
-                if (!AppSettings.ShowTheme)
-                    ThemeLayout.Visibility = ViewStates.Gone;
 
                 //============== SecurityAccount ===================
 
@@ -810,12 +813,12 @@ namespace DeepSound.Activities.SettingsUser
 
                 if (!AppSettings.ShowSettingsManageSessions)
                     ManageSessionsLayout.Visibility = ViewStates.Gone;
-                 
+
                 //============== Support ===================
 
                 if (!AppSettings.ShowSettingsRateApp)
                     RateOurAppLayout.Visibility = ViewStates.Gone;
-                
+
                 if (!AppSettings.ShowSettingsHelp)
                     HelpLayout.Visibility = ViewStates.Gone;
 
@@ -824,7 +827,11 @@ namespace DeepSound.Activities.SettingsUser
 
                 if (!AppSettings.ShowSettingsDeleteAccount)
                     DeleteAccountLayout.Visibility = ViewStates.Gone;
-                 
+
+
+                if (!AppSettings.ShowSettingsMyAffiliates)
+                    MyAffiliatesLayout.Visibility = ViewStates.Gone;
+
             }
             catch (Exception e)
             {

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Content.PM;
 using Android.Graphics;
 using Android.OS;
@@ -24,13 +19,18 @@ using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.Stations;
 using DeepSoundClient.Requests;
-using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using SearchView = AndroidX.AppCompat.Widget.SearchView;
+using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Stations
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
-    public class CreateStationsActivity : BaseActivity 
+    public class CreateStationsActivity : BaseActivity
     {
         #region Variables Basic
 
@@ -41,7 +41,7 @@ namespace DeepSound.Activities.Stations
         private ViewStub EmptyStateLayout;
         private View Inflated;
         private Toolbar ToolBar;
-        private SearchView SearchView; 
+        private SearchView SearchView;
         private ProgressBar ProgressBarLoader;
         private string SearchText = "a";
         private TextView FilterButton;
@@ -67,7 +67,7 @@ namespace DeepSound.Activities.Stations
                 InitComponent();
                 InitToolbar();
                 SetRecyclerViewAdapters();
-                 
+
                 AdsGoogle.Ad_Interstitial(this);
             }
             catch (Exception e)
@@ -127,7 +127,7 @@ namespace DeepSound.Activities.Stations
 
 
                 ProgressBarLoader = (ProgressBar)FindViewById(Resource.Id.sectionProgress);
-                ProgressBarLoader.Visibility = ViewStates.Gone; 
+                ProgressBarLoader.Visibility = ViewStates.Gone;
             }
             catch (Exception e)
             {
@@ -196,7 +196,7 @@ namespace DeepSound.Activities.Stations
                 var preLoader = new RecyclerViewPreloader<SoundDataObject>(this, MAdapter, sizeProvider, 10);
                 MRecycler.AddOnScrollListener(preLoader);
                 MRecycler.SetAdapter(MAdapter);
-                
+
                 Inflated ??= EmptyStateLayout.Inflate();
 
                 EmptyStateInflater x = new EmptyStateInflater();
@@ -205,7 +205,7 @@ namespace DeepSound.Activities.Stations
                 x.EmptyStateButton.Visibility = ViewStates.Invisible;
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     //x.EmptyStateButton.Click += TryAgainButton_Click;
                 }
             }
@@ -259,13 +259,13 @@ namespace DeepSound.Activities.Stations
             {
                 var item = MAdapter.GetItem(e.Position);
                 if (item != null)
-                { 
+                {
                     MAdapter.NotifyItemChanged(e.Position, item.IsAdded == false ? "true" : "false");
 
                     Toast.MakeText(this, GetString(Resource.String.Lbl_AddedSuccessfully), ToastLength.Short)?.Show();
 
                     if (Methods.CheckConnectivity())
-                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.AddStationsAsync(item.RadioId, item.Name , item.Url , item.Logo , item.Genre , item.Country) });
+                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.AddStationsAsync(item.RadioId, item.Name, item.Url, item.Logo, item.Genre, item.Country) });
                     else
                         Toast.MakeText(this, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
                 }
@@ -275,9 +275,9 @@ namespace DeepSound.Activities.Stations
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void SearchViewOnQueryTextChange(object sender, SearchView.QueryTextChangeEventArgs e)
-        { 
+        {
             SearchText = e.NewText;
         }
 
@@ -287,7 +287,7 @@ namespace DeepSound.Activities.Stations
             {
                 SearchText = e.NewText;
 
-                SearchView.ClearFocus(); 
+                SearchView.ClearFocus();
 
                 MAdapter.StationsList.Clear();
                 MAdapter.NotifyDataSetChanged();
@@ -339,7 +339,7 @@ namespace DeepSound.Activities.Stations
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
 
         #region Load Data Search
@@ -360,7 +360,7 @@ namespace DeepSound.Activities.Stations
 
                         if (EmptyStateLayout != null)
                             EmptyStateLayout.Visibility = ViewStates.Gone;
-                         
+
                         StartApiService();
                     }
                 }
@@ -372,7 +372,7 @@ namespace DeepSound.Activities.Stations
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSearchResult);
                     if (!x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click -= EmptyStateButtonOnClick; 
+                        x.EmptyStateButton.Click -= EmptyStateButtonOnClick;
                     }
 
                     x.EmptyStateButton.Visibility = ViewStates.Invisible;
@@ -399,9 +399,9 @@ namespace DeepSound.Activities.Stations
         }
 
         private async Task StartSearchRequest()
-        { 
+        {
             int countStationsList = MAdapter.StationsList.Count;
-             
+
             var (apiStatus, respond) = await RequestsAsync.User.SearchStationsAsync(SearchText);
             if (apiStatus == 200)
             {
@@ -414,24 +414,24 @@ namespace DeepSound.Activities.Stations
                         {
                             var isAdded = ListUtils.MyUserInfoList.FirstOrDefault()?.Stations?.FirstOrDefault(a => a.Lyrics == item.RadioId);
                             item.IsAdded = isAdded != null;
-                             
+
                             MAdapter.StationsList.Add(item);
                         }
 
                         if (countStationsList > 0)
-                        { 
+                        {
                             RunOnUiThread(() => { MAdapter.NotifyItemRangeInserted(countStationsList, MAdapter.StationsList.Count - countStationsList); });
                         }
                         else
                         {
                             RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); });
                         }
-                    } 
+                    }
                 }
             }
             else
             {
-                Methods.DisplayReportResult(this, respond); 
+                Methods.DisplayReportResult(this, respond);
             }
 
             RunOnUiThread(ShowEmptyPage);
@@ -440,7 +440,7 @@ namespace DeepSound.Activities.Stations
         private void ShowEmptyPage()
         {
             try
-            { 
+            {
                 ProgressBarLoader.Visibility = ViewStates.Gone;
 
                 if (MAdapter.StationsList.Count > 0)
@@ -455,7 +455,7 @@ namespace DeepSound.Activities.Stations
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSearchResult);
                     if (!x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click -= EmptyStateButtonOnClick; 
+                        x.EmptyStateButton.Click -= EmptyStateButtonOnClick;
                     }
 
                     x.EmptyStateButton.Visibility = ViewStates.Invisible;
@@ -463,12 +463,12 @@ namespace DeepSound.Activities.Stations
                 }
             }
             catch (Exception e)
-            { 
+            {
                 ProgressBarLoader.Visibility = ViewStates.Gone;
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void EmptyStateButtonOnClick(object sender, EventArgs e)
         {
             try
@@ -476,10 +476,10 @@ namespace DeepSound.Activities.Stations
                 SearchView.ClearFocus();
                 MAdapter.StationsList.Clear();
                 MAdapter.NotifyDataSetChanged();
-                 
+
                 if (string.IsNullOrEmpty(SearchText) || string.IsNullOrWhiteSpace(SearchText))
                 {
-                   return;
+                    return;
                 }
 
                 if (Methods.CheckConnectivity())
@@ -495,7 +495,7 @@ namespace DeepSound.Activities.Stations
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSearchResult);
                     if (!x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click -= EmptyStateButtonOnClick; 
+                        x.EmptyStateButton.Click -= EmptyStateButtonOnClick;
                     }
 
                     x.EmptyStateButton.Visibility = ViewStates.Invisible;
@@ -507,8 +507,8 @@ namespace DeepSound.Activities.Stations
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
-         
+
     }
 }

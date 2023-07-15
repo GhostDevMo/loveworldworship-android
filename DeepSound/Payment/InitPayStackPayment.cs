@@ -1,21 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Graphics;
 using Android.Util;
 using Android.Webkit;
-using Android.Widget; 
+using Android.Widget;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Fonts;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Requests;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Exception = System.Exception;
 
 namespace DeepSound.Payment
 {
-    public class InitPayStackPayment 
+    public class InitPayStackPayment
     {
         private readonly Activity ActivityContext;
         private Dialog PayStackWindow;
@@ -104,7 +104,7 @@ namespace DeepSound.Payment
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         public void StopPayStack()
         {
             try
@@ -121,7 +121,7 @@ namespace DeepSound.Payment
             }
         }
 
-        private async Task PayStack(string reference , string request)
+        private async Task PayStack(string reference, string request)
         {
             try
             {
@@ -129,14 +129,14 @@ namespace DeepSound.Payment
                 {
                     var keyValues = new Dictionary<string, string>
                     {
-                        {"reference", reference}, 
+                        {"reference", reference},
                     };
 
                     //var priceInt = Convert.ToInt32(Price) * 100;
 
                     keyValues.Add("price", Price);
 
-                    var (apiStatus, respond) = await RequestsAsync.Payments.PayStackAsync(request , keyValues);
+                    var (apiStatus, respond) = await RequestsAsync.Payments.PayStackAsync(request, keyValues);
                     switch (apiStatus)
                     {
                         case 200:
@@ -159,8 +159,8 @@ namespace DeepSound.Payment
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
-        private class MyWebViewClient : WebViewClient 
+
+        private class MyWebViewClient : WebViewClient
         {
             private readonly InitPayStackPayment MActivity;
             public MyWebViewClient(InitPayStackPayment mActivity)
@@ -188,7 +188,7 @@ namespace DeepSound.Payment
                             return false;
 
                         PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => MActivity.PayStack(reference, "pay") });
-                    } 
+                    }
                 }
                 catch (Exception e)
                 {
@@ -220,7 +220,7 @@ namespace DeepSound.Payment
                 {
                     Methods.DisplayReportResultTrack(e);
                 }
-            } 
-        }  
+            }
+        }
     }
 }

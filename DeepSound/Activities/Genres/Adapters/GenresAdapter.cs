@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -12,6 +9,9 @@ using Bumptech.Glide.Request;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.User;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 using Object = Java.Lang.Object;
 
@@ -24,17 +24,17 @@ namespace DeepSound.Activities.Genres.Adapters
 
         private readonly Activity ActivityContext;
         public ObservableCollection<GenresObject.DataGenres> GenresList = new ObservableCollection<GenresObject.DataGenres>();
-        private RequestBuilder FullGlideRequestBuilder;
+        private readonly RequestBuilder FullGlideRequestBuilder;
 
         public GenresAdapter(Activity context)
         {
             try
             {
                 ActivityContext = context;
-                HasStableIds = true; 
+                HasStableIds = true;
 
                 var glideRequestOptions = new RequestOptions().SetDiskCacheStrategy(DiskCacheStrategy.All).SetPriority(Priority.High).Apply(RequestOptions.CircleCropTransform().CenterCrop().CircleCrop());
-                FullGlideRequestBuilder = Glide.With(context).AsBitmap().Apply(glideRequestOptions).Transition(new BitmapTransitionOptions().CrossFade(100));
+                FullGlideRequestBuilder = Glide.With(context?.BaseContext).AsBitmap().Apply(glideRequestOptions).Transition(new BitmapTransitionOptions().CrossFade(100));
             }
             catch (Exception e)
             {
@@ -55,7 +55,7 @@ namespace DeepSound.Activities.Genres.Adapters
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -70,7 +70,7 @@ namespace DeepSound.Activities.Genres.Adapters
                     if (item != null)
                     {
                         FullGlideRequestBuilder.Load(item.BackgroundThumb).Into(holder.GenresImage);
-                        holder.TxtName.Text = item.CateogryName; 
+                        holder.TxtName.Text = item.CateogryName;
                     }
                 }
             }
@@ -143,7 +143,7 @@ namespace DeepSound.Activities.Genres.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString())
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString())
                 .Apply(new RequestOptions().CircleCrop());
         }
     }
@@ -155,7 +155,7 @@ namespace DeepSound.Activities.Genres.Adapters
         public View MainView { get; set; }
         public ImageView GenresImage { get; private set; }
         public TextView TxtName { get; private set; }
-      
+
 
         #endregion
 
@@ -183,6 +183,6 @@ namespace DeepSound.Activities.Genres.Adapters
     public class GenresAdapterClickEventArgs : EventArgs
     {
         public View View { get; set; }
-        public int Position { get; set; } 
+        public int Position { get; set; }
     }
 }

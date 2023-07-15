@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Android.Content;
+﻿using Android.Content;
 using Android.Graphics;
 using Android.OS;
 using Android.Runtime;
@@ -13,6 +11,8 @@ using DeepSound.Helpers.Utils;
 using Java.Lang;
 using Java.Lang.Reflect;
 using Java.Util.Regex;
+using System;
+using System.Collections.Generic;
 using Exception = System.Exception;
 using Pattern = Java.Util.Regex.Pattern;
 
@@ -28,14 +28,14 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
         private List<StTools.XAutoLinkMode> MBoldAutoLinkModes;
         private string CustomRegex;
         private bool IsUnderLineEnabled;
-        private static Color MentionModeColor { set; get; } 
+        private static Color MentionModeColor { set; get; }
         private static Color HashtagModeColor { set; get; }
         private static Color UrlModeColor { set; get; }
         private static Color PhoneModeColor { set; get; }
         private static Color EmailModeColor { set; get; }
         private static Color CustomModeColor { set; get; }
         private static Color DefaultSelectedColor = Color.LightGray;
-         
+
         protected SuperTextView(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
         }
@@ -86,7 +86,7 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
             {
                 if (showMore != null)
                 {
-                    showMore.AddAutoLinkMode(new[] { StTools.XAutoLinkMode.ModePhone, StTools.XAutoLinkMode.ModeEmail, StTools.XAutoLinkMode.ModeHashTag, StTools.XAutoLinkMode.ModeUrl, StTools.XAutoLinkMode.ModeMention , StTools.XAutoLinkMode.ModeCustom }); 
+                    showMore.AddAutoLinkMode(new[] { StTools.XAutoLinkMode.ModePhone, StTools.XAutoLinkMode.ModeEmail, StTools.XAutoLinkMode.ModeHashTag, StTools.XAutoLinkMode.ModeUrl, StTools.XAutoLinkMode.ModeMention, StTools.XAutoLinkMode.ModeCustom });
                     showMore.SetPhoneModeColor(new Color(ContextCompat.GetColor(Context, Resource.Color.AutoLinkText_ModePhone_color)));
                     showMore.SetEmailModeColor(new Color(ContextCompat.GetColor(Context, Resource.Color.AutoLinkText_ModeEmail_color)));
                     showMore.SetHashtagModeColor(new Color(ContextCompat.GetColor(Context, Resource.Color.AutoLinkText_ModeHashtag_color)));
@@ -123,7 +123,7 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
                 base.SetText(text, type);
             }
         }
-        
+
         private SpannableString MakeSpannAbleString(ICharSequence text)
         {
             try
@@ -176,43 +176,43 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
                 {
                     Console.WriteLine("Run foreach MatchedRanges => 175");
                     string regex = StTools.XUtils.GetRegexByAutoLinkMode(anAutoLinkMode, CustomRegex);
-                   
+
                     switch (regex.Length)
                     {
                         case <= 0:
                             continue;
                     }
-                    
+
                     Pattern pattern = Pattern.Compile(regex);
                     Matcher matcher = pattern.Matcher(text);
-                   
+
                     switch (anAutoLinkMode)
                     {
                         case StTools.XAutoLinkMode.ModePhone:
-                        {
-                            while (matcher.Find())
                             {
-                                Console.WriteLine("Run while MatchedRanges => 186");
-                                StTools.XAutoLinkItem ss = new StTools.XAutoLinkItem(matcher.Start(), matcher.End(), matcher.Group(), anAutoLinkMode, UserId);
-
-                                if (matcher.Group().Length > MinPhoneNumberLength)
+                                while (matcher.Find())
                                 {
-                                    autoLinkItems.Add(ss);
+                                    Console.WriteLine("Run while MatchedRanges => 186");
+                                    StTools.XAutoLinkItem ss = new StTools.XAutoLinkItem(matcher.Start(), matcher.End(), matcher.Group(), anAutoLinkMode, UserId);
+
+                                    if (matcher.Group().Length > MinPhoneNumberLength)
+                                    {
+                                        autoLinkItems.Add(ss);
+                                    }
                                 }
-                            }
 
-                            break;
-                        }
+                                break;
+                            }
                         default:
-                        {
-                            while (matcher.Find())
                             {
-                                Console.WriteLine("Run while MatchedRanges => 199");
-                                autoLinkItems.Add(new StTools.XAutoLinkItem(matcher.Start(), matcher.End(), matcher.Group(), anAutoLinkMode, UserId));
-                            }
+                                while (matcher.Find())
+                                {
+                                    Console.WriteLine("Run while MatchedRanges => 199");
+                                    autoLinkItems.Add(new StTools.XAutoLinkItem(matcher.Start(), matcher.End(), matcher.Group(), anAutoLinkMode, UserId));
+                                }
 
-                            break;
-                        }
+                                break;
+                            }
                     }
                 }
 
@@ -398,65 +398,65 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
                 switch (Build.VERSION.SdkInt)
                 {
                     case >= (BuildVersionCodes)16:
-                    {
-                        StaticLayout layout = null!;
-                        Field field = null!;
-
-                        Class klass = Class.FromType(typeof(DynamicLayout));
-
-                        try
                         {
-                            Field insetsDirtyField = klass.GetDeclaredField("sStaticLayout");
+                            StaticLayout layout = null;
+                            Field field = null;
 
-                            insetsDirtyField.Accessible = true;
-                            layout = (StaticLayout)insetsDirtyField.Get(klass);
+                            Class klass = Class.FromType(typeof(DynamicLayout));
 
-                        }
-                        catch (NoSuchFieldException ex)
-                        {
-                            Methods.DisplayReportResultTrack(ex);
-                        }
-                        catch (IllegalAccessException ex)
-                        {
-                            Methods.DisplayReportResultTrack(ex);
-                        }
-
-                        if (layout != null)
-                        {
                             try
                             {
-                                //Field insetsDirtyField = klass.GetDeclaredField("sStaticLayout");
+                                Field insetsDirtyField = klass.GetDeclaredField("sStaticLayout");
 
-                                field = layout.Class.GetDeclaredField("mMaximumVisibleLineCount");
-                                field.Accessible = true;
-                                field.SetInt(layout, MaxLines);
+                                insetsDirtyField.Accessible = true;
+                                layout = (StaticLayout)insetsDirtyField.Get(klass);
+
                             }
-                            catch (NoSuchFieldException e)
+                            catch (NoSuchFieldException ex)
                             {
-                                Methods.DisplayReportResultTrack(e);
+                                Methods.DisplayReportResultTrack(ex);
                             }
-                            catch (IllegalAccessException e)
+                            catch (IllegalAccessException ex)
                             {
-                                Methods.DisplayReportResultTrack(e);
+                                Methods.DisplayReportResultTrack(ex);
                             }
+
+                            if (layout != null)
+                            {
+                                try
+                                {
+                                    //Field insetsDirtyField = klass.GetDeclaredField("sStaticLayout");
+
+                                    field = layout.Class.GetDeclaredField("mMaximumVisibleLineCount");
+                                    field.Accessible = true;
+                                    field.SetInt(layout, MaxLines);
+                                }
+                                catch (NoSuchFieldException e)
+                                {
+                                    Methods.DisplayReportResultTrack(e);
+                                }
+                                catch (IllegalAccessException e)
+                                {
+                                    Methods.DisplayReportResultTrack(e);
+                                }
+                            }
+
+                            base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
+
+                            if (layout != null && field != null)
+                            {
+                                try
+                                {
+                                    field.SetInt(layout, Integer.MaxValue);
+                                }
+                                catch (IllegalAccessException e)
+                                {
+                                    Methods.DisplayReportResultTrack(e);
+                                }
+                            }
+
+                            break;
                         }
-
-                        base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
-
-                        if (layout != null && field != null)
-                        {
-                            try
-                            {
-                                field.SetInt(layout, Integer.MaxValue);
-                            }
-                            catch (IllegalAccessException e)
-                            {
-                                Methods.DisplayReportResultTrack(e);
-                            }
-                        }
-
-                        break;
-                    }
                     default:
                         base.OnMeasure(widthMeasureSpec, heightMeasureSpec);
                         break;

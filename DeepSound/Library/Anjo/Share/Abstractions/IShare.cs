@@ -16,12 +16,12 @@ namespace DeepSound.Library.Anjo.Share.Abstractions
         /// <returns>True if the operation was successful, false otherwise</returns>
         Task<bool> OpenBrowser(string url, BrowserOptions options = null);
 
-		/// <summary>
-		/// Checks if the url can be opened
-		/// </summary>
-		/// <param name="url">Url to check</param>
-		/// <returns>True if it can</returns>
-		bool CanOpenUrl(string url);
+        /// <summary>
+        /// Checks if the url can be opened
+        /// </summary>
+        /// <param name="url">Url to check</param>
+        /// <returns>True if it can</returns>
+        bool CanOpenUrl(string url);
 
         /// <summary>
         /// Share a message with compatible services

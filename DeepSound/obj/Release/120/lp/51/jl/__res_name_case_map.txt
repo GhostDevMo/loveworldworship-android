@@ -1,3 +1,0 @@
-values/strings.xml;values/strings.xml
-layout/WebViewLayout.xml;layout/webviewlayout.xml
-drawable/icon_close_vector.xml;drawable/icon_close_vector.xml

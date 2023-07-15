@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using MaterialDialogsCore;
-using Android;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Gms.Ads.DoubleClick;
@@ -12,13 +7,12 @@ using Android.OS;
 using Android.Views;
 using Android.Widget;
 using AndroidHUD;
+using AndroidX.Activity.Result;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.AppCompat.Widget;
-using AndroidX.Core.Content;
 using Bumptech.Glide;
 using Bumptech.Glide.Request;
-using TheArtOfDev.Edmodo.Cropper;
-using Java.IO;
+using Com.Canhub.Cropper;
 using DeepSound.Activities.Base;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.CacheLoaders;
@@ -26,15 +20,19 @@ using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Advertise;
 using DeepSoundClient.Requests;
+using Google.Android.Material.Dialog;
+using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Exception = System.Exception;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
-using Uri = Android.Net.Uri;
 
 namespace DeepSound.Activities.Advertise
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
-    public class CreateAdvertiseActivity : BaseActivity, MaterialDialog.IListCallback, MaterialDialog.ISingleButtonCallback, MaterialDialog.IListCallbackMultiChoice
-    { 
+    public class CreateAdvertiseActivity : BaseActivity, IActivityResultCallback, IDialogListCallBack
+    {
         #region Variables Basic
 
         private ImageView ImageAd, BtnSelectImage;
@@ -42,6 +40,7 @@ namespace DeepSound.Activities.Advertise
         private string PathFile, TotalIdAudienceChecked, PlacementStatus, PricingStatus, TypeStatus, TypeDialog;
         private PublisherAdView PublisherAdView;
         private AppCompatButton BtnApply;
+        private DialogGalleryController GalleryController;
 
         #endregion
 
@@ -58,10 +57,11 @@ namespace DeepSound.Activities.Advertise
 
                 // Create your application here
                 SetContentView(Resource.Layout.CreateAdvertiseLayout);
-                 
+
                 //Get Value And Set Toolbar
                 InitComponent();
                 InitToolbar();
+                GalleryController = new DialogGalleryController(this, this);
             }
             catch (Exception e)
             {
@@ -261,16 +261,16 @@ namespace DeepSound.Activities.Advertise
             {
                 PublisherAdView?.Destroy();
 
-                TxtName = null!;
-                ImageAd = null!;
-                BtnSelectImage = null!;
-                TxtTitle = null!;
-                TxtDescription = null!;
-                TxtAudience = null!;
-                TxtPlacement = null!;
-                TxtPricing = null!;
+                TxtName = null;
+                ImageAd = null;
+                BtnSelectImage = null;
+                TxtTitle = null;
+                TxtDescription = null;
+                TxtAudience = null;
+                TxtPlacement = null;
+                TxtPricing = null;
 
-                PublisherAdView = null!;
+                PublisherAdView = null;
             }
             catch (Exception e)
             {
@@ -289,11 +289,11 @@ namespace DeepSound.Activities.Advertise
             {
                 if (TypeStatus == "banner")
                 {
-                    OpenDialogGallery();
+                    GalleryController?.OpenDialogGallery();
                 }
                 else if (TypeStatus == "audio")
                 {
-                    OpenDialogAudio(); 
+                    OpenDialogAudio();
                 }
                 else
                 {
@@ -315,16 +315,16 @@ namespace DeepSound.Activities.Advertise
                 TypeDialog = "Type";
 
                 var arrayAdapter = new List<string>();
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
                 arrayAdapter.Add(GetText(Resource.String.Lbl_TypeBanners)); //banner
                 arrayAdapter.Add(GetText(Resource.String.Lbl_TypeAudio)); //audio
 
-                dialogList.Title(GetText(Resource.String.Lbl_Type)).TitleColorRes(Resource.Color.primary);
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetTitle(GetText(Resource.String.Lbl_Type));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -341,16 +341,16 @@ namespace DeepSound.Activities.Advertise
                 TypeDialog = "Pricing";
 
                 var arrayAdapter = new List<string>();
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
                 arrayAdapter.Add(GetText(Resource.String.Lbl_PricingClick)); //1
                 arrayAdapter.Add(GetText(Resource.String.Lbl_PricingViews)); //2
 
-                dialogList.Title(GetText(Resource.String.Lbl_Pricing)).TitleColorRes(Resource.Color.primary);
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetTitle(GetText(Resource.String.Lbl_Pricing));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -367,16 +367,16 @@ namespace DeepSound.Activities.Advertise
                 TypeDialog = "Placement";
 
                 var arrayAdapter = new List<string>();
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
                 arrayAdapter.Add(GetText(Resource.String.Lbl_Placement_TrackPage)); //1
                 arrayAdapter.Add(GetText(Resource.String.Lbl_Placement_AllPage)); //2
 
-                dialogList.Title(GetText(Resource.String.Lbl_Placement)).TitleColorRes(Resource.Color.primary);
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetTitle(GetText(Resource.String.Lbl_Placement));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -389,50 +389,85 @@ namespace DeepSound.Activities.Advertise
             try
             {
                 if (e?.Event?.Action != MotionEventActions.Up) return;
-
                 TypeDialog = "Audience";
 
-                var arrayIndexAdapter = new int[] { };
                 var countriesArray = DeepSoundTools.GetCountryList(this);
+                var listItems = countriesArray.Select(item => item.Value).ToList();
 
-                var arrayAdapter = countriesArray.Select(item => item.Value).ToList();
+                var checkedItems = new bool[listItems.Count];
+                var selectedItems = new List<string>(listItems);
 
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                dialogList.Title(GetText(Resource.String.Lbl_TargetAudience)).TitleColorRes(Resource.Color.primary)
-                    .Items(arrayAdapter)
-                    .ItemsCallbackMultiChoice(arrayIndexAdapter, this)
-                    .AlwaysCallMultiChoiceCallback()
-                    .AutoDismiss(false)
-                    .PositiveText(GetText(Resource.String.Lbl_Close)).OnPositive(this)
-                    .NeutralText(Resource.String.Lbl_SelectAll).OnNeutral((dialog, action) =>
+                var dialogList = new MaterialAlertDialogBuilder(this);
+
+                dialogList.SetTitle(Resource.String.Lbl_TargetAudience);
+                dialogList.SetCancelable(false);
+                dialogList.SetMultiChoiceItems(listItems.ToArray(), checkedItems, (o, args) =>
+                {
+                    try
                     {
-                        try
-                        {
-                            dialog.SelectAllIndices();
+                        checkedItems[args.Which] = args.IsChecked;
 
-                            TotalIdAudienceChecked = "";
-                            foreach (var item in countriesArray)
+                        var text = selectedItems[args.Which] ?? "";
+                        Console.WriteLine(text);
+                    }
+                    catch (Exception exception)
+                    {
+                        Methods.DisplayReportResultTrack(exception);
+                    }
+                });
+                dialogList.SetPositiveButton(GetText(Resource.String.Lbl_Close), (o, args) =>
+                {
+                    try
+                    {
+                        TotalIdAudienceChecked = "";
+                        for (int i = 0; i < checkedItems.Length; i++)
+                        {
+                            if (checkedItems[i])
                             {
-                                TotalIdAudienceChecked += item.Key + ",";
+                                var text = selectedItems[i];
+                                var check = countriesArray.FirstOrDefault(a => a.Value == text).Key;
+                                if (check != null)
+                                {
+                                    TotalIdAudienceChecked += check + ",";
+                                }
                             }
-
-                            TxtAudience.Text = TypeDialog == "Audience" && !string.IsNullOrEmpty(TotalIdAudienceChecked) ? GetText(Resource.String.Lbl_Selected) : TxtAudience.Text;
-
-                            dialog.Dismiss();
                         }
-                        catch (Exception ex)
+
+                        TxtAudience.Text = TypeDialog == "Audience" && !string.IsNullOrEmpty(TotalIdAudienceChecked) ? GetText(Resource.String.Lbl_Selected) : TxtAudience.Text;
+                    }
+                    catch (Exception exception)
+                    {
+                        Methods.DisplayReportResultTrack(exception);
+                    }
+                });
+                dialogList.SetNeutralButton(Resource.String.Lbl_SelectAll, (o, args) =>
+                {
+                    try
+                    {
+                        Arrays.Fill(checkedItems, true);
+
+                        TotalIdAudienceChecked = "";
+                        foreach (var item in countriesArray)
                         {
-                            Methods.DisplayReportResultTrack(ex);
+                            TotalIdAudienceChecked += item.Key + ",";
                         }
-                    })
-                    .Build().Show();
+
+                        TxtAudience.Text = TypeDialog == "Audience" && !string.IsNullOrEmpty(TotalIdAudienceChecked) ? GetText(Resource.String.Lbl_Selected) : TxtAudience.Text;
+                    }
+                    catch (Exception ex)
+                    {
+                        Methods.DisplayReportResultTrack(ex);
+                    }
+                });
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-        
+
         //Save 
         private async void TxtAddOnClick(object sender, EventArgs e)
         {
@@ -443,7 +478,7 @@ namespace DeepSound.Activities.Advertise
                     Toast.MakeText(this, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
                 }
                 else
-                { 
+                {
                     if (string.IsNullOrEmpty(TxtName.Text) || string.IsNullOrWhiteSpace(TxtName.Text))
                     {
                         Toast.MakeText(this, GetString(Resource.String.Lbl_PleaseEnterName), ToastLength.Short)?.Show();
@@ -461,43 +496,43 @@ namespace DeepSound.Activities.Advertise
                         Toast.MakeText(this, GetString(Resource.String.Lbl_PleaseEnterUrl), ToastLength.Short)?.Show();
                         return;
                     }
-                      
+
                     if (string.IsNullOrEmpty(TxtDescription.Text) || string.IsNullOrWhiteSpace(TxtDescription.Text))
                     {
                         Toast.MakeText(this, GetString(Resource.String.Lbl_PleaseEnterDescription), ToastLength.Short)?.Show();
                         return;
                     }
-                      
+
                     if (string.IsNullOrEmpty(TxtAudience.Text) || string.IsNullOrWhiteSpace(TxtAudience.Text) || string.IsNullOrEmpty(TotalIdAudienceChecked))
                     {
                         Toast.MakeText(this, GetString(Resource.String.Lbl_Please_select_Audience), ToastLength.Short)?.Show();
                         return;
                     }
-                     
+
                     if (string.IsNullOrEmpty(TxtPlacement.Text) || string.IsNullOrWhiteSpace(TxtPlacement.Text))
                     {
                         Toast.MakeText(this, GetString(Resource.String.Lbl_Please_select_Placement), ToastLength.Short)?.Show();
                         return;
                     }
-                       
+
                     if (string.IsNullOrEmpty(TxtPricing.Text) || string.IsNullOrWhiteSpace(TxtPricing.Text))
                     {
                         Toast.MakeText(this, GetString(Resource.String.Lbl_Please_select_Pricing), ToastLength.Short)?.Show();
                         return;
                     }
-                       
+
                     if (string.IsNullOrEmpty(TxtSpending.Text) || string.IsNullOrWhiteSpace(TxtSpending.Text))
                     {
                         Toast.MakeText(this, GetString(Resource.String.Lbl_Please_select_Spending), ToastLength.Short)?.Show();
                         return;
                     }
-                       
+
                     if (string.IsNullOrEmpty(TxtType.Text) || string.IsNullOrWhiteSpace(TxtType.Text))
                     {
                         Toast.MakeText(this, GetString(Resource.String.Lbl_Please_select_Type), ToastLength.Short)?.Show();
                         return;
                     }
-                       
+
                     //Show a progress
                     AndHUD.Shared.Show(this, GetText(Resource.String.Lbl_Loading));
 
@@ -526,7 +561,7 @@ namespace DeepSound.Activities.Advertise
                         {
                             AndHUD.Shared.Dismiss(this);
                             Toast.MakeText(this, GetString(Resource.String.Lbl_CreatedSuccessfully), ToastLength.Short)?.Show();
-                             
+
                             Finish();
                         }
                     }
@@ -551,34 +586,12 @@ namespace DeepSound.Activities.Advertise
             try
             {
                 base.OnActivityResult(requestCode, resultCode, data);
-                if (requestCode == CropImage.CropImageActivityRequestCode)
-                {
-                    var result = CropImage.GetActivityResult(data); 
-                    if (result.IsSuccessful)
-                    {
-                        var resultUri = result.Uri;
-
-                        if (!string.IsNullOrEmpty(resultUri.Path))
-                        {
-                            PathFile = resultUri.Path;
-                            File file2 = new File(resultUri.Path);
-                            var photoUri = FileProvider.GetUriForFile(this, PackageName + ".fileprovider", file2);
-                            Glide.With(this).Load(photoUri).Apply(new RequestOptions()).Into(ImageAd);
-
-                            //GlideImageLoader.LoadImage(this, resultUri.Path, ImgCover, ImageStyle.CenterCrop, ImagePlaceholders.Drawable);
-                        }
-                        else
-                        {
-                            Toast.MakeText(this, GetString(Resource.String.Lbl_something_went_wrong), ToastLength.Short)?.Show();
-                        }
-                    }
-                }
-                else if (requestCode == 505 && resultCode == Result.Ok) //==> Audio
+                if (requestCode == 505 && resultCode == Result.Ok) //==> Audio
                 {
                     var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, data.Data);
                     if (filepath != null)
                     {
-                        PathFile = filepath; 
+                        PathFile = filepath;
                         GlideImageLoader.LoadImage(this, "Audio_File", ImageAd, ImageStyle.CenterCrop, ImagePlaceholders.Drawable);
                     }
                 }
@@ -599,7 +612,7 @@ namespace DeepSound.Activities.Advertise
                 switch (requestCode)
                 {
                     case 108 when grantResults.Length > 0 && grantResults[0] == Permission.Granted:
-                        OpenDialogGallery();
+                        GalleryController?.OpenDialogGallery();
                         break;
                     case 108:
                         Toast.MakeText(this, GetString(Resource.String.Lbl_Permission_is_denied), ToastLength.Short)?.Show();
@@ -622,7 +635,7 @@ namespace DeepSound.Activities.Advertise
 
         #region MaterialDialog
 
-        public void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+        public void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
             {
@@ -681,51 +694,35 @@ namespace DeepSound.Activities.Advertise
             }
         }
 
-        bool MaterialDialog.IListCallbackMultiChoice.OnSelection(MaterialDialog dialog, int[] which, string[] text)
+        #endregion
+
+        #region Result Gallery
+
+        public void OnActivityResult(Java.Lang.Object p0)
         {
             try
             {
-                switch (TypeDialog)
+                if (p0 is CropImageView.CropResult result)
                 {
-                    case "Audience":
+                    if (result.IsSuccessful)
+                    {
+                        var resultUri = result.UriContent;
+                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        if (!string.IsNullOrEmpty(filepath))
                         {
-                            TotalIdAudienceChecked = "";
-                            var countriesArray = DeepSoundTools.GetCountryList(this);
-                            for (int i = 0; i < which.Length; i++)
-                            {
-                                var itemString = text[i];
-                                var check = countriesArray.FirstOrDefault(a => a.Value == itemString).Key;
-                                if (check != null)
-                                {
-                                    TotalIdAudienceChecked += check + ",";
-                                }
-                            }
-
-                            break;
+                            //Do something with your Uri
+                            PathFile = filepath;
+                            Glide.With(this).Load(filepath).Apply(new RequestOptions()).Into(ImageAd);
                         }
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-                return true;
-            }
-            return true;
-        }
-
-        public void OnClick(MaterialDialog p0, DialogAction p1)
-        {
-            try
-            {
-                if (p1 == DialogAction.Positive)
-                {
-                    TxtAudience.Text = TypeDialog == "Audience" && !string.IsNullOrEmpty(TotalIdAudienceChecked) ? GetText(Resource.String.Lbl_Selected) : TxtAudience.Text;
-
-                    p0.Dismiss();
-                }
-                else if (p1 == DialogAction.Negative)
-                {
-                    p0.Dismiss();
+                        else
+                        {
+                            Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
+                        }
+                    }
+                    else
+                    {
+                        Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
+                    }
                 }
             }
             catch (Exception e)
@@ -735,65 +732,6 @@ namespace DeepSound.Activities.Advertise
         }
 
         #endregion
-
-        private void OpenDialogGallery()
-        {
-            try
-            {
-                if (!DeepSoundTools.CheckAllowedFileUpload())
-                {
-                    Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_Security), GetText(Resource.String.Lbl_Error_AllowedFileUpload), GetText(Resource.String.Lbl_Ok));
-                    return;
-                }
-
-                switch ((int)Build.VERSION.SdkInt)
-                {
-                    // Check if we're running on Android 5.0 or higher
-                    case < 23:
-                        {
-                            Methods.Path.Chack_MyFolder();
-
-                            //Open Image 
-                            var myUri = Uri.FromFile(new File(Methods.Path.FolderDiskImage, Methods.GetTimestamp(DateTime.Now) + ".jpg"));
-                            CropImage.Activity()
-                                .SetInitialCropWindowPaddingRatio(0)
-                                .SetAutoZoomEnabled(true)
-                                .SetMaxZoom(4)
-                                .SetGuidelines(CropImageView.Guidelines.On)
-                                .SetCropMenuCropButtonTitle(GetText(Resource.String.Lbl_Crop))
-                                .SetOutputUri(myUri).Start(this);
-                            break;
-                        }
-                    default:
-                        {
-                            if (!CropImage.IsExplicitCameraPermissionRequired(this) && PermissionsController.CheckPermissionStorage() && CheckSelfPermission(Manifest.Permission.Camera) == Permission.Granted)
-                            {
-                                Methods.Path.Chack_MyFolder();
-
-                                //Open Image 
-                                var myUri = Uri.FromFile(new File(Methods.Path.FolderDiskImage, Methods.GetTimestamp(DateTime.Now) + ".jpg"));
-                                CropImage.Activity()
-                                    .SetInitialCropWindowPaddingRatio(0)
-                                    .SetAutoZoomEnabled(true)
-                                    .SetMaxZoom(4)
-                                    .SetGuidelines(CropImageView.Guidelines.On)
-                                    .SetCropMenuCropButtonTitle(GetText(Resource.String.Lbl_Crop))
-                                    .SetOutputUri(myUri).Start(this);
-                            }
-                            else
-                            {
-                                new PermissionsController(this).RequestPermission(108);
-                            }
-
-                            break;
-                        }
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
 
         private void OpenDialogAudio()
         {
@@ -810,7 +748,7 @@ namespace DeepSound.Activities.Advertise
                     new IntentController(this).OpenIntentAudio(); //505
                 else
                 {
-                    if (PermissionsController.CheckPermissionStorage() )
+                    if (PermissionsController.CheckPermissionStorage())
                         new IntentController(this).OpenIntentAudio(); //505
                     else
                         new PermissionsController(this).RequestPermission(100);

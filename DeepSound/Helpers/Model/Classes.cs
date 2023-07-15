@@ -9,13 +9,13 @@
             public int SongsCount { get; set; }
             public string BackgroundImage { get; set; }
         }
-         
+
         public class Categories
         {
             public string CategoriesId { get; set; }
             public string CategoriesName { get; set; }
             public string CategoriesColor { get; set; }
-            public string CategoriesIcon { get; set; } 
+            public string CategoriesIcon { get; set; }
         }
 
 
@@ -34,11 +34,17 @@
         AllUsers,
         UnProfessional,
     }
-    
+
     public enum TabTheme
     {
         Dark,
         Light,
     }
-    
+
+    public enum PlayerTheme
+    {
+        Theme1,
+        Theme2,
+    }
+
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Content;
+﻿using Android.Content;
 using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
@@ -24,6 +19,11 @@ using DeepSoundClient.Classes.Event;
 using DeepSoundClient.Requests;
 using Google.Android.Material.FloatingActionButton;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Event
@@ -66,7 +66,7 @@ namespace DeepSound.Activities.Event
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -213,7 +213,7 @@ namespace DeepSound.Activities.Event
         }
 
         #endregion
-         
+
         #region Event
 
         //Add new Event 
@@ -228,7 +228,7 @@ namespace DeepSound.Activities.Event
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-        
+
         //Scroll
         private void MainScrollEventOnLoadMoreEvent(object sender, EventArgs e)
         {
@@ -358,7 +358,7 @@ namespace DeepSound.Activities.Event
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -390,7 +390,7 @@ namespace DeepSound.Activities.Event
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoEvents);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }

@@ -6,9 +6,9 @@
     <com.sothree.slidinguppanel.SlidingUpPanelLayout
         android:id="@+id/sliding_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:gravity="bottom"
-        app:umanoPanelHeight="103dp"
+        app:umanoPanelHeight="123dp"
         app:umanoShadowHeight="4dp"
         app:umanoParallaxOffset="180dp"
         app:umanoDragView="@+id/root"
@@ -27,11 +27,11 @@
             android:clickable="true"
             android:id="@+id/root"
             android:layout_height="match_parent">
-            <include
-                android:id="@+id/slidepanelchildtwo_topviewtwo"
-                layout="@layout/FullScreenPlayerLayout"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+	        <ViewStub
+		        android:id="@+id/viewStubFullScreenPlayer"
+		        android:inflatedId="@+id/stubViewFullScreenPlayer"
+		        android:layout_width="match_parent"
+		        android:layout_height="match_parent"/>
         </LinearLayout>
     </com.sothree.slidinguppanel.SlidingUpPanelLayout>
     <include

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -11,6 +8,9 @@ using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Global;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 
 namespace DeepSound.Activities.Songs.Adapters
@@ -48,7 +48,7 @@ namespace DeepSound.Activities.Songs.Adapters
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -120,10 +120,10 @@ namespace DeepSound.Activities.Songs.Adapters
 
                 if (item == null)
                     return Collections.SingletonList(p0);
-                 
+
                 d.Add(item.Thumbnail);
                 return d;
-            
+
             }
             catch (Exception e)
             {
@@ -134,7 +134,7 @@ namespace DeepSound.Activities.Songs.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString()).Apply(new RequestOptions().CenterCrop());
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString()).Apply(new RequestOptions().CenterCrop());
         }
 
     }
@@ -175,6 +175,6 @@ namespace DeepSound.Activities.Songs.Adapters
     public class HSoundAdapterClickEventArgs : EventArgs
     {
         public View View { get; set; }
-        public int Position { get; set; } 
+        public int Position { get; set; }
     }
 }

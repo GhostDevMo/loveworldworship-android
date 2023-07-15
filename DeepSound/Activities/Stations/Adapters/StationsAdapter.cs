@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -11,6 +8,9 @@ using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Global;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 
 namespace DeepSound.Activities.Stations.Adapters
@@ -19,7 +19,7 @@ namespace DeepSound.Activities.Stations.Adapters
     {
         public event EventHandler<StationsAdapterClickEventArgs> ItemClick;
         public event EventHandler<StationsAdapterClickEventArgs> ItemLongClick;
-        
+
         private readonly Activity ActivityContext;
         public ObservableCollection<SoundDataObject> StationsList = new ObservableCollection<SoundDataObject>();
 
@@ -49,7 +49,7 @@ namespace DeepSound.Activities.Stations.Adapters
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -139,7 +139,7 @@ namespace DeepSound.Activities.Stations.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString())
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString())
                 .Apply(new RequestOptions().CenterCrop());
         }
     }
@@ -149,11 +149,11 @@ namespace DeepSound.Activities.Stations.Adapters
         #region Variables Basic
 
         public View MainView { get; private set; }
-        public ImageView Image  { get; private set; }
+        public ImageView Image { get; private set; }
         public TextView TxtName { get; private set; }
-        public TextView TxtCat { get; private set; } 
-        public TextView TxtCountry { get; private set; } 
-         
+        public TextView TxtCat { get; private set; }
+        public TextView TxtCountry { get; private set; }
+
         #endregion
 
         public StationsAdapterViewHolder(View itemView, Action<StationsAdapterClickEventArgs> clickListener, Action<StationsAdapterClickEventArgs> longClickListener) : base(itemView)
@@ -165,7 +165,7 @@ namespace DeepSound.Activities.Stations.Adapters
                 Image = MainView.FindViewById<ImageView>(Resource.Id.image);
                 TxtName = MainView.FindViewById<TextView>(Resource.Id.name);
                 TxtCat = MainView.FindViewById<TextView>(Resource.Id.cat);
-                TxtCountry = MainView.FindViewById<TextView>(Resource.Id.country); 
+                TxtCountry = MainView.FindViewById<TextView>(Resource.Id.country);
 
                 //Event
                 itemView.Click += (sender, e) => clickListener(new StationsAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });

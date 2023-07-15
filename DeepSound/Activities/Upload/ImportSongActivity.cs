@@ -1,5 +1,4 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Gms.Ads.DoubleClick;
@@ -16,6 +15,7 @@ using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Tracks;
 using DeepSoundClient.Requests;
 using Newtonsoft.Json;
+using System;
 using Exception = System.Exception;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
@@ -147,7 +147,7 @@ namespace DeepSound.Activities.Upload
             try
             {
                 TxtLink = FindViewById<EditText>(Resource.Id.linkText);
-                BtnImport = FindViewById<AppCompatButton>(Resource.Id.ImportButton); 
+                BtnImport = FindViewById<AppCompatButton>(Resource.Id.ImportButton);
             }
             catch (Exception e)
             {
@@ -181,7 +181,7 @@ namespace DeepSound.Activities.Upload
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void AddOrRemoveEvent(bool addEvent)
         {
             try
@@ -205,7 +205,7 @@ namespace DeepSound.Activities.Upload
         #endregion
 
         #region Events
-         
+
         private async void BtnImportOnClick(object sender, EventArgs e)
         {
             try
@@ -221,11 +221,11 @@ namespace DeepSound.Activities.Upload
                     Toast.MakeText(this, GetText(Resource.String.Lbl_ImportSoundUrlError), ToastLength.Short)?.Show();
                     return;
                 }
-                
+
                 //Show a progress
                 AndHUD.Shared.Show(this, GetText(Resource.String.Lbl_Loading));
 
-                 var (apiStatus, respond) = await RequestsAsync.Common.ImportAsync(TxtLink.Text); //Sent api 
+                var (apiStatus, respond) = await RequestsAsync.Common.ImportAsync(TxtLink.Text); //Sent api 
                 if (apiStatus.Equals(200))
                 {
                     if (respond is ImportTrackObject result)
@@ -233,7 +233,7 @@ namespace DeepSound.Activities.Upload
                         AndHUD.Shared.Dismiss(this);
 
                         if (result.Message != null && result.Message.Contains("converted to mp3 soon"))
-                        { 
+                        {
                             Toast.MakeText(this, GetString(Resource.String.Lbl_ImportSong_YoutubeMsg), ToastLength.Short)?.Show();
                             Finish();
                         }
@@ -247,7 +247,7 @@ namespace DeepSound.Activities.Upload
                             }
 
                             Finish();
-                        } 
+                        }
                     }
                 }
                 else

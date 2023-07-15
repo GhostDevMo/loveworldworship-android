@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.CardView.Widget;
@@ -14,6 +11,9 @@ using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo;
 using DeepSoundClient.Classes.Global;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 using Object = Java.Lang.Object;
 
@@ -58,7 +58,7 @@ namespace DeepSound.Activities.Songs.Adapters
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -85,7 +85,7 @@ namespace DeepSound.Activities.Songs.Adapters
                                     holder.Equalizer.AnimateBars();
                                 }
                                 else
-                                { 
+                                {
                                     holder.Image.Visibility = ViewStates.Visible;
                                     holder.CardViewImage.Visibility = ViewStates.Visible;
                                     holder.Equalizer.Visibility = ViewStates.Gone;
@@ -93,7 +93,7 @@ namespace DeepSound.Activities.Songs.Adapters
                                 }
                                 //NotifyItemChanged(position);
                                 break;
-                            } 
+                            }
                         default:
                             base.OnBindViewHolder(viewHolder, position, payloads);
                             break;
@@ -124,16 +124,16 @@ namespace DeepSound.Activities.Songs.Adapters
 
                 holder.CountItemTextView.Text = position.ToString("D2");
 
-                //Glide.With(ActivityContext).Load(item.Thumbnail).Apply(GlideRequestOptions).Transition(DrawableTransitionOptions.WithCrossFade(400)).Into(holder.Image);
+                //Glide.With(ActivityContext?.BaseContext).Load(item.Thumbnail).Apply(GlideRequestOptions).Transition(DrawableTransitionOptions.WithCrossFade(400)).Into(holder.Image);
                 GlideImageLoader.LoadImage(ActivityContext, item.Thumbnail, holder.Image, ImageStyle.CenterCrop, ImagePlaceholders.Drawable);
 
                 holder.TxtSongName.Text = Methods.FunString.SubStringCutOf(Methods.FunString.DecodeString(item.Title), 80);
-               
+
                 if (item.Publisher != null)
                     holder.TxtGenresName.Text = DeepSoundTools.GetNameFinal(item.Publisher);
                 else
                     holder.TxtGenresName.Text = item.CategoryName + " " + ActivityContext.GetText(Resource.String.Lbl_Music);
-                
+
                 //holder.CountLike.Text = item.CountLikes.ToString();
                 //holder.CountStars.Text = item.CountFavorite.ToString(); 
                 //holder.CountViews.Text = item.CountViews;
@@ -147,11 +147,11 @@ namespace DeepSound.Activities.Songs.Adapters
                 }
                 else
                     holder.TxtSongDuration.Text = item.Duration + " " + ActivityContext.GetText(Resource.String.Lbl_CutMinutes);
-                 
+
                 ClickListeners.SetPlaySongs(holder.PlayButton, item.IsPlay);
 
                 if (item.IsPlay)
-                { 
+                {
                     holder.Image.Visibility = ViewStates.Gone;
                     holder.CardViewImage.Visibility = ViewStates.Gone;
                     holder.Equalizer.Visibility = ViewStates.Visible;
@@ -159,15 +159,15 @@ namespace DeepSound.Activities.Songs.Adapters
                 }
                 else
                 {
-                   
+
                     holder.Image.Visibility = ViewStates.Visible;
                     holder.CardViewImage.Visibility = ViewStates.Visible;
                     holder.Equalizer.Visibility = ViewStates.Gone;
                     holder.Equalizer.StopBars();
                 }
-                 
+
                 if (!holder.MoreButton.HasOnClickListeners)
-                    holder.MoreButton.Click += (sender, e) => ClickListeners.OnMoreClick(new MoreClickEventArgs { View = holder.MainView, SongsClass = item }, NamePage); 
+                    holder.MoreButton.Click += (sender, e) => ClickListeners.OnMoreClick(new MoreClickEventArgs { View = holder.MainView, SongsClass = item }, NamePage);
             }
             catch (Exception exception)
             {
@@ -243,7 +243,7 @@ namespace DeepSound.Activities.Songs.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString()).Apply(new RequestOptions().CenterCrop());
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString()).Apply(new RequestOptions().CenterCrop());
         }
 
     }
@@ -277,7 +277,7 @@ namespace DeepSound.Activities.Songs.Adapters
                 TxtGenresName = MainView.FindViewById<TextView>(Resource.Id.textView_catname);
                 PlayButton = MainView.FindViewById<ImageView>(Resource.Id.playImageview);
                 ImageSeperator = MainView.FindViewById<ImageView>(Resource.Id.seperatorImageview);
-  
+
                 TxtSongDuration = MainView.FindViewById<TextView>(Resource.Id.textView_songduration);
 
                 MoreButton = MainView.FindViewById<ImageButton>(Resource.Id.more);

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Widget;
 using DeepSound.Activities.Chat;
 using DeepSound.Helpers.Utils;
@@ -9,6 +6,9 @@ using DeepSound.SQLite;
 using DeepSoundClient.Classes.Chat;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Requests;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DeepSound.Helpers.Controller
 {
@@ -74,8 +74,8 @@ namespace DeepSound.Helpers.Controller
                     checker.Image = messages.Image;
                     checker.FullImage = messages.FullImage;
                     checker.ApiPosition = messages.ApiPosition;
-                    checker.ApiType = messages.ApiType;  
-                      
+                    checker.ApiType = messages.ApiType;
+
                     var dataUser = LastChatActivity.MAdapter?.UserList?.FirstOrDefault(a => a.User.Id == messages.ToId);
                     if (dataUser != null)
                     {
@@ -110,9 +110,9 @@ namespace DeepSound.Helpers.Controller
                             LastChatActivity.MAdapter?.NotifyItemInserted(0);
                         }
                     }
-                     
+
                     SqLiteDatabase dbDatabase = new SqLiteDatabase();
-                    
+
                     //Update All data users to database
                     dbDatabase.InsertOrUpdateToOneMessages(checker);
 

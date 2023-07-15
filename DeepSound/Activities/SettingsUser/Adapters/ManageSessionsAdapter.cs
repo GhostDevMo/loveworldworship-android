@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using AmulyaKhare.TextDrawableLib;
+﻿using AmulyaKhare.TextDrawableLib;
 using Android.App;
 using Android.Graphics;
 using Android.Views;
@@ -9,6 +7,8 @@ using AndroidX.RecyclerView.Widget;
 using AT.Markushi.UI;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Common;
+using System;
+using System.Collections.ObjectModel;
 
 namespace DeepSound.Activities.SettingsUser.Adapters
 {
@@ -50,7 +50,7 @@ namespace DeepSound.Activities.SettingsUser.Adapters
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -77,7 +77,7 @@ namespace DeepSound.Activities.SettingsUser.Adapters
                         {
                             var drawable = TextDrawable.InvokeBuilder().BeginConfig().FontSize(35).EndConfig().BuildRound(item.Browser.Substring(0, 1), Color.ParseColor(AppSettings.MainColor));
                             holder.Image.SetImageDrawable(drawable);
-                        } 
+                        }
                     }
                 }
             }
@@ -86,7 +86,7 @@ namespace DeepSound.Activities.SettingsUser.Adapters
                 Methods.DisplayReportResultTrack(exception);
             }
         }
- 
+
         public FetchSessionsObject.SessionsDataObject GetItem(int position)
         {
             return SessionsList[position];
@@ -122,7 +122,7 @@ namespace DeepSound.Activities.SettingsUser.Adapters
         {
             CloseItemClick?.Invoke(this, args);
         }
-        
+
         private void Click(ManageSessionsAdapterClickEventArgs args)
         {
             ItemClick?.Invoke(this, args);
@@ -131,7 +131,7 @@ namespace DeepSound.Activities.SettingsUser.Adapters
         private void LongClick(ManageSessionsAdapterClickEventArgs args)
         {
             ItemLongClick?.Invoke(this, args);
-        } 
+        }
     }
 
     public class ManageSessionsAdapterViewHolder : RecyclerView.ViewHolder
@@ -169,7 +169,7 @@ namespace DeepSound.Activities.SettingsUser.Adapters
         public TextView Browser { get; private set; }
         public TextView Seen { get; private set; }
         public TextView Address { get; private set; }
-        public CircleButton Button { get; private set; } 
+        public CircleButton Button { get; private set; }
 
         #endregion
     }

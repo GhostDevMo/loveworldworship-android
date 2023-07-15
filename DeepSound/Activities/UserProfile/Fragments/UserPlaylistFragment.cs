@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -24,6 +19,11 @@ using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Playlist;
 using DeepSoundClient.Requests;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Xamarin.Facebook.Ads;
 
 namespace DeepSound.Activities.UserProfile.Fragments
@@ -75,10 +75,10 @@ namespace DeepSound.Activities.UserProfile.Fragments
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
-         
+
         public override void OnDestroy()
         {
             try
@@ -102,7 +102,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
             {
                 MRecycler = view.FindViewById<RecyclerView>(Resource.Id.recyler);
                 EmptyStateLayout = view.FindViewById<ViewStub>(Resource.Id.viewStub);
-                 
+
                 SwipeRefreshLayout = view.FindViewById<SwipeRefreshLayout>(Resource.Id.swipeRefreshLayout);
                 SwipeRefreshLayout.SetColorSchemeResources(Android.Resource.Color.HoloBlueLight, Android.Resource.Color.HoloGreenLight, Android.Resource.Color.HoloOrangeLight, Android.Resource.Color.HoloRedLight);
                 SwipeRefreshLayout.Refreshing = true;
@@ -150,7 +150,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #endregion
 
         #region Event
@@ -255,7 +255,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 else
                 {
                     StartApiService();
-                } 
+                }
             }
             catch (Exception e)
             {
@@ -325,7 +325,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -361,7 +361,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoPlaylist);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Gms.Ads.DoubleClick;
@@ -20,6 +17,9 @@ using DeepSound.Helpers.Utils;
 using DeepSound.SQLite;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Requests;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Exception = System.Exception;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
@@ -30,11 +30,11 @@ namespace DeepSound.Activities.MyProfile
     {
         #region Variables Basic
 
-        private TextView  NameIcon,  AboutIcon, FacebookIcon, WebsiteIcon;
-        private EditText EdtFullName, EdtAbout, EdtFacebook, EdtWebsite;
+        private TextView NameIcon, AboutIcon, WebsiteIcon;
+        private EditText EdtFullName, EdtAbout, EdtWebsite;
         private AppCompatButton BtnSave;
         private PublisherAdView PublisherAdView;
-        
+
 
         #endregion
 
@@ -76,7 +76,7 @@ namespace DeepSound.Activities.MyProfile
                 base.OnResume();
                 AddOrRemoveEvent(true);
                 PublisherAdView?.Resume();
-                
+
             }
             catch (Exception e)
             {
@@ -91,7 +91,7 @@ namespace DeepSound.Activities.MyProfile
                 base.OnPause();
                 AddOrRemoveEvent(false);
                 PublisherAdView?.Pause();
-                
+
             }
             catch (Exception e)
             {
@@ -130,7 +130,7 @@ namespace DeepSound.Activities.MyProfile
         {
             try
             {
-                
+
                 PublisherAdView?.Destroy();
 
                 base.OnDestroy();
@@ -165,29 +165,24 @@ namespace DeepSound.Activities.MyProfile
         private void InitComponent()
         {
             try
-            { 
+            {
                 NameIcon = FindViewById<TextView>(Resource.Id.IconFullName);
                 EdtFullName = FindViewById<EditText>(Resource.Id.FullNameEditText);
 
                 AboutIcon = FindViewById<TextView>(Resource.Id.IconAbout);
                 EdtAbout = FindViewById<EditText>(Resource.Id.AboutEditText);
 
-                FacebookIcon = FindViewById<TextView>(Resource.Id.IconFacebook);
-                EdtFacebook = FindViewById<EditText>(Resource.Id.FacebookEditText);
-
                 WebsiteIcon = FindViewById<TextView>(Resource.Id.IconWebsite);
                 EdtWebsite = FindViewById<EditText>(Resource.Id.WebsiteEditText);
 
                 BtnSave = FindViewById<AppCompatButton>(Resource.Id.ApplyButton);
-                
+
                 Methods.SetColorEditText(EdtFullName, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(EdtAbout, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
-                Methods.SetColorEditText(EdtFacebook, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(EdtWebsite, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
 
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeLight, NameIcon, FontAwesomeIcon.User);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeLight, AboutIcon, FontAwesomeIcon.InfoCircle);
-                FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, FacebookIcon, IonIconsFonts.LogoFacebook);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeLight, WebsiteIcon, FontAwesomeIcon.GlobeAmericas);
             }
             catch (Exception e)
@@ -195,7 +190,7 @@ namespace DeepSound.Activities.MyProfile
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void InitToolbar()
         {
             try
@@ -210,7 +205,7 @@ namespace DeepSound.Activities.MyProfile
                     SupportActionBar.SetDisplayHomeAsUpEnabled(true);
                     SupportActionBar.SetHomeButtonEnabled(true);
                     SupportActionBar.SetDisplayShowHomeEnabled(true);
-                
+
                     var icon = AppCompatResources.GetDrawable(this, AppSettings.FlowDirectionRightToLeft ? Resource.Drawable.icon_back_arrow_right : Resource.Drawable.icon_back_arrow_left);
                     icon?.SetTint(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                     SupportActionBar.SetHomeAsUpIndicator(icon);
@@ -247,7 +242,7 @@ namespace DeepSound.Activities.MyProfile
         #endregion
 
         #region Events
-         
+
         //Click save data and sent api
         private async void BtnSaveOnClick(object sender, EventArgs e)
         {
@@ -257,19 +252,18 @@ namespace DeepSound.Activities.MyProfile
                 {
                     //Show a progress
                     AndHUD.Shared.Show(this, GetText(Resource.String.Lbl_Loading));
- 
+
                     var dictionary = new Dictionary<string, string>
                     {
-                        {"name", EdtFullName.Text},                      
+                        {"name", EdtFullName.Text},
                         {"about_me", EdtAbout.Text},
-                        {"facebook", EdtFacebook.Text},
-                        {"website", EdtWebsite.Text}, 
+                        {"website", EdtWebsite.Text},
                     };
 
                     if (string.IsNullOrEmpty(dictionary["website"]))
                         dictionary["website"] = "https://www.example.com/";
 
-                    var (apiStatus, respond) = await RequestsAsync.User.UpdateProfileAsync(UserDetails.UserId.ToString(),dictionary);
+                    var (apiStatus, respond) = await RequestsAsync.User.UpdateProfileAsync(UserDetails.UserId.ToString(), dictionary);
                     if (apiStatus == 200)
                     {
                         if (respond is MessageObject result)
@@ -280,12 +274,11 @@ namespace DeepSound.Activities.MyProfile
                             {
                                 local.Name = EdtFullName.Text;
                                 local.About = EdtAbout.Text;
-                                local.Facebook = EdtFacebook.Text;
                                 local.Website = EdtWebsite.Text;
 
                                 //TextSanitizer aboutSanitizer = new TextSanitizer(HomeActivity.GetInstance()?.ProfileFragment.TxtAbout, this);
                                 //aboutSanitizer.Load(Methods.FunString.DecodeString(EdtAbout.Text));
-                                 
+
                                 SqLiteDatabase database = new SqLiteDatabase();
                                 database.InsertOrUpdate_DataMyInfo(local);
                             }
@@ -293,12 +286,11 @@ namespace DeepSound.Activities.MyProfile
                             Toast.MakeText(this, GetText(Resource.String.Lbl_UpdatedSuccessfully), ToastLength.Short)?.Show();
                             AndHUD.Shared.Dismiss(this);
 
-                           
+
                             Intent returnIntent = new Intent();
 
                             returnIntent.PutExtra("name", dictionary["name"]);
                             returnIntent.PutExtra("about_me", dictionary["about_me"]);
-                            returnIntent.PutExtra("facebook", dictionary["facebook"]);
                             returnIntent.PutExtra("website", dictionary["website"]);
 
                             SetResult(Result.Ok, returnIntent);
@@ -322,7 +314,7 @@ namespace DeepSound.Activities.MyProfile
                 AndHUD.Shared.Dismiss(this);
             }
         }
-         
+
         #endregion
 
         private void GetMyInfoData()
@@ -340,8 +332,7 @@ namespace DeepSound.Activities.MyProfile
                 {
                     EdtFullName.Text = dataUser.Name;
                     EdtAbout.Text = Methods.FunString.DecodeString(dataUser.About);
-                    EdtFacebook.Text = dataUser.Facebook; 
-                    EdtWebsite.Text = dataUser.Website; 
+                    EdtWebsite.Text = dataUser.Website;
                 }
             }
             catch (Exception e)

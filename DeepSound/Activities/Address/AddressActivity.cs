@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Gms.Ads;
@@ -22,9 +17,14 @@ using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Address;
 using DeepSoundClient.Requests;
+using Google.Android.Material.Dialog;
 using Google.Android.Material.FloatingActionButton;
-using MaterialDialogsCore;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Address
@@ -178,7 +178,7 @@ namespace DeepSound.Activities.Address
                 ActionButton = FindViewById<FloatingActionButton>(Resource.Id.floatingActionButtonView);
                 ActionButton.Visibility = ViewStates.Visible;
                 ActionButton.Click += ActionButtonOnClick;
-                 
+
                 MAdView = FindViewById<AdView>(Resource.Id.adView);
                 AdsGoogle.InitAdView(MAdView, MRecycler);
             }
@@ -279,10 +279,10 @@ namespace DeepSound.Activities.Address
                     var itemUser = MAdapter.GetItem(e.Position);
                     if (itemUser != null)
                     {
-                        var dialog = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                        dialog.Title(GetText(Resource.String.Lbl_DeleteAddress));
-                        dialog.Content(GetText(Resource.String.Lbl_AreYouSureDeleteAddress));
-                        dialog.PositiveText(GetText(Resource.String.Lbl_Yes)).OnPositive((materialDialog, action) =>
+                        var dialog = new MaterialAlertDialogBuilder(this);
+                        dialog.SetTitle(GetText(Resource.String.Lbl_DeleteAddress));
+                        dialog.SetMessage(GetText(Resource.String.Lbl_AreYouSureDeleteAddress));
+                        dialog.SetPositiveButton(GetText(Resource.String.Lbl_Yes), (materialDialog, action) =>
                         {
                             try
                             {
@@ -301,10 +301,10 @@ namespace DeepSound.Activities.Address
                                 Methods.DisplayReportResultTrack(exception);
                             }
                         });
-                        dialog.NegativeText(GetText(Resource.String.Lbl_No)).OnNegative(new MyMaterialDialog());
-                        dialog.AlwaysCallSingleChoiceCallback();
-                        dialog.Build().Show();
-                       
+                        dialog.SetNegativeButton(GetText(Resource.String.Lbl_No), new MaterialDialogUtils());
+
+                        dialog.Show();
+
                     }
                 }
                 else
@@ -328,7 +328,7 @@ namespace DeepSound.Activities.Address
                     var intent = new Intent(this, typeof(EditAddressActivity));
                     intent.PutExtra("ItemData", JsonConvert.SerializeObject(item));
                     StartActivity(intent);
-                } 
+                }
             }
             catch (Exception exception)
             {
@@ -365,7 +365,7 @@ namespace DeepSound.Activities.Address
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         //Scroll
         private void MainScrollEventOnLoadMoreEvent(object sender, EventArgs e)
         {
@@ -449,7 +449,7 @@ namespace DeepSound.Activities.Address
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -482,7 +482,7 @@ namespace DeepSound.Activities.Address
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoAddress);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }
@@ -510,27 +510,5 @@ namespace DeepSound.Activities.Address
 
         #endregion
 
-        #region MaterialDialog
-
-        public void OnClick(MaterialDialog p0, DialogAction p1)
-        {
-            try
-            {
-                if (p1 == DialogAction.Positive)
-                {
-                    
-                }
-                else if (p1 == DialogAction.Negative)
-                {
-                    p0.Dismiss();
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-        #endregion
     }
 }

@@ -1,10 +1,10 @@
-﻿using System;
-using Android.Content;
+﻿using Android.Content;
 using Android.OS;
 using Android.Print;
 using Android.Webkit;
 using Java.IO;
 using Java.Lang;
+using System;
 using Console = System.Console;
 using Exception = System.Exception;
 
@@ -50,7 +50,15 @@ namespace DeepSound.Helpers.Utils
         {
             MWebView = new WebView(MContext);
             MWebView.SetWebViewClient(new WebViewClientAnonymousInnerClass(this));
-            MWebView.LoadData(MHtmlString, "text/HTML", "UTF-8");
+
+            if (MHtmlString.Contains("http"))
+            {
+                MWebView.LoadUrl(MHtmlString);
+            }
+            else
+            {
+                MWebView.LoadData(MHtmlString, "text/HTML", "UTF-8");
+            }
         }
 
         private class WebViewClientAnonymousInnerClass : WebViewClient
@@ -63,7 +71,7 @@ namespace DeepSound.Helpers.Utils
             }
 
             public override bool ShouldOverrideUrlLoading(WebView view, IWebResourceRequest request)
-            { 
+            {
                 try
                 {
                     return base.ShouldOverrideUrlLoading(view, request);
@@ -83,8 +91,8 @@ namespace DeepSound.Helpers.Utils
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e); 
-                } 
+                    Console.WriteLine(e);
+                }
             }
 
             public override void OnPageFinished(WebView view, string url)
@@ -100,7 +108,7 @@ namespace DeepSound.Helpers.Utils
                     {
                         // Get a PrintManager instance
                         PrintManager printManager = (PrintManager)Instance.MContext.GetSystemService(Context.PrintService);
-                        
+
                         string jobName = AppSettings.ApplicationName + " Document";
 
                         // Get a print adapter instance
@@ -124,7 +132,7 @@ namespace DeepSound.Helpers.Utils
                         //Console.WriteLine(printJob);
                         if (printManager != null)
                         {
-                            var ddd = printManager.Print(jobName, printAdapter, OuterInstance.PdfPrintAttrs); 
+                            var ddd = printManager.Print(jobName, printAdapter, OuterInstance.PdfPrintAttrs);
                         }
 
                         //printAdapter.OnLayout(null, OuterInstance.PdfPrintAttrs, null, null, null);
@@ -145,7 +153,7 @@ namespace DeepSound.Helpers.Utils
             //{
             //    public LayoutResultCallbackAnonymousInnerClass(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
             //    {
-                    
+
             //    }
             //}
 
@@ -210,7 +218,7 @@ namespace DeepSound.Helpers.Utils
                 MHtmlString = htmlString;
                 MPdfFile = file;
                 MIsCurrentlyConverting = true;
-               RunOnUiThread(this);
+                RunOnUiThread(this);
             }
             catch (Exception exception)
             {
@@ -285,4 +293,4 @@ namespace DeepSound.Helpers.Utils
         }
 
     }
-} 
+}

@@ -1,33 +1,33 @@
-﻿using System;
-using Android;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Gms.Ads.DoubleClick;
+using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using AndroidHUD;
+using AndroidX.Activity.Result;
+using AndroidX.AppCompat.Content.Res;
+using AndroidX.AppCompat.Widget;
 using AT.Markushi.UI;
-using Java.IO;
+using Bumptech.Glide;
+using Bumptech.Glide.Request;
+using Com.Canhub.Cropper;
+using DeepSound.Activities.Base;
+using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Utils;
-using Console = System.Console;
-using Uri = Android.Net.Uri;
-using Android.Graphics;
-using AndroidHUD;
-using AndroidX.AppCompat.Content.Res;
-using AndroidX.AppCompat.Widget;
 using DeepSoundClient.Requests;
-using DeepSound.Activities.Base;
-using DeepSound.Helpers.Ads;
-using TheArtOfDev.Edmodo.Cropper;
+using System;
+using Console = System.Console;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Payment
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class PaymentLocalActivity : BaseActivity
+    public class PaymentLocalActivity : BaseActivity, IActivityResultCallback
     {
         #region Variables Basic
 
@@ -35,9 +35,10 @@ namespace DeepSound.Payment
         private ImageView Image;
         private CircleButton ImageClose;
         private AppCompatButton BtnAddImage, BtnApply;
-        private string Id , Price, PayType, PathImage = "";
+        private string Id, Price, PayType, PathImage = "";
         private PublisherAdView PublisherAdView;
-      
+        private DialogGalleryController GalleryController;
+
         #endregion
 
         #region General
@@ -61,6 +62,7 @@ namespace DeepSound.Payment
                 //Get Value And Set Toolbar
                 InitComponent();
                 InitToolbar();
+                GalleryController = new DialogGalleryController(this, this);
             }
             catch (Exception e)
             {
@@ -171,7 +173,7 @@ namespace DeepSound.Payment
                 bankDescription = bankDescription?.Replace("&lt;", "<").Replace("&gt;", ">");
                 var splitText = bankDescription?.Split(new[] { "<p>", "</p>" }, StringSplitOptions.None);
                 Console.WriteLine(splitText);
-                  
+
                 if (splitText != null)
                 {
                     CardNumber.Text = splitText[1];
@@ -248,7 +250,7 @@ namespace DeepSound.Payment
         {
             try
             {
-                OpenDialogGallery();
+                GalleryController?.OpenDialogGallery();
             }
             catch (Exception exception)
             {
@@ -276,7 +278,7 @@ namespace DeepSound.Payment
                     {
                         Toast.MakeText(this, GetText(Resource.String.Lbl_YourWasReceiptSuccessfullyUploaded), ToastLength.Long)?.Show();
 
-                        AndHUD.Shared.Dismiss(this); 
+                        AndHUD.Shared.Dismiss(this);
                         Finish();
                     }
                     else
@@ -313,43 +315,6 @@ namespace DeepSound.Payment
 
         #region Permissions && Result
 
-        //Result
-        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
-        {
-            try
-            {
-                base.OnActivityResult(requestCode, resultCode, data);
-                if (requestCode == 108 || requestCode == CropImage.CropImageActivityRequestCode)
-                {
-                    if (Methods.CheckConnectivity())
-                    {
-                        var result = CropImage.GetActivityResult(data);
-                        if (result.IsSuccessful)
-                        {
-                            var resultPathImage = result.Uri.Path;
-                            if (!string.IsNullOrEmpty(resultPathImage))
-                            {
-                                PathImage = resultPathImage;
-                                GlideImageLoader.LoadImage(this, resultPathImage, Image, ImageStyle.CenterCrop, ImagePlaceholders.Drawable);
-                            }
-                        }
-                        else
-                        {
-                            Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
-                        }
-                    }
-                    else
-                    {
-                        Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
         //Permissions
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
         {
@@ -361,7 +326,7 @@ namespace DeepSound.Payment
                 {
                     if (grantResults.Length > 0 && grantResults[0] == Permission.Granted)
                     {
-                        OpenDialogGallery();
+                        GalleryController?.OpenDialogGallery();
                     }
                     else
                     {
@@ -375,48 +340,34 @@ namespace DeepSound.Payment
             }
         }
 
-
         #endregion
 
-        private void OpenDialogGallery()
+        #region Result Gallery
+
+        public void OnActivityResult(Java.Lang.Object p0)
         {
             try
             {
-                // Check if we're running on Android 5.0 or higher
-                if ((int)Build.VERSION.SdkInt < 23)
+                if (p0 is CropImageView.CropResult result)
                 {
-                    Methods.Path.Chack_MyFolder();
-
-                    //Open Image 
-                    var myUri = Uri.FromFile(new File(Methods.Path.FolderDiskImage, Methods.GetTimestamp(DateTime.Now) + ".jpeg"));
-                    CropImage.Activity()
-                        .SetInitialCropWindowPaddingRatio(0)
-                        .SetAutoZoomEnabled(true)
-                        .SetMaxZoom(4)
-                        .SetGuidelines(CropImageView.Guidelines.On)
-                        .SetCropMenuCropButtonTitle(GetText(Resource.String.Lbl_Crop))
-                        .SetOutputUri(myUri).Start(this);
-                }
-                else
-                {
-                    if (!CropImage.IsExplicitCameraPermissionRequired(this) && PermissionsController.CheckPermissionStorage() && CheckSelfPermission(Manifest.Permission.Camera) == Permission.Granted)
+                    if (result.IsSuccessful)
                     {
-                        Methods.Path.Chack_MyFolder();
-
-                        //Open Image 
-                        var myUri = Uri.FromFile(new File(Methods.Path.FolderDiskImage, Methods.GetTimestamp(DateTime.Now) + ".jpeg"));
-                        CropImage.Activity()
-                            .SetInitialCropWindowPaddingRatio(0)
-                            .SetAutoZoomEnabled(true)
-                            .SetMaxZoom(4)
-                            .SetGuidelines(CropImageView.Guidelines.On)
-                            .SetCropMenuCropButtonTitle(GetText(Resource.String.Lbl_Crop))
-                            .SetOutputUri(myUri).Start(this);
+                        var resultUri = result.UriContent;
+                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        if (!string.IsNullOrEmpty(filepath))
+                        {
+                            //Do something with your Uri
+                            PathImage = filepath;
+                            Glide.With(this).Load(filepath).Apply(new RequestOptions()).Into(Image);
+                        }
+                        else
+                        {
+                            Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
+                        }
                     }
                     else
                     {
-                        //request Code 108
-                        new PermissionsController(this).RequestPermission(108);
+                        Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
                     }
                 }
             }
@@ -425,6 +376,8 @@ namespace DeepSound.Payment
                 Methods.DisplayReportResultTrack(e);
             }
         }
+
+        #endregion
 
     }
 }

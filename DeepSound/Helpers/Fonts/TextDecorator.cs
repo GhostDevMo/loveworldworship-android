@@ -1,15 +1,15 @@
-﻿using System;
-using System.Linq;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.Text;
 using Android.Text.Style;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using DeepSound.Helpers.Utils;
+using System;
+using System.Linq;
 
 namespace DeepSound.Helpers.Fonts
-{ 
+{
     public class TextDecorator
     {
         public string Content;

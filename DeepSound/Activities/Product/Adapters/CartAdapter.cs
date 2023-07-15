@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -12,6 +8,10 @@ using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Product;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using IList = System.Collections.IList;
 
 namespace DeepSound.Activities.Product.Adapters
@@ -51,7 +51,7 @@ namespace DeepSound.Activities.Product.Adapters
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -67,13 +67,13 @@ namespace DeepSound.Activities.Product.Adapters
                     {
                         var image = item.Product.Images.FirstOrDefault()?.Image;
                         GlideImageLoader.LoadImage(ActivityContext, image, holder.Image, ImageStyle.RoundedCrop, ImagePlaceholders.Drawable);
-                      
+
                         holder.Name.Text = Methods.FunString.DecodeString(item.Product.Title);
                         holder.Username.Text = DeepSoundTools.GetNameFinal(item.Product.UserData?.UserDataClass);
-                     
+
                         holder.CountQty.Text = ActivityContext.GetText(Resource.String.Lbl_Qty) + " : " + item.Units;
                         holder.Price.Text = "$ " + item.Product.FormattedPrice;
-                        
+
                     }
                 }
             }
@@ -149,7 +149,7 @@ namespace DeepSound.Activities.Product.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString())
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString())
                 .Apply(new RequestOptions().CircleCrop());
         }
     }
@@ -170,7 +170,7 @@ namespace DeepSound.Activities.Product.Adapters
 
         #endregion
 
-        public CartAdapterViewHolder(View itemView, Action<CartAdapterClickEventArgs> selectQtyClickListener, Action<CartAdapterClickEventArgs> removeButtonClickListener,  Action<CartAdapterClickEventArgs> clickListener, Action<CartAdapterClickEventArgs> longClickListener) : base(itemView)
+        public CartAdapterViewHolder(View itemView, Action<CartAdapterClickEventArgs> selectQtyClickListener, Action<CartAdapterClickEventArgs> removeButtonClickListener, Action<CartAdapterClickEventArgs> clickListener, Action<CartAdapterClickEventArgs> longClickListener) : base(itemView)
         {
             try
             {

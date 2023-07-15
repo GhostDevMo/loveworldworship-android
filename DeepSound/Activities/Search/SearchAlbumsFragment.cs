@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -17,6 +14,9 @@ using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Albums;
 using Newtonsoft.Json;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace DeepSound.Activities.Search
 {
@@ -60,7 +60,7 @@ namespace DeepSound.Activities.Search
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -107,10 +107,10 @@ namespace DeepSound.Activities.Search
         {
             try
             {
-                MAdapter = new HAlbumsAdapter(Activity){AlbumsList = new ObservableCollection<DataAlbumsObject>()};
+                MAdapter = new HAlbumsAdapter(Activity) { AlbumsList = new ObservableCollection<DataAlbumsObject>() };
                 MAdapter.ItemClick += MAdapterItemClick;
                 LayoutManager = new LinearLayoutManager(Activity);
-                MRecycler.SetLayoutManager(LayoutManager); 
+                MRecycler.SetLayoutManager(LayoutManager);
                 MRecycler.HasFixedSize = true;
                 MRecycler.SetItemViewCacheSize(10);
                 MRecycler.GetLayoutManager().ItemPrefetchEnabled = true;
@@ -131,7 +131,7 @@ namespace DeepSound.Activities.Search
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSearchResult);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += ContextSearch.TryAgainButton_Click;
                 }
             }
@@ -140,7 +140,7 @@ namespace DeepSound.Activities.Search
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #endregion
 
         #region Event
@@ -156,7 +156,7 @@ namespace DeepSound.Activities.Search
                 {
                     ContextSearch.OffsetAlbums = item.Id.ToString();
                     ContextSearch.StartApiService();
-                } 
+                }
             }
             catch (Exception exception)
             {
@@ -168,12 +168,12 @@ namespace DeepSound.Activities.Search
         private void MAdapterItemClick(object sender, HAlbumsAdapterClickEventArgs e)
         {
             try
-            { 
+            {
                 var item = MAdapter.GetItem(e.Position);
                 if (item != null)
                 {
                     Bundle bundle = new Bundle();
-                    bundle.PutString("ItemData", JsonConvert.SerializeObject(item)); 
+                    bundle.PutString("ItemData", JsonConvert.SerializeObject(item));
                     bundle.PutString("AlbumsId", item.Id.ToString());
 
                     AlbumsFragment = new AlbumsFragment

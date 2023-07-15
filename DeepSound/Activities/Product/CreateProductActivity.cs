@@ -1,19 +1,16 @@
 ﻿using Android.App;
 using Android.Content;
-using Android.OS;
-using Android.Views;
-using Android.Widget;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Android;
 using Android.Content.PM;
 using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
+using Android.OS;
+using Android.Views;
+using Android.Widget;
 using AndroidHUD;
+using AndroidX.Activity.Result;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.RecyclerView.Widget;
+using Com.Canhub.Cropper;
 using DeepSound.Activities.Base;
 using DeepSound.Activities.Playlist.Adapters;
 using DeepSound.Helpers.Ads;
@@ -23,18 +20,19 @@ using DeepSound.SQLite;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.Product;
 using DeepSoundClient.Requests;
-using Java.IO;
-using MaterialDialogsCore;
+using Google.Android.Material.Dialog;
 using Newtonsoft.Json;
-using TheArtOfDev.Edmodo.Cropper;
-using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
-using Uri = Android.Net.Uri;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Console = System.Console;
+using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Product
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
-    public class CreateProductActivity : BaseActivity, MaterialDialog.IListCallback
+    public class CreateProductActivity : BaseActivity, IDialogListCallBack, IActivityResultCallback
     {
         #region Variables Basic
 
@@ -46,6 +44,7 @@ namespace DeepSound.Activities.Product
         private RecyclerView MRecycler;
         private LinearLayoutManager LayoutManager;
         private List<SoundDataObject> LatestSongsList;
+        private DialogGalleryController GalleryController;
 
         #endregion
 
@@ -68,6 +67,7 @@ namespace DeepSound.Activities.Product
                 InitToolbar();
                 SetRecyclerViewAdapters();
                 GetMyInfoData();
+                GalleryController = new DialogGalleryController(this, this);
             }
             catch (Exception e)
             {
@@ -175,14 +175,14 @@ namespace DeepSound.Activities.Product
                 TxtCategory = FindViewById<EditText>(Resource.Id.CategoryText);
 
                 MRecycler = (RecyclerView)FindViewById(Resource.Id.imageRecyler);
-                
+
                 Methods.SetColorEditText(TxtTitle, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(TxtDescription, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(TxtTags, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(TxtTotalItem, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(TxtPrice, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(TxtRelatedToSong, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
-                Methods.SetColorEditText(TxtCategory, DeepSoundTools.IsTabDark() ? Color.White : Color.Black); 
+                Methods.SetColorEditText(TxtCategory, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
 
                 Methods.SetFocusable(TxtRelatedToSong);
                 Methods.SetFocusable(TxtCategory);
@@ -210,7 +210,7 @@ namespace DeepSound.Activities.Product
                     SupportActionBar.SetDisplayHomeAsUpEnabled(true);
                     SupportActionBar.SetHomeButtonEnabled(true);
                     SupportActionBar.SetDisplayShowHomeEnabled(true);
-                  
+
                     var icon = AppCompatResources.GetDrawable(this, AppSettings.FlowDirectionRightToLeft ? Resource.Drawable.icon_back_arrow_right : Resource.Drawable.icon_back_arrow_left);
                     icon?.SetTint(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                     SupportActionBar.SetHomeAsUpIndicator(icon);
@@ -284,15 +284,15 @@ namespace DeepSound.Activities.Product
             {
                 PublisherAdView?.Destroy();
 
-                TxtSave = null!;
-                TxtTitle = null!;
-                TxtPrice = null!;
-                TxtCategory = null!;
-                
-                MAdapter = null!;
-                MRecycler = null!;
-                LayoutManager = null!;
-                PublisherAdView = null!;
+                TxtSave = null;
+                TxtTitle = null;
+                TxtPrice = null;
+                TxtCategory = null;
+
+                MAdapter = null;
+                MRecycler = null;
+                LayoutManager = null;
+                PublisherAdView = null;
                 CategoryId = "";
                 TypeDialog = "";
             }
@@ -324,7 +324,7 @@ namespace DeepSound.Activities.Product
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void MAdapterItemClick(object sender, AttachmentsAdapterClickEventArgs e)
         {
             try
@@ -336,7 +336,7 @@ namespace DeepSound.Activities.Product
                     if (item == null) return;
 
                     if (item.TypeAttachment != "Default") return;
-                    OpenDialogGallery(); //requestCode >> 500 => Image Gallery
+                    GalleryController?.OpenDialogGallery(); //requestCode >> 500 => Image Gallery
                 }
             }
             catch (Exception exception)
@@ -344,26 +344,26 @@ namespace DeepSound.Activities.Product
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void TxtRelatedToSongOnTouch(object sender, View.TouchEventArgs e)
         {
             try
             {
                 if (e?.Event?.Action != MotionEventActions.Up) return;
-                 
+
                 if (LatestSongsList?.Count > 0)
                 {
                     TypeDialog = "RelatedToSong";
 
-                    var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                    var dialogList = new MaterialAlertDialogBuilder(this);
 
                     var arrayAdapter = LatestSongsList.Select(item => Methods.FunString.DecodeString(item.Title)).ToList();
 
-                    dialogList.Title(GetText(Resource.String.Lbl_RelatedToSong)).TitleColorRes(Resource.Color.primary);
-                    dialogList.Items(arrayAdapter);
-                    dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                    dialogList.AlwaysCallSingleChoiceCallback();
-                    dialogList.ItemsCallback(this).Build().Show();
+                    dialogList.SetTitle(GetText(Resource.String.Lbl_RelatedToSong));
+                    dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                    dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                    dialogList.Show();
                 }
                 else
                 {
@@ -375,7 +375,7 @@ namespace DeepSound.Activities.Product
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void TxtCategoryOnClick(object sender, View.TouchEventArgs e)
         {
             try
@@ -386,15 +386,15 @@ namespace DeepSound.Activities.Product
                 {
                     TypeDialog = "Categories";
 
-                    var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                    var dialogList = new MaterialAlertDialogBuilder(this);
 
                     var arrayAdapter = CategoriesController.ListCategoriesProducts.Select(item => item.CategoriesName).ToList();
 
-                    dialogList.Title(GetText(Resource.String.Lbl_SelectCategories)).TitleColorRes(Resource.Color.primary);
-                    dialogList.Items(arrayAdapter);
-                    dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                    dialogList.AlwaysCallSingleChoiceCallback();
-                    dialogList.ItemsCallback(this).Build().Show();
+                    dialogList.SetTitle(GetText(Resource.String.Lbl_SelectCategories));
+                    dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                    dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                    dialogList.Show();
                 }
                 else
                 {
@@ -406,7 +406,7 @@ namespace DeepSound.Activities.Product
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-        
+
         private async void TxtSaveOnClick(object sender, EventArgs e)
         {
             try
@@ -428,13 +428,13 @@ namespace DeepSound.Activities.Product
                     Toast.MakeText(this, GetText(Resource.String.Lbl_PleaseEnterDescription), ToastLength.Short)?.Show();
                     return;
                 }
-                   
+
                 if (TxtDescription.Text.Length < 10)
                 {
                     Toast.MakeText(this, GetText(Resource.String.Lbl_DescriptionIsShort), ToastLength.Short)?.Show();
                     return;
                 }
-                   
+
                 if (string.IsNullOrEmpty(TxtTags.Text))
                 {
                     Toast.MakeText(this, GetText(Resource.String.Lbl_PleaseEnterTags), ToastLength.Short)?.Show();
@@ -464,7 +464,7 @@ namespace DeepSound.Activities.Product
                     Toast.MakeText(this, GetText(Resource.String.Lbl_PleaseEnterCategory), ToastLength.Short)?.Show();
                     return;
                 }
-                 
+
                 var list = MAdapter.AttachmentList.Where(a => a.TypeAttachment != "Default").ToList();
                 if (list.Count == 0)
                 {
@@ -482,7 +482,7 @@ namespace DeepSound.Activities.Product
                         {
                             AndHUD.Shared.Dismiss(this);
                             Console.WriteLine(result.Message);
-                               
+
                             Intent intent = new Intent();
                             intent.PutExtra("itemData", JsonConvert.SerializeObject(result.Data));
                             SetResult(Result.Ok, intent);
@@ -507,46 +507,6 @@ namespace DeepSound.Activities.Product
 
         #region Permissions && Result
 
-        //Result
-        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
-        {
-            try
-            {
-                base.OnActivityResult(requestCode, resultCode, data);
-
-                if (requestCode == CropImage.CropImageActivityRequestCode && resultCode == Result.Ok)
-                {
-                    var result = CropImage.GetActivityResult(data); 
-                    if (result.IsSuccessful)
-                    {
-                        var resultUri = result.Uri;
-
-                        if (!string.IsNullOrEmpty(resultUri.Path))
-                        {
-                            var productPathImage = resultUri.Path;
-                            var attach = new AttachmentsObject
-                            {
-                                Id = MAdapter.AttachmentList.Count + 1,
-                                TypeAttachment = "image[]",
-                                FileSimple = productPathImage,
-                                FileUrl = productPathImage
-                            };
-
-                            MAdapter.Add(attach);
-                        }
-                        else
-                        {
-                            Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
-                        }
-                    } 
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
         //Permissions
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
         {
@@ -557,13 +517,13 @@ namespace DeepSound.Activities.Product
                 {
                     if (grantResults.Length > 0 && grantResults[0] == Permission.Granted)
                     {
-                        OpenDialogGallery();
+                        GalleryController?.OpenDialogGallery();
                     }
                     else
                     {
                         Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
                     }
-                } 
+                }
             }
             catch (Exception e)
             {
@@ -575,7 +535,7 @@ namespace DeepSound.Activities.Product
 
         #region MaterialDialog
 
-        public void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+        public void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
             {
@@ -595,46 +555,42 @@ namespace DeepSound.Activities.Product
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #endregion
-        
-        private void OpenDialogGallery()
+
+        #region Result Gallery
+
+        public void OnActivityResult(Java.Lang.Object p0)
         {
             try
             {
-                if ((int) Build.VERSION.SdkInt < 23)
+                if (p0 is CropImageView.CropResult result)
                 {
-                    Methods.Path.Chack_MyFolder();
-
-                    //Open Image 
-                    var myUri = Uri.FromFile(new File(Methods.Path.FolderDiskImage, Methods.GetTimestamp(DateTime.Now) + ".jpg"));
-                    CropImage.Activity()
-                        .SetInitialCropWindowPaddingRatio(0)
-                        .SetAutoZoomEnabled(true)
-                        .SetMaxZoom(4)
-                        .SetGuidelines(CropImageView.Guidelines.On)
-                        .SetCropMenuCropButtonTitle(GetText(Resource.String.Lbl_Crop))
-                        .SetOutputUri(myUri).Start(this);
-                }
-                else
-                {
-                    if (!CropImage.IsExplicitCameraPermissionRequired(this) && PermissionsController.CheckPermissionStorage() && CheckSelfPermission(Manifest.Permission.Camera) == Permission.Granted)
+                    if (result.IsSuccessful)
                     {
-                        Methods.Path.Chack_MyFolder();
+                        var resultUri = result.UriContent;
+                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        if (!string.IsNullOrEmpty(filepath))
+                        {
+                            //Do something with your Uri 
+                            var attach = new AttachmentsObject
+                            {
+                                Id = MAdapter.AttachmentList.Count + 1,
+                                TypeAttachment = "image[]",
+                                FileSimple = filepath,
+                                FileUrl = filepath
+                            };
 
-                        //Open Image 
-                        var myUri = Uri.FromFile(new File(Methods.Path.FolderDiskImage, Methods.GetTimestamp(DateTime.Now) + ".jpg"));
-                        CropImage.Activity()
-                            .SetInitialCropWindowPaddingRatio(0)
-                            .SetAutoZoomEnabled(true)
-                            .SetMaxZoom(4)
-                            .SetGuidelines(CropImageView.Guidelines.On)
-                            .SetCropMenuCropButtonTitle(GetText(Resource.String.Lbl_Crop))
-                            .SetOutputUri(myUri).Start(this);
+                            MAdapter.Add(attach);
+                        }
+                        else
+                        {
+                            Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
+                        }
                     }
                     else
                     {
-                        new PermissionsController(this).RequestPermission(108);
+                        Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
                     }
                 }
             }
@@ -643,7 +599,9 @@ namespace DeepSound.Activities.Product
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
+        #endregion
+
         private void GetMyInfoData()
         {
             try
@@ -654,13 +612,13 @@ namespace DeepSound.Activities.Product
                     sqlEntity.GetDataMyInfo();
                 }
 
-                LatestSongsList = ListUtils.MyUserInfoList?.FirstOrDefault()?.Latestsongs;
+                LatestSongsList = ListUtils.MyUserInfoList?.FirstOrDefault()?.Latestsongs?.FirstOrDefault();
 
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
-        } 
+        }
     }
 }

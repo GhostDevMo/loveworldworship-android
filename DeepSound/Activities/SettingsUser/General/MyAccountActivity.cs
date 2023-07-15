@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using MaterialDialogsCore;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Gms.Ads.DoubleClick;
@@ -21,13 +17,17 @@ using DeepSound.Helpers.Utils;
 using DeepSound.SQLite;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Requests;
+using Google.Android.Material.Dialog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Exception = System.Exception;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser.General
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class MyAccountActivity : BaseActivity, MaterialDialog.IListCallback
+    public class MyAccountActivity : BaseActivity, IDialogListCallBack
     {
         #region Variables Basic
 
@@ -310,7 +310,7 @@ namespace DeepSound.Activities.SettingsUser.General
                         {"age", EdtAge.Text},
                     };
 
-                     var (apiStatus, respond) = await RequestsAsync.User.UpdateGeneralAsync(UserDetails.UserId.ToString(), dictionary);
+                    var (apiStatus, respond) = await RequestsAsync.User.UpdateGeneralAsync(UserDetails.UserId.ToString(), dictionary);
                     if (apiStatus == 200)
                     {
                         if (respond is MessageObject result)
@@ -362,17 +362,17 @@ namespace DeepSound.Activities.SettingsUser.General
         {
             try
             {
-                if (e.Event?.Action != MotionEventActions.Down) return;
+                if (e.Event?.Action != MotionEventActions.Up) return;
 
                 var countriesArray = DeepSoundTools.GetCountryList(this);
-                var arrayAdapter = countriesArray.Select(item => item.Value).ToList();  
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                 
-                dialogList.Title(GetText(Resource.String.Lbl_Location));
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                var arrayAdapter = countriesArray.Select(item => item.Value).ToList();
+                var dialogList = new MaterialAlertDialogBuilder(this);
+
+                dialogList.SetTitle(GetText(Resource.String.Lbl_Location));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -418,6 +418,7 @@ namespace DeepSound.Activities.SettingsUser.General
                             IdGender = "female";
                             break;
                     }
+
                 }
             }
             catch (Exception e)
@@ -427,16 +428,13 @@ namespace DeepSound.Activities.SettingsUser.General
         }
 
         #region MaterialDialog
-        
-        public void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+
+        public void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
             {
-                var id = position + 1;
-                var text = itemString;
-
-                Country = id.ToString();
-                EdtCountry.Text = text;
+                Country = DeepSoundTools.GetCountryList(this).FirstOrDefault(a => a.Value == itemString).Key;
+                EdtCountry.Text = itemString;
             }
             catch (Exception e)
             {

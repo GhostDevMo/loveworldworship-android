@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using DeepSound.Helpers.Fonts;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Address;
+using System;
+using System.Collections.ObjectModel;
 
 namespace DeepSound.Activities.Address.Adapters
 {
@@ -22,13 +22,13 @@ namespace DeepSound.Activities.Address.Adapters
         public ObservableCollection<AddressDataObject> AddressList = new ObservableCollection<AddressDataObject>();
         private readonly string TypeSystem = "Edit";  //Edit , Select
 
-        public AddressAdapter(Activity context , string typeSystem = "Edit")
+        public AddressAdapter(Activity context, string typeSystem = "Edit")
         {
             try
             {
                 //HasStableIds = true;
                 ActivityContext = context;
-                TypeSystem= typeSystem;
+                TypeSystem = typeSystem;
             }
             catch (Exception e)
             {
@@ -51,7 +51,7 @@ namespace DeepSound.Activities.Address.Adapters
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -178,9 +178,9 @@ namespace DeepSound.Activities.Address.Adapters
                 Country = MainView.FindViewById<TextView>(Resource.Id.country);
                 CheckBox = MainView.FindViewById<CheckBox>(Resource.Id.check);
 
-                FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeRegular, Edit, FontAwesomeIcon.Edit); 
+                FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeRegular, Edit, FontAwesomeIcon.Edit);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeRegular, Delete, FontAwesomeIcon.TrashAlt);
-                 
+
                 //Event  
                 Edit.Click += (sender, e) => editClickListener(new AddressAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });
                 Delete.Click += (sender, e) => deleteClickListener(new AddressAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });

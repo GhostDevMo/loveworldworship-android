@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
@@ -25,6 +19,12 @@ using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Common;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Requests;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser.General
@@ -41,7 +41,7 @@ namespace DeepSound.Activities.SettingsUser.General
         private TextView IconPaymentHistory;
         private RecyclerView MRecycler;
         private PaymentHistoryAdapter MAdapter;
-        private NestedScrollViewOnScroll MainScrollEvent; 
+        private NestedScrollViewOnScroll MainScrollEvent;
 
         #endregion
 
@@ -135,7 +135,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
 
         #region Menu
@@ -161,7 +161,7 @@ namespace DeepSound.Activities.SettingsUser.General
             {
                 SendText = FindViewById<TextView>(Resource.Id.toolbar_title);
                 CountBalanceText = FindViewById<TextView>(Resource.Id.countBalanceText);
-             
+
                 IconAmount = FindViewById<TextView>(Resource.Id.IconAmount);
                 AmountEditText = FindViewById<EditText>(Resource.Id.AmountEditText);
 
@@ -175,7 +175,7 @@ namespace DeepSound.Activities.SettingsUser.General
 
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeLight, IconAmount, FontAwesomeIcon.HandHoldingUsd);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeBrands, IconPayPalEmail, FontAwesomeIcon.Paypal);
-                 
+
                 Methods.SetColorEditText(AmountEditText, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(PayPalEmailEditText, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
             }
@@ -310,7 +310,7 @@ namespace DeepSound.Activities.SettingsUser.General
                     {
                         //Show a progress
                         AndHUD.Shared.Show(this, GetText(Resource.String.Lbl_Loading));
-                        
+
                         var (apiStatus, respond) = await RequestsAsync.Common.WithdrawAsync(AmountEditText.Text, PayPalEmailEditText.Text);
                         if (apiStatus == 200)
                         {
@@ -320,7 +320,7 @@ namespace DeepSound.Activities.SettingsUser.General
                                 Toast.MakeText(this, GetText(Resource.String.Lbl_RequestSentWithdrawals), ToastLength.Long)?.Show();
                             }
                         }
-                        else 
+                        else
                         {
                             Methods.DisplayAndHudErrorResult(this, respond);
                         }
@@ -345,14 +345,14 @@ namespace DeepSound.Activities.SettingsUser.General
             try
             {
                 if (ListUtils.MyUserInfoList?.Count == 0)
-                    await ApiRequest.GetInfoData(this ,UserDetails.UserId.ToString());
+                    await ApiRequest.GetInfoData(this, UserDetails.UserId.ToString());
 
                 var local = ListUtils.MyUserInfoList?.FirstOrDefault();
                 if (local != null)
                 {
                     CountBalance = Convert.ToDouble(local.Balance);
                     CountBalanceText.Text = "$" + CountBalance.ToString(CultureInfo.InvariantCulture);
-                     
+
                     StartApiService();
                 }
             }
@@ -361,7 +361,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #region Load Blocks 
 
         private void StartApiService(string offset = "0")
@@ -371,7 +371,7 @@ namespace DeepSound.Activities.SettingsUser.General
             else
                 PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => LoadData(offset) });
         }
-         
+
         private async Task LoadData(string offset = "0")
         {
             if (MainScrollEvent.IsLoading)
@@ -415,35 +415,35 @@ namespace DeepSound.Activities.SettingsUser.General
                 RunOnUiThread(ShowEmptyPage);
             }
             else
-            { 
-                Toast.MakeText(this, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show(); 
+            {
+                Toast.MakeText(this, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
             }
             MainScrollEvent.IsLoading = false;
         }
-         
+
         private void ShowEmptyPage()
         {
             try
-            { 
+            {
                 if (MAdapter.WithdrawalsList.Count > 0)
                 {
                     MRecycler.Visibility = ViewStates.Visible;
-                    PaymentHistoryLinear.Visibility = ViewStates.Visible; 
+                    PaymentHistoryLinear.Visibility = ViewStates.Visible;
                 }
                 else
                 {
                     MRecycler.Visibility = ViewStates.Gone;
-                    PaymentHistoryLinear.Visibility = ViewStates.Gone; 
+                    PaymentHistoryLinear.Visibility = ViewStates.Gone;
                 }
 
                 MainScrollEvent.IsLoading = false;
             }
             catch (Exception e)
-            { 
+            {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #endregion
 
 

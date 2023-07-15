@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -11,6 +8,9 @@ using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.User;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 
 namespace DeepSound.Activities.Library.Adapters
@@ -49,7 +49,7 @@ namespace DeepSound.Activities.Library.Adapters
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -130,7 +130,7 @@ namespace DeepSound.Activities.Library.Adapters
 
                 if (item == null)
                     return Collections.SingletonList(p0);
-             
+
                 if (item.Event != null)
                 {
                     d.Add(item.Event.Image);
@@ -139,7 +139,7 @@ namespace DeepSound.Activities.Library.Adapters
                 {
                     d.Add(item.SongData?.SongClass.Thumbnail);
                 }
-                
+
                 return d;
             }
             catch (Exception e)
@@ -151,7 +151,7 @@ namespace DeepSound.Activities.Library.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString()).Apply(new RequestOptions().CenterCrop());
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString()).Apply(new RequestOptions().CenterCrop());
         }
 
     }

@@ -1,26 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using Android.Content;
+﻿using Android.Content;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using AndroidHUD;
 using AndroidX.AppCompat.Widget;
 using DeepSound.Activities.Tabbes;
+using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Playlist;
 using DeepSoundClient.Requests;
 using Google.Android.Material.BottomSheet;
-using MaterialDialogsCore;
-using Exception = System.Exception;
-using AndroidHUD;
-using System.Linq;
-using DeepSound.Helpers.CacheLoaders;
+using Google.Android.Material.Dialog;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Exception = System.Exception;
 
 namespace DeepSound.Activities.Playlist
 {
-    public class EditPlaylistBottomSheet : BottomSheetDialogFragment, MaterialDialog.IListCallback
+    public class EditPlaylistBottomSheet : BottomSheetDialogFragment, IDialogListCallBack
     {
         #region Variables Basic
 
@@ -60,7 +60,7 @@ namespace DeepSound.Activities.Playlist
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -149,7 +149,7 @@ namespace DeepSound.Activities.Playlist
             {
                 if (e?.Event?.Action != MotionEventActions.Up) return;
 
-                var dialogList = new MaterialDialog.Builder(Context).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(Context);
 
                 var arrayAdapter = new List<string>
                 {
@@ -157,11 +157,11 @@ namespace DeepSound.Activities.Playlist
                     GetText(Resource.String.Lbl_Private)
                 };
 
-                dialogList.Title(GetText(Resource.String.Lbl_Privacy)).TitleColorRes(Resource.Color.primary);
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetTitle(GetText(Resource.String.Lbl_Privacy));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -196,7 +196,7 @@ namespace DeepSound.Activities.Playlist
                         Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_PleaseEnterName), ToastLength.Short)?.Show();
                         return;
                     }
-                     
+
                     //Show a progress
                     AndHUD.Shared.Show(Context, GetText(Resource.String.Lbl_Loading));
                     var (apiStatus, respond) = await RequestsAsync.Playlist.UpdatePlaylistAsync(PlaylistObject.Id.ToString(), TxtName.Text, Status, PathImage); //Sent api 
@@ -255,7 +255,7 @@ namespace DeepSound.Activities.Playlist
 
         #region MaterialDialog
 
-        public void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+        public void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
             {
@@ -276,7 +276,7 @@ namespace DeepSound.Activities.Playlist
         }
 
         #endregion
-          
+
         private void SetDataPlaylist()
         {
             try

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Gms.Ads;
+﻿using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -25,6 +20,11 @@ using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.User;
 using DeepSoundClient.Requests;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Library
@@ -65,7 +65,7 @@ namespace DeepSound.Activities.Library
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -81,7 +81,7 @@ namespace DeepSound.Activities.Library
 
                 StartApiService();
 
-                AdsGoogle.Ad_Interstitial(Activity); 
+                AdsGoogle.Ad_Interstitial(Activity);
             }
             catch (Exception e)
             {
@@ -211,7 +211,7 @@ namespace DeepSound.Activities.Library
         }
 
         #endregion
-         
+
         #region Event
 
         //Scroll
@@ -234,7 +234,7 @@ namespace DeepSound.Activities.Library
         private void MAdapterItemClick(object sender, MyPurchasesAdapterClickEventArgs e)
         {
             try
-            { 
+            {
                 var item = MAdapter.GetItem(e.Position);
                 if (item != null)
                 {
@@ -255,7 +255,7 @@ namespace DeepSound.Activities.Library
                     {
                         Constant.PlayPos = 0;
                         GlobalContext?.SoundController?.StartPlaySound(item?.SongData?.SongClass, new ObservableCollection<SoundDataObject>() { item?.SongData?.SongClass });
-                    } 
+                    }
                 }
             }
             catch (Exception exception)
@@ -304,7 +304,7 @@ namespace DeepSound.Activities.Library
             {
                 MainScrollEvent.IsLoading = true;
 
-                int countList = MAdapter.PurchasesList.Count; 
+                int countList = MAdapter.PurchasesList.Count;
                 var (apiStatus, respond) = await RequestsAsync.User.GetMyPurchasesAsync(UserDetails.UserId.ToString(), "15", offset);
                 if (apiStatus == 200)
                 {
@@ -312,7 +312,7 @@ namespace DeepSound.Activities.Library
                     {
                         var respondList = result.Data?.Count;
                         if (respondList > 0)
-                        { 
+                        {
                             if (countList > 0)
                             {
                                 foreach (var item in from item in result.Data let check = MAdapter.PurchasesList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
@@ -350,7 +350,7 @@ namespace DeepSound.Activities.Library
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -376,7 +376,7 @@ namespace DeepSound.Activities.Library
                 }
                 else
                 {
-                    MRecycler.Visibility = ViewStates.Gone; 
+                    MRecycler.Visibility = ViewStates.Gone;
 
                     if (Inflated == null)
                         Inflated = EmptyStateLayout.Inflate();
@@ -385,7 +385,7 @@ namespace DeepSound.Activities.Library
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoPurchases);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }

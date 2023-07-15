@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Graphics;
 using Android.Views;
 using Android.Widget;
@@ -17,19 +13,23 @@ using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Requests;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using IList = System.Collections.IList;
 
 namespace DeepSound.Activities.MyContacts.Adapters
 {
     public class ContactsAdapter : RecyclerView.Adapter, ListPreloader.IPreloadModelProvider
-    { 
+    {
         public event EventHandler<ContactsAdapterClickEventArgs> ItemClick;
         public event EventHandler<ContactsAdapterClickEventArgs> ItemLongClick;
         private readonly Activity ActivityContext;
         public ObservableCollection<UserDataObject> UsersList = new ObservableCollection<UserDataObject>();
         private readonly bool ShowButtonFollow;
 
-        public ContactsAdapter(Activity context ,bool showButtonFollow = true)
+        public ContactsAdapter(Activity context, bool showButtonFollow = true)
         {
             try
             {
@@ -56,7 +56,7 @@ namespace DeepSound.Activities.MyContacts.Adapters
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -91,7 +91,7 @@ namespace DeepSound.Activities.MyContacts.Adapters
         {
             try
             {
-                GlideImageLoader.LoadImage(ActivityContext,following.Avatar, holder.Image, ImageStyle.CircleCrop, ImagePlaceholders.DrawableUser);
+                GlideImageLoader.LoadImage(ActivityContext, following.Avatar, holder.Image, ImageStyle.CircleCrop, ImagePlaceholders.DrawableUser);
 
                 string name = Methods.FunString.DecodeString(DeepSoundTools.GetNameFinal(following));
                 holder.Name.Text = Methods.FunString.SubStringCutOf(name, 25);
@@ -136,7 +136,7 @@ namespace DeepSound.Activities.MyContacts.Adapters
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-            } 
+            }
         }
 
         private void OnFollowButtonClick(FollowFollowingClickEventArgs e)
@@ -173,7 +173,7 @@ namespace DeepSound.Activities.MyContacts.Adapters
                             e.ButtonFollow.Tag = "true";
 
                             PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.FollowUnFollowUserAsync(e.UserClass.Id.ToString(), true) });
-                        } 
+                        }
                     }
                 }
                 else
@@ -187,7 +187,7 @@ namespace DeepSound.Activities.MyContacts.Adapters
             }
 
         }
-         
+
         public override int ItemCount => UsersList?.Count ?? 0;
 
         public UserDataObject GetItem(int position)
@@ -251,7 +251,7 @@ namespace DeepSound.Activities.MyContacts.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString())
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString())
                 .Apply(new RequestOptions().CircleCrop());
         }
 
@@ -280,7 +280,7 @@ namespace DeepSound.Activities.MyContacts.Adapters
                 Name = MainView.FindViewById<TextView>(Resource.Id.card_name);
                 About = MainView.FindViewById<TextView>(Resource.Id.card_dist);
                 Button = MainView.FindViewById<AppCompatButton>(Resource.Id.cont);
-                 
+
                 //Event
                 itemView.Click += (sender, e) => clickListener(new ContactsAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });
                 itemView.LongClick += (sender, e) => longClickListener(new ContactsAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });
@@ -303,6 +303,6 @@ namespace DeepSound.Activities.MyContacts.Adapters
         public View View { get; set; }
         public int Position { get; set; }
         public UserDataObject UserClass { get; set; }
-        public AppCompatButton ButtonFollow { get; set; }  
-    } 
+        public AppCompatButton ButtonFollow { get; set; }
+    }
 }

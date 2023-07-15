@@ -6,12 +6,6 @@
 // Follow me on facebook >> https://www.facebook.com/Elindoughous
 //=========================================================
 
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using MaterialDialogsCore;
 using Android;
 using Android.App;
 using Android.Content;
@@ -22,22 +16,28 @@ using Android.OS;
 using Android.Provider;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Activity.Result;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.Core.Content;
 using AndroidX.SlidingPaneLayout.Widget;
 using Bumptech.Glide;
 using Bumptech.Glide.Request;
+using Com.Canhub.Cropper;
 using Com.Google.Android.Play.Core.Install.Model;
 using Com.Sothree.Slidinguppanel;
 using DeepSound.Activities.Artists;
 using DeepSound.Activities.Chat;
+using DeepSound.Activities.Library;
 using DeepSound.Activities.Library.Listeners;
+using DeepSound.Activities.Playlist;
 using DeepSound.Activities.SettingsUser;
 using DeepSound.Activities.SettingsUser.General;
+using DeepSound.Activities.Songs;
 using DeepSound.Activities.Tabbes.Fragments;
 using DeepSound.Activities.Upload;
 using DeepSound.Activities.UserProfile;
+using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.MediaPlayerController;
 using DeepSound.Helpers.Model;
@@ -49,34 +49,39 @@ using DeepSoundClient.Classes.Albums;
 using DeepSoundClient.Classes.Chat;
 using DeepSoundClient.Classes.Event;
 using DeepSoundClient.Classes.Global;
+using DeepSoundClient.Classes.Product;
 using DeepSoundClient.Classes.Tracks;
 using DeepSoundClient.Classes.User;
 using DeepSoundClient.Requests;
 using Google.Android.Material.AppBar;
+using Google.Android.Material.Dialog;
 using Java.IO;
 using Newtonsoft.Json;
 using Q.Rorbin.Badgeview;
-using TheArtOfDev.Edmodo.Cropper;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
+using AndroidX.Core.OS;
+using DeepSound.Activities.Base;
+using ActivityResult = Com.Google.Android.Play.Core.Install.Model.ActivityResult;
 using Console = System.Console;
 using Exception = System.Exception;
 using Math = System.Math;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 using Uri = Android.Net.Uri;
-using DeepSound.Activities.Library;
-using DeepSound.Activities.Songs;
-using DeepSound.Activities.Playlist;
-using DeepSound.Helpers.CacheLoaders;
-using DeepSoundClient.Classes.Product;
 
 namespace DeepSound.Activities.Tabbes
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", WindowSoftInputMode = SoftInput.AdjustNothing | SoftInput.AdjustPan, ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
-    public class HomeActivity : AppCompatActivity, SlidingPaneLayout.IPanelSlideListener, SlidingUpPanelLayout.IPanelSlideListener, AppBarLayout.IOnOffsetChangedListener
+    public class HomeActivity : AppCompatActivity, SlidingPaneLayout.IPanelSlideListener, SlidingUpPanelLayout.IPanelSlideListener, AppBarLayout.IOnOffsetChangedListener, IActivityResultCallback
     {
         #region Variables Basic
 
         private static HomeActivity Instance;
         public SlidingUpPanelLayout SlidingUpPanel;
+        private ViewStub FullScreenPlayerViewStub;
         public HomeFragment HomeFragment;
         public TrendingFragment TrendingFragment;
         public FavoritesFragment FavoritesFragment;
@@ -85,11 +90,12 @@ namespace DeepSound.Activities.Tabbes
         private LinearLayout NavigationTabBar;
         public CustomNavigationController FragmentBottomNavigator;
         private PowerManager.WakeLock Wl;
-        public SoundController SoundController; 
+        public SoundController SoundController;
         private string TypeImage = "";
         public LibrarySynchronizer LibrarySynchronizer;
         private readonly Handler ExitHandler = new Handler(Looper.MainLooper);
         private bool RecentlyBackPressed;
+        private DialogGalleryController GalleryController;
 
         #endregion
 
@@ -122,28 +128,32 @@ namespace DeepSound.Activities.Tabbes
                 LibrarySynchronizer = new LibrarySynchronizer(this);
 
                 //Get Value 
-                InitComponent(); 
+                InitComponent();
                 SetupBottomNavigationView();
+                InitBackPressed("HomeActivity");
+                //if (BuildCompat.IsAtLeastT)
+                //    OnBackInvokedDispatcher.RegisterOnBackInvokedCallback((int)Priority.Default, new MyBackInvokedCallback(this));
 
                 SoundController = new SoundController(this);
                 SoundController.InitializeUi();
 
                 Task.Factory.StartNew(GetGeneralAppData);
-                 
+
                 GetOneSignalNotification();
                 SetService();
-                CheckOptimization(); 
+                CheckOptimization();
+                GalleryController = new DialogGalleryController(this, this);
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void CheckOptimization()
         {
             try
-            { 
+            {
                 if (!AppSettings.EnableOptimizationApp || UserDetails.IsOptimizationApp) return;
                 if (Build.VERSION.SdkInt < BuildVersionCodes.M) return;
 
@@ -157,7 +167,7 @@ namespace DeepSound.Activities.Tabbes
                 UserDetails.IsOptimizationApp = true;
                 SharedPref.SharedData?.Edit()?.PutBoolean(SharedPref.PrefKeyOptimizationApp, true)?.Commit();
 
-                var intent = new Intent(); 
+                var intent = new Intent();
                 if (pm.IsIgnoringBatteryOptimizations(PackageName))
                 {
                     intent.SetAction(Settings.ActionIgnoreBatteryOptimizationSettings);
@@ -179,7 +189,7 @@ namespace DeepSound.Activities.Tabbes
         {
             try
             {
-                base.OnResume(); 
+                base.OnResume();
             }
             catch (Exception e)
             {
@@ -191,7 +201,7 @@ namespace DeepSound.Activities.Tabbes
         {
             try
             {
-                base.OnPause(); 
+                base.OnPause();
                 OffWakeLock();
             }
             catch (Exception e)
@@ -229,11 +239,11 @@ namespace DeepSound.Activities.Tabbes
         protected override void OnDestroy()
         {
             try
-            {  
+            {
                 Intent intent = new Intent(this, typeof(PlayerService));
                 intent.SetAction(PlayerService.ActionStop);
 
-                if (!Constant.IsLoggingOut && !Constant.IsChangingTheme)
+                if (!Constant.IsLoggingOut && !Constant.IsChangingTheme || Constant.IsPlayed)
                 {
                     ContextCompat.StartForegroundService(this, intent);
                 }
@@ -292,13 +302,25 @@ namespace DeepSound.Activities.Tabbes
                 SlidingUpPanel = FindViewById<SlidingUpPanelLayout>(Resource.Id.sliding_layout);
                 SlidingUpPanel.SetPanelState(SlidingUpPanelLayout.PanelState.Hidden);
                 SlidingUpPanel.AddPanelSlideListener(this);
+
+                FullScreenPlayerViewStub = FindViewById<ViewStub>(Resource.Id.viewStubFullScreenPlayer);
+                switch (AppSettings.PlayerTheme)
+                {
+                    case PlayerTheme.Theme1:
+                        FullScreenPlayerViewStub.LayoutResource = Resource.Layout.FullScreenPlayerLayout;
+                        break;
+                    case PlayerTheme.Theme2:
+                        FullScreenPlayerViewStub.LayoutResource = Resource.Layout.FullScreenPlayer2Layout;
+                        break;
+                }
+                FullScreenPlayerViewStub.Inflate();
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         public static HomeActivity GetInstance()
         {
             try
@@ -308,7 +330,7 @@ namespace DeepSound.Activities.Tabbes
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -340,6 +362,25 @@ namespace DeepSound.Activities.Tabbes
             }
         }
 
+        public void InitBackPressed(string pageName)
+        {
+            try
+            {
+                if (BuildCompat.IsAtLeastT && Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+                {
+                    OnBackInvokedDispatcher.RegisterOnBackInvokedCallback(0, new BackCallAppBase2(this, pageName));
+                }
+                else
+                {
+                    OnBackPressedDispatcher.AddCallback(new BackCallAppBase1(this, pageName, true));
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
         #endregion
 
         #region Functions ¯\_(ツ)_/¯
@@ -348,6 +389,27 @@ namespace DeepSound.Activities.Tabbes
         {
             try
             {
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+                {
+                    if (ContextCompat.CheckSelfPermission(this, Manifest.Permission.PostNotifications) == Permission.Granted)
+                    {
+                        if (string.IsNullOrEmpty(UserDetails.DeviceId))
+                            OneSignalNotification.Instance.RegisterNotificationDevice(this);
+                    }
+                    else
+                    {
+                        RequestPermissions(new[]
+                        {
+                            Manifest.Permission.PostNotifications
+                        }, 16248);
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(UserDetails.DeviceId))
+                        OneSignalNotification.Instance.RegisterNotificationDevice(this);
+                }
+
                 string type = Intent?.GetStringExtra("TypeNotification") ?? "Don't have type";
                 if (!string.IsNullOrEmpty(type) && type != "Don't have type")
                 {
@@ -357,7 +419,7 @@ namespace DeepSound.Activities.Tabbes
                     }
                     else if (type == "Track")
                     {
-                         var (apiStatus, respond) = await RequestsAsync.Tracks.GetTrackInfoAsync(OneSignalNotification.TrackId);
+                        var (apiStatus, respond) = await RequestsAsync.Tracks.GetTrackInfoAsync(OneSignalNotification.TrackId);
                         if (apiStatus.Equals(200))
                         {
                             if (respond is GetTrackInfoObject result)
@@ -411,7 +473,7 @@ namespace DeepSound.Activities.Tabbes
             }
             catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(e); 
+                Methods.DisplayReportResultTrack(e);
             }
         }
 
@@ -467,7 +529,7 @@ namespace DeepSound.Activities.Tabbes
             {
                 NavigationTabBar = FindViewById<LinearLayout>(Resource.Id.buttomnavigationBar);
                 FragmentBottomNavigator = new CustomNavigationController(this);
-                 
+
                 HomeFragment = new HomeFragment();
                 TrendingFragment = new TrendingFragment();
                 FavoritesFragment = new FavoritesFragment();
@@ -496,7 +558,7 @@ namespace DeepSound.Activities.Tabbes
         }
 
         #endregion
-         
+
         #region Menu
 
         public override bool OnOptionsItemSelected(IMenuItem item)
@@ -514,8 +576,8 @@ namespace DeepSound.Activities.Tabbes
         #endregion
 
         #region Event Back
-
-        public override void OnBackPressed()
+         
+        public void BackPressed()
         {
             try
             {
@@ -534,7 +596,7 @@ namespace DeepSound.Activities.Tabbes
                         ExitHandler.RemoveCallbacks(() => { RecentlyBackPressed = false; });
                         RecentlyBackPressed = false;
                         MoveTaskToBack(true);
-                        base.OnBackPressed();
+                        //Finish();
                     }
                     else
                     {
@@ -547,7 +609,7 @@ namespace DeepSound.Activities.Tabbes
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                base.OnBackPressed();
+                //Finish();
             }
         }
 
@@ -590,7 +652,7 @@ namespace DeepSound.Activities.Tabbes
                     new IntentController(this).OpenIntentAudio(); //505
                 else
                 {
-                    if (PermissionsController.CheckPermissionStorage() )
+                    if (PermissionsController.CheckPermissionStorage())
                         new IntentController(this).OpenIntentAudio(); //505
                     else
                         new PermissionsController(this).RequestPermission(100);
@@ -619,126 +681,13 @@ namespace DeepSound.Activities.Tabbes
         #region Permissions && Result
 
         //Result
-        protected override async void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
             try
             {
                 base.OnActivityResult(requestCode, resultCode, data);
 
-                if (requestCode == 108 || requestCode == CropImage.CropImageActivityRequestCode) //==> change Avatar Or Cover
-                {
-                    if (Methods.CheckConnectivity())
-                    {
-                        var result = CropImage.GetActivityResult(data);
-                        if (result.IsSuccessful)
-                        {
-                            var resultPathImage = result.Uri.Path;
-
-                            if (!string.IsNullOrEmpty(resultPathImage))
-                            {
-                                if (TypeImage == "Avatar")
-                                {
-                                    if (ProfileFragment?.ImageAvatar == null)
-                                        return;
-
-                                    File file2 = new File(resultPathImage);
-                                    var photoUri = FileProvider.GetUriForFile(this, PackageName + ".fileprovider", file2);
-                                    Glide.With(this).Load(photoUri).Apply(new RequestOptions()).Into(ProfileFragment?.ImageAvatar);
-
-                                    await Task.Run(async () =>
-                                    {
-                                        try
-                                        {
-                                             var (apiStatus, respond) = await RequestsAsync.User.UpdateAvatarAsync(resultPathImage);
-                                            if (apiStatus.Equals(200))
-                                            {
-                                                if (respond is UpdateImageUserObject image)
-                                                {
-                                                    var dataUser = ListUtils.MyUserInfoList?.FirstOrDefault();
-                                                    if (dataUser != null)
-                                                    {
-                                                        dataUser.Avatar = image.Img;
-
-                                                        SqLiteDatabase dbDatabase = new SqLiteDatabase();
-                                                        dbDatabase.InsertOrUpdate_DataMyInfo(dataUser);
-                                                    }
-                                                }
-                                            }
-                                            else Methods.DisplayReportResult(this, respond);
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            Methods.DisplayReportResultTrack(e);
-                                        }
-                                    });
-                                }
-                                else if (TypeImage == "Cover")
-                                {
-                                    if (ProfileFragment?.ImageCover == null)
-                                        return;
-
-                                    File file2 = new File(resultPathImage);
-                                    var photoUri = FileProvider.GetUriForFile(this, PackageName + ".fileprovider", file2);
-                                    Glide.With(this).Load(photoUri).Apply(new RequestOptions()).Into(ProfileFragment?.ImageCover);
-
-                                    await Task.Run(async () =>
-                                    {
-                                        try
-                                        {
-                                             var (apiStatus, respond) = await RequestsAsync.User.UpdateCoverAsync(resultPathImage);
-                                            if (apiStatus.Equals(200))
-                                            {
-                                                if (respond is UpdateImageUserObject image)
-                                                {
-                                                    var dataUser = ListUtils.MyUserInfoList?.FirstOrDefault();
-                                                    if (dataUser != null)
-                                                    {
-                                                        dataUser.Cover = image.Img;
-
-                                                        SqLiteDatabase dbDatabase = new SqLiteDatabase();
-                                                        dbDatabase.InsertOrUpdate_DataMyInfo(dataUser);
-                                                    }
-                                                }
-                                            }
-                                            else Methods.DisplayReportResult(this, respond);
-                                        }
-                                        catch (Exception e)
-                                        {
-                                            Methods.DisplayReportResultTrack(e);
-                                        }
-                                    });
-                                }
-                                else if (TypeImage == "CreatePlaylist")
-                                {
-                                    var page = CreatePlaylistBottomSheet.Instance;
-                                    if (page != null)
-                                    {
-                                        page.PathImage = resultPathImage;
-                                        File file2 = new File(resultPathImage);
-                                        var photoUri = FileProvider.GetUriForFile(this, PackageName + ".fileprovider", file2);
-                                        Glide.With(this).Load(photoUri).Apply(GlideImageLoader.GetOptions(ImageStyle.RoundedCrop,ImagePlaceholders.Drawable)).Into(page.Image);
-                                    }
-                                }
-                                else if (TypeImage == "EditPlaylist")
-                                {
-                                    var page = EditPlaylistBottomSheet.Instance;
-                                    if (page != null)
-                                    {
-                                        page.PathImage = resultPathImage;
-                                        File file2 = new File(resultPathImage);
-                                        var photoUri = FileProvider.GetUriForFile(this, PackageName + ".fileprovider", file2);
-                                        Glide.With(this).Load(photoUri).Apply(GlideImageLoader.GetOptions(ImageStyle.RoundedCrop, ImagePlaceholders.Drawable)).Into(page.Image);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
-                            }
-                        }
-                    }
-                }
-                else if (requestCode == 505 && resultCode == Result.Ok) //==> Audio
+                if (requestCode == 505 && resultCode == Result.Ok) //==> Audio
                 {
                     var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, data.Data);
                     if (filepath != null)
@@ -751,7 +700,7 @@ namespace DeepSound.Activities.Tabbes
                             StartActivity(intent);
                         }
                     }
-                } 
+                }
                 else if (requestCode == 4711)
                 {
                     switch (resultCode) // The switch block will be triggered only with flexible update since it returns the install result codes
@@ -772,13 +721,13 @@ namespace DeepSound.Activities.Tabbes
                 else if (requestCode == 200 && resultCode == Result.Ok)
                 {
                     var name = data.GetStringExtra("name") ?? "";
-                    if (!string.IsNullOrEmpty(name) && ProfileFragment != null && !name.Equals(ProfileFragment.TxtFullName.Text)) 
+                    if (!string.IsNullOrEmpty(name) && ProfileFragment != null && !name.Equals(ProfileFragment.TxtFullName.Text))
                         ProfileFragment.TxtFullName.Text = data.GetStringExtra("name");
                 }
                 else if (requestCode == 3500 && resultCode == Result.Ok) //Add Product
                 {
                     if (string.IsNullOrEmpty(data?.GetStringExtra("itemData"))) return;
-                     
+
                     var item = JsonConvert.DeserializeObject<ProductDataObject>(data.GetStringExtra("itemData") ?? "");
                     if (item != null)
                     {
@@ -805,7 +754,7 @@ namespace DeepSound.Activities.Tabbes
 
                             TrendingFragment?.EventFragment?.MAdapter.NotifyDataSetChanged();
                         }
-                    } 
+                    }
                 }
             }
             catch (Exception e)
@@ -822,38 +771,36 @@ namespace DeepSound.Activities.Tabbes
                 Xamarin.Essentials.Platform.OnRequestPermissionsResult(requestCode, permissions, grantResults);
                 base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
-                if (requestCode == 108)
+                switch (requestCode)
                 {
-                    if (grantResults.Length > 0 && grantResults[0] == Permission.Granted)
-                    {
-                        OpenDialogGallery(TypeImage);
-                    }
-                    else
-                    {
+                    case 108 when grantResults.Length > 0 && grantResults[0] == Permission.Granted:
+                        GalleryController?.OpenDialogGallery(TypeImage);
+                        break;
+                    case 108:
                         Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
-                    }
-                }
-                else if (requestCode == 100)
-                {
-                    if (grantResults.Length > 0 && grantResults[0] == Permission.Granted)
-                    {
+                        break;
+                    case 100 when grantResults.Length > 0 && grantResults[0] == Permission.Granted:
                         new IntentController(this).OpenIntentAudio(); //505
-                    }
-                    else
-                    {
+                        break;
+                    case 100:
                         Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
-                    }
-                }
-                else if (requestCode == 1325)
-                {
-                    if (grantResults.Length > 0 && grantResults[0] == Permission.Granted)
-                    {
-                        SongOptionBottomDialogFragment.Instance?.SetRingtone();
-                    }
-                    else
-                    {
+                        break;
+                    case 1325:
                         Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
-                    }
+                        break;
+                    case 1005 when grantResults.Length > 0 && grantResults[0] == Permission.Granted:
+                        SoundController?.SetDownload();
+                        break;
+                    case 1005:
+                        Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
+                        break;
+                    case 16248 when grantResults.Length > 0 && grantResults[0] == Permission.Granted:
+                        if (string.IsNullOrEmpty(UserDetails.DeviceId))
+                            OneSignalNotification.Instance.RegisterNotificationDevice(this);
+                        break;
+                    case 16248:
+                        Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
+                        break;
                 }
             }
             catch (Exception e)
@@ -876,7 +823,7 @@ namespace DeepSound.Activities.Tabbes
                 }
                 else
                 {
-                    if (CheckSelfPermission(Manifest.Permission.WakeLock) == Permission.Granted)
+                    if (ContextCompat.CheckSelfPermission(this, Manifest.Permission.WakeLock) == Permission.Granted)
                     {
                         Window?.AddFlags(WindowManagerFlags.KeepScreenOn);
                     }
@@ -916,7 +863,7 @@ namespace DeepSound.Activities.Tabbes
             {
                 // ..screen will stay on during this section..
                 Wl?.Release();
-                Wl = null!;
+                Wl = null;
             }
             catch (Exception e)
             {
@@ -936,12 +883,12 @@ namespace DeepSound.Activities.Tabbes
 
         public void OnPanelClosed(View panel)
         {
-            
+
         }
 
         public void OnPanelOpened(View panel)
         {
-            
+
         }
 
         public void OnPanelSlide(View panel, float slideOffset)
@@ -964,7 +911,9 @@ namespace DeepSound.Activities.Tabbes
                 {
                     if (SoundController?.BackIcon?.Tag?.ToString() == "Close")
                     {
-                        SoundController?.BackIcon.SetImageResource(Resource.Drawable.ic_action_arrow_down_sign);
+                        if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                            SoundController?.BackIcon.SetImageResource(Resource.Drawable.ic_action_arrow_down_sign);
+
                         SoundController.BackIcon.Tag = "Open";
                         SoundController?.SetUiSliding(false);
                         //NavigationTabBar.Hide();
@@ -974,7 +923,9 @@ namespace DeepSound.Activities.Tabbes
                 {
                     if (SoundController?.BackIcon != null && SoundController?.BackIcon?.Tag?.ToString() == "Open")
                     {
-                        SoundController?.BackIcon.SetImageResource(Resource.Drawable.icon_close_vector);
+                        if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                            SoundController?.BackIcon.SetImageResource(Resource.Drawable.icon_close_vector);
+
                         SoundController.BackIcon.Tag = "Close";
                         SoundController?.SetUiSliding(true);
                         NavigationTabBar.Visibility = ViewStates.Visible;
@@ -993,7 +944,9 @@ namespace DeepSound.Activities.Tabbes
                 {
                     if (SoundController?.BackIcon != null && SoundController?.BackIcon?.Tag?.ToString() == "Close")
                     {
-                        SoundController?.BackIcon.SetImageResource(Resource.Drawable.ic_action_arrow_down_sign);
+                        if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                            SoundController?.BackIcon.SetImageResource(Resource.Drawable.ic_action_arrow_down_sign);
+
                         SoundController.BackIcon.Tag = "Open";
                         SoundController?.SetUiSliding(false);
                         NavigationTabBar.Visibility = ViewStates.Gone;
@@ -1007,29 +960,42 @@ namespace DeepSound.Activities.Tabbes
                 {
                     if (SoundController?.BackIcon != null && SoundController?.BackIcon?.Tag?.ToString() == "Open")
                     {
-                        SoundController?.BackIcon.SetImageResource(Resource.Drawable.icon_close_vector);
+                        if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                            SoundController?.BackIcon.SetImageResource(Resource.Drawable.icon_close_vector);
+
                         SoundController.BackIcon.Tag = "Close";
                         SoundController?.SetUiSliding(true);
-                         
+
                         NavigationTabBar.Visibility = ViewStates.Visible;
+
                     }
                 }
+
                 if (p1 == SlidingUpPanelLayout.PanelState.Dragging && p2 == SlidingUpPanelLayout.PanelState.Collapsed)
                 {
                     if (SoundController?.BackIcon != null && SoundController?.BackIcon?.Tag?.ToString() == "Open")
                     {
-                        SoundController?.BackIcon.SetImageResource(Resource.Drawable.icon_close_vector);
+                        if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                            SoundController?.BackIcon.SetImageResource(Resource.Drawable.icon_close_vector);
+
                         SoundController.BackIcon.Tag = "Close";
                         SoundController?.SetUiSliding(true);
                         NavigationTabBar.Visibility = ViewStates.Visible;
                     }
                     else
                     {
-                        SoundController?.BtPlay.SetImageResource(Resource.Drawable.icon_player_pause);
-                        SoundController?.BtnPlayImage.SetImageResource(Resource.Drawable.icon_player_pause);
+                        if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                        {
+                            SoundController?.BtPlay.SetImageResource(Resource.Drawable.icon_player_pause);
+                            SoundController?.BtnPlayImage.SetImageResource(Resource.Drawable.icon_player_pause);
+                        }
+                        else if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
+                        {
+                            SoundController?.BtPlay.SetImageResource(Resource.Drawable.icon_player2_pause);
+                            SoundController?.BtnPlayImage.SetImageResource(Resource.Drawable.icon_player2_pause);
+                        }
                         NavigationTabBar.Visibility = ViewStates.Visible;
                     }
-
                 }
             }
             catch (Exception exception)
@@ -1039,25 +1005,25 @@ namespace DeepSound.Activities.Tabbes
         }
 
         #endregion
-         
+
         #region Purchase the song Or album
 
         private static SoundDataObject PaymentSoundObject;
         private static DataAlbumsObject PaymentAlbumsObject;
-    
+
         public void OpenDialogPurchaseSound(SoundDataObject soundObject)
         {
             try
             {
                 PaymentSoundObject = soundObject;
 
-                var dialog = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                dialog.Title(Resource.String.Lbl_PurchaseRequired);
-                dialog.Content(GetText(Resource.String.Lbl_PurchaseRequiredContent));
-                dialog.PositiveText(GetText(Resource.String.Lbl_Purchase)).OnPositive(async (materialDialog, action) =>
+                var dialog = new MaterialAlertDialogBuilder(this);
+                dialog.SetTitle(Resource.String.Lbl_PurchaseRequired);
+                dialog.SetMessage(GetText(Resource.String.Lbl_PurchaseRequiredContent));
+                dialog.SetPositiveButton(GetText(Resource.String.Lbl_Purchase), async (materialDialog, action) =>
                 {
                     try
-                    { 
+                    {
                         if (soundObject.Price != null && DeepSoundTools.CheckWallet(soundObject.Price.Value))
                         {
                             if (Methods.CheckConnectivity())
@@ -1082,10 +1048,10 @@ namespace DeepSound.Activities.Tabbes
                         }
                         else
                         {
-                            var dialogBuilder = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                            dialogBuilder.Title(GetText(Resource.String.Lbl_Wallet));
-                            dialogBuilder.Content(GetText(Resource.String.Lbl_Error_NoWallet));
-                            dialogBuilder.PositiveText(GetText(Resource.String.Lbl_AddWallet)).OnPositive((materialDialog, action) =>
+                            var dialogBuilder = new MaterialAlertDialogBuilder(this);
+                            dialogBuilder.SetTitle(GetText(Resource.String.Lbl_Wallet));
+                            dialogBuilder.SetMessage(GetText(Resource.String.Lbl_Error_NoWallet));
+                            dialogBuilder.SetPositiveButton(GetText(Resource.String.Lbl_AddWallet), (materialDialog, action) =>
                             {
                                 try
                                 {
@@ -1096,19 +1062,19 @@ namespace DeepSound.Activities.Tabbes
                                     Methods.DisplayReportResultTrack(exception);
                                 }
                             });
-                            dialogBuilder.NegativeText(GetText(Resource.String.Lbl_Cancel)).OnNegative(new MyMaterialDialog());
-                            dialogBuilder.AlwaysCallSingleChoiceCallback();
-                            dialogBuilder.Build().Show();
-                        } 
+                            dialogBuilder.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+
+                            dialogBuilder.Show();
+                        }
                     }
                     catch (Exception e)
                     {
                         Methods.DisplayReportResultTrack(e);
                     }
                 });
-                dialog.NegativeText(GetText(Resource.String.Lbl_Cancel)).OnNegative(new MyMaterialDialog());
-                dialog.AlwaysCallSingleChoiceCallback();
-                dialog.Build().Show();
+                dialog.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+
+                dialog.Show();
             }
             catch (Exception e)
             {
@@ -1122,13 +1088,13 @@ namespace DeepSound.Activities.Tabbes
             {
                 PaymentAlbumsObject = albumsObject;
 
-                var dialog = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                dialog.Title(Resource.String.Lbl_PurchaseRequired);
-                dialog.Content(GetText(Resource.String.Lbl_PurchaseRequiredContent));
-                dialog.PositiveText(GetText(Resource.String.Lbl_Purchase)).OnPositive(async (materialDialog, action) =>
+                var dialog = new MaterialAlertDialogBuilder(this);
+                dialog.SetTitle(Resource.String.Lbl_PurchaseRequired);
+                dialog.SetMessage(GetText(Resource.String.Lbl_PurchaseRequiredContent));
+                dialog.SetPositiveButton(GetText(Resource.String.Lbl_Purchase), async (materialDialog, action) =>
                 {
                     try
-                    { 
+                    {
                         if (DeepSoundTools.CheckWallet(albumsObject.Price))
                         {
                             if (Methods.CheckConnectivity())
@@ -1151,10 +1117,10 @@ namespace DeepSound.Activities.Tabbes
                         }
                         else
                         {
-                            var dialogBuilder = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                            dialogBuilder.Title(GetText(Resource.String.Lbl_Wallet));
-                            dialogBuilder.Content(GetText(Resource.String.Lbl_Error_NoWallet));
-                            dialogBuilder.PositiveText(GetText(Resource.String.Lbl_AddWallet)).OnPositive((materialDialog, action) =>
+                            var dialogBuilder = new MaterialAlertDialogBuilder(this);
+                            dialogBuilder.SetTitle(GetText(Resource.String.Lbl_Wallet));
+                            dialogBuilder.SetMessage(GetText(Resource.String.Lbl_Error_NoWallet));
+                            dialogBuilder.SetPositiveButton(GetText(Resource.String.Lbl_AddWallet), (materialDialog, action) =>
                             {
                                 try
                                 {
@@ -1165,26 +1131,26 @@ namespace DeepSound.Activities.Tabbes
                                     Methods.DisplayReportResultTrack(exception);
                                 }
                             });
-                            dialogBuilder.NegativeText(GetText(Resource.String.Lbl_Cancel)).OnNegative(new MyMaterialDialog());
-                            dialogBuilder.AlwaysCallSingleChoiceCallback();
-                            dialogBuilder.Build().Show();
-                        } 
+                            dialogBuilder.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+
+                            dialogBuilder.Show();
+                        }
                     }
                     catch (Exception e)
                     {
                         Methods.DisplayReportResultTrack(e);
                     }
                 });
-                dialog.NegativeText(GetText(Resource.String.Lbl_Cancel)).OnNegative(new MyMaterialDialog());
-                dialog.AlwaysCallSingleChoiceCallback();
-                dialog.Build().Show();
+                dialog.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+
+                dialog.Show();
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #endregion
 
         #region Service Chat
@@ -1192,10 +1158,10 @@ namespace DeepSound.Activities.Tabbes
         public void SetService(bool run = true)
         {
             try
-            { 
+            {
                 if (!UserDetails.IsLogin)
                     return;
- 
+
                 if (run)
                 {
                     // reschedule the job
@@ -1212,7 +1178,7 @@ namespace DeepSound.Activities.Tabbes
                 Methods.DisplayReportResultTrack(e);
             }
         }
- 
+
         public void OnReceiveResult(string resultData)
         {
             try
@@ -1231,45 +1197,137 @@ namespace DeepSound.Activities.Tabbes
 
         #endregion
 
-        public void OpenDialogGallery(string typeImage)
+        #region Result Gallery
+
+        public void OpenDialogGallery(string type)
         {
             try
             {
-                TypeImage = typeImage;
-                // Check if we're running on Android 5.0 or higher
-                if ((int)Build.VERSION.SdkInt < 23)
-                {
-                    Methods.Path.Chack_MyFolder();
+                TypeImage = type;
+                GalleryController?.OpenDialogGallery(type);
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
 
-                    //Open Image 
-                    var myUri = Uri.FromFile(new File(Methods.Path.FolderDiskImage, Methods.GetTimestamp(DateTime.Now) + ".jpeg"));
-                    CropImage.Activity()
-                        .SetInitialCropWindowPaddingRatio(0)
-                        .SetAutoZoomEnabled(true)
-                        .SetMaxZoom(4)
-                        .SetGuidelines(CropImageView.Guidelines.On)
-                        .SetCropMenuCropButtonTitle(GetText(Resource.String.Lbl_Crop))
-                        .SetOutputUri(myUri).Start(this);
-                }
-                else
+        public async void OnActivityResult(Java.Lang.Object p0)
+        {
+            try
+            {
+                if (p0 is CropImageView.CropResult result)
                 {
-                    if (!CropImage.IsExplicitCameraPermissionRequired(this) && PermissionsController.CheckPermissionStorage() && CheckSelfPermission(Manifest.Permission.Camera) == Permission.Granted)
+                    if (result.IsSuccessful)
                     {
-                        Methods.Path.Chack_MyFolder();
+                        var resultUri = result.UriContent;
+                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        if (!string.IsNullOrEmpty(filepath))
+                        {  
+                            //Do something with your Uri
+                            if (TypeImage == "Avatar")
+                            {
+                                if (ProfileFragment?.ImageAvatar == null)
+                                    return;
 
-                        //Open Image 
-                        var myUri = Uri.FromFile(new File(Methods.Path.FolderDiskImage, Methods.GetTimestamp(DateTime.Now) + ".jpeg"));
-                        CropImage.Activity()
-                            .SetInitialCropWindowPaddingRatio(0)
-                            .SetAutoZoomEnabled(true)
-                            .SetMaxZoom(4)
-                            .SetGuidelines(CropImageView.Guidelines.On)
-                            .SetCropMenuCropButtonTitle(GetText(Resource.String.Lbl_Crop))
-                            .SetOutputUri(myUri).Start(this);
+                                File file2 = new File(filepath);
+                                var photoUri = FileProvider.GetUriForFile(this, PackageName + ".fileprovider", file2);
+                                Glide.With(this).Load(photoUri).Apply(new RequestOptions()).Into(ProfileFragment?.ImageAvatar);
+
+                                await Task.Run(async () =>
+                                {
+                                    try
+                                    {
+                                        var (apiStatus, respond) = await RequestsAsync.User.UpdateAvatarAsync(filepath);
+                                        if (apiStatus.Equals(200))
+                                        {
+                                            if (respond is UpdateImageUserObject image)
+                                            {
+                                                var dataUser = ListUtils.MyUserInfoList?.FirstOrDefault();
+                                                if (dataUser != null)
+                                                {
+                                                    dataUser.Avatar = image.Img;
+
+                                                    SqLiteDatabase dbDatabase = new SqLiteDatabase();
+                                                    dbDatabase.InsertOrUpdate_DataMyInfo(dataUser);
+                                                }
+                                            }
+                                        }
+                                        else Methods.DisplayReportResult(this, respond);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Methods.DisplayReportResultTrack(e);
+                                    }
+                                });
+                            }
+                            else if (TypeImage == "Cover")
+                            {
+                                if (ProfileFragment?.ImageCover == null)
+                                    return;
+
+                                File file2 = new File(filepath);
+                                var photoUri = FileProvider.GetUriForFile(this, PackageName + ".fileprovider", file2);
+                                Glide.With(this).Load(photoUri).Apply(new RequestOptions()).Into(ProfileFragment?.ImageCover);
+
+                                await Task.Run(async () =>
+                                {
+                                    try
+                                    {
+                                        var (apiStatus, respond) = await RequestsAsync.User.UpdateCoverAsync(filepath);
+                                        if (apiStatus.Equals(200))
+                                        {
+                                            if (respond is UpdateImageUserObject image)
+                                            {
+                                                var dataUser = ListUtils.MyUserInfoList?.FirstOrDefault();
+                                                if (dataUser != null)
+                                                {
+                                                    dataUser.Cover = image.Img;
+
+                                                    SqLiteDatabase dbDatabase = new SqLiteDatabase();
+                                                    dbDatabase.InsertOrUpdate_DataMyInfo(dataUser);
+                                                }
+                                            }
+                                        }
+                                        else Methods.DisplayReportResult(this, respond);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Methods.DisplayReportResultTrack(e);
+                                    }
+                                });
+                            }
+                            else if (TypeImage == "CreatePlaylist")
+                            {
+                                var page = CreatePlaylistBottomSheet.Instance;
+                                if (page != null)
+                                {
+                                    page.PathImage = filepath;
+                                    File file2 = new File(filepath);
+                                    var photoUri = FileProvider.GetUriForFile(this, PackageName + ".fileprovider", file2);
+                                    Glide.With(this).Load(photoUri).Apply(GlideImageLoader.GetOptions(ImageStyle.RoundedCrop, ImagePlaceholders.Drawable)).Into(page.Image);
+                                }
+                            }
+                            else if (TypeImage == "EditPlaylist")
+                            {
+                                var page = EditPlaylistBottomSheet.Instance;
+                                if (page != null)
+                                {
+                                    page.PathImage = filepath;
+                                    File file2 = new File(filepath);
+                                    var photoUri = FileProvider.GetUriForFile(this, PackageName + ".fileprovider", file2);
+                                    Glide.With(this).Load(photoUri).Apply(GlideImageLoader.GetOptions(ImageStyle.RoundedCrop, ImagePlaceholders.Drawable)).Into(page.Image);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
+                        }
                     }
                     else
                     {
-                        new PermissionsController(this).RequestPermission(108);
+                        Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
                     }
                 }
             }
@@ -1278,6 +1336,8 @@ namespace DeepSound.Activities.Tabbes
                 Methods.DisplayReportResultTrack(e);
             }
         }
+
+        #endregion
 
         public void OpenProfile(long userId, UserDataObject item)
         {
@@ -1327,26 +1387,24 @@ namespace DeepSound.Activities.Tabbes
         }
 
         #region Load General Data
-         
+
         private void GetGeneralAppData()
         {
             try
             {
                 var sqlEntity = new SqLiteDatabase();
-                 
+
                 sqlEntity.GetSettings();
                 if (UserDetails.IsLogin)
                 {
                     sqlEntity.GetDataMyInfo();
 
-                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => ApiRequest.GetSettings_Api(this), ApiRequest.GetMyPlaylist_Api, () => ApiRequest.GetInfoData(this, UserDetails.UserId.ToString()), ApiRequest.LoadFavorites,  ApiRequest.LoadLiked});
+                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => ApiRequest.GetSettings_Api(this), ApiRequest.GetMyPlaylist_Api, () => ApiRequest.GetInfoData(this, UserDetails.UserId.ToString()), ApiRequest.LoadFavorites, ApiRequest.LoadLiked, GetNotInterestedSounds });
                 }
                 else
                 {
                     PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => ApiRequest.GetSettings_Api(this) });
                 }
-
-                ListUtils.GlobalNotInterestedList = sqlEntity.Get_NotInterestedSound();
 
                 ListUtils.GenresList = sqlEntity.Get_GenresList();
                 ListUtils.PriceList = sqlEntity.Get_PriceList();
@@ -1360,21 +1418,21 @@ namespace DeepSound.Activities.Tabbes
                 RunOnUiThread(() =>
                 {
                     try
-                    { 
+                    {
                         InAppUpdate();
                     }
                     catch (Exception e)
                     {
                         Methods.DisplayReportResultTrack(e);
                     }
-                }); 
+                });
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void InAppUpdate()
         {
             try
@@ -1398,10 +1456,10 @@ namespace DeepSound.Activities.Tabbes
                 {
                     if (CountRateApp == AppSettings.ShowRateAppCount)
                     {
-                        var dialog = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                        dialog.Title(GetText(Resource.String.Lbl_RateOurApp));
-                        dialog.Content(GetText(Resource.String.Lbl_RateOurAppContent));
-                        dialog.PositiveText(GetText(Resource.String.Lbl_Rate)).OnPositive((materialDialog, action) =>
+                        var dialog = new MaterialAlertDialogBuilder(this);
+                        dialog.SetTitle(GetText(Resource.String.Lbl_RateOurApp));
+                        dialog.SetMessage(GetText(Resource.String.Lbl_RateOurAppContent));
+                        dialog.SetPositiveButton(GetText(Resource.String.Lbl_Rate), (materialDialog, action) =>
                         {
                             try
                             {
@@ -1413,9 +1471,9 @@ namespace DeepSound.Activities.Tabbes
                                 Methods.DisplayReportResultTrack(e);
                             }
                         });
-                        dialog.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                        dialog.AlwaysCallSingleChoiceCallback();
-                        dialog.Build().Show();
+                        dialog.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                        dialog.Show();
 
                         SharedPref.InAppReview?.Edit()?.PutBoolean(SharedPref.PrefKeyInAppReview, true)?.Commit();
                     }
@@ -1431,8 +1489,35 @@ namespace DeepSound.Activities.Tabbes
             }
         }
 
+
         #endregion
-       
+
+        private async Task GetNotInterestedSounds()
+        {
+            try
+            {
+                if (Methods.CheckConnectivity())
+                {
+                    var (apiStatus, respond) = await RequestsAsync.Tracks.GetNotInterestedAsync("25");
+                    if (apiStatus == 200)
+                    {
+                        if (respond is GetSoundDataObject result)
+                        {
+                            if (result.Data.Count > 0)
+                            {
+                                ListUtils.GlobalNotInterestedList = new ObservableCollection<SoundDataObject>(result.Data);
+                            }
+                        }
+                    }
+                    else Methods.DisplayReportResult(this, respond);
+                }
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
         private bool ShouldReturn()
         {
             try

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Android.App;
+﻿using Android.App;
 using Android.BillingClient.Api;
 using Android.Content;
 using Android.Content.PM;
@@ -21,8 +18,11 @@ using DeepSound.SQLite;
 using DeepSoundClient;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Requests;
+using Google.Android.Material.Dialog;
 using InAppBilling.Lib;
-using MaterialDialogsCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using BaseActivity = DeepSound.Activities.Base.BaseActivity;
 using Exception = System.Exception;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
@@ -30,7 +30,7 @@ using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 namespace DeepSound.Activities.Upgrade
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Keyboard | ConfigChanges.Orientation | ConfigChanges.KeyboardHidden | ConfigChanges.ScreenLayout | ConfigChanges.ScreenSize | ConfigChanges.SmallestScreenSize | ConfigChanges.UiMode | ConfigChanges.Locale)]
-    public class GoProActivity : BaseActivity, IBillingPaymentListener, MaterialDialog.IListCallback
+    public class GoProActivity : BaseActivity, IBillingPaymentListener, IDialogListCallBack
     {
         #region Variables Basic
 
@@ -56,11 +56,11 @@ namespace DeepSound.Activities.Upgrade
 
                 // Create your application here
                 SetContentView(Resource.Layout.Go_Pro_Layout);
-                
+
                 TextDecorator = new TextDecorator();
 
                 if (AppSettings.ShowInAppBilling && InitializeDeepSound.IsExtended)
-                    BillingSupport = new BillingSupport(this, InAppBillingGoogle.ProductId, AppSettings.Cert, InAppBillingGoogle.ListProductSku, this);  
+                    BillingSupport = new BillingSupport(this, InAppBillingGoogle.ProductId, AppSettings.Cert, InAppBillingGoogle.ListProductSku, this);
 
                 //Get Value And Set Toolbar
                 InitComponent();
@@ -164,7 +164,7 @@ namespace DeepSound.Activities.Upgrade
             {
                 OptionLinerLayout = FindViewById<LinearLayout>(Resource.Id.OptionLinerLayout);
                 UpgradeButton = FindViewById<AppCompatButton>(Resource.Id.btnUpgrade);
-             
+
                 PriceText = FindViewById<TextView>(Resource.Id.priceTextView);
 
                 var list = ListUtils.SettingsSiteList;
@@ -209,7 +209,7 @@ namespace DeepSound.Activities.Upgrade
                             TextDecorator.Build(text, TextDecorator.DecoratedContent);
                         }
                     }
-                } 
+                }
             }
             catch (Exception e)
             {
@@ -273,18 +273,18 @@ namespace DeepSound.Activities.Upgrade
             try
             {
                 var arrayAdapter = new List<string>();
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
                 arrayAdapter.Add(GetString(Resource.String.Lbl_Wallet));
                 if (AppSettings.ShowInAppBilling && InitializeDeepSound.IsExtended)
                     arrayAdapter.Add(GetString(Resource.String.Btn_GooglePlay));
-                  
-                dialogList.Title(GetText(Resource.String.Lbl_Go_Pro));
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show(); 
-            } 
+
+                dialogList.SetTitle(GetText(Resource.String.Lbl_Go_Pro));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
+            }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
@@ -292,10 +292,10 @@ namespace DeepSound.Activities.Upgrade
         }
 
         #endregion
-          
+
         #region MaterialDialog
-         
-        public async void OnSelection(MaterialDialog dialog, View itemView, int position, string text)
+
+        public async void OnSelection(IDialogInterface dialog, int position, string text)
         {
             try
             {
@@ -320,7 +320,7 @@ namespace DeepSound.Activities.Upgrade
 
                                         var sqlEntity = new SqLiteDatabase();
                                         sqlEntity.InsertOrUpdate_DataMyInfo(dataUser);
-                                     
+
                                         SettingsActivity.Instance.GoProLayout.Visibility = ViewStates.Gone;
 
                                         //var HomeFragmentProIcon = HomeActivity.GetInstance()?.HomeFragment?.ProIcon;
@@ -339,10 +339,10 @@ namespace DeepSound.Activities.Upgrade
                     }
                     else
                     {
-                        var dialogBuilder = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                        dialogBuilder.Title(GetText(Resource.String.Lbl_Wallet));
-                        dialogBuilder.Content(GetText(Resource.String.Lbl_Error_NoWallet));
-                        dialogBuilder.PositiveText(GetText(Resource.String.Lbl_AddWallet)).OnPositive((materialDialog, action) =>
+                        var dialogBuilder = new MaterialAlertDialogBuilder(this);
+                        dialogBuilder.SetTitle(GetText(Resource.String.Lbl_Wallet));
+                        dialogBuilder.SetMessage(GetText(Resource.String.Lbl_Error_NoWallet));
+                        dialogBuilder.SetPositiveButton(GetText(Resource.String.Lbl_AddWallet), (materialDialog, action) =>
                         {
                             try
                             {
@@ -353,14 +353,14 @@ namespace DeepSound.Activities.Upgrade
                                 Methods.DisplayReportResultTrack(exception);
                             }
                         });
-                        dialogBuilder.NegativeText(GetText(Resource.String.Lbl_Cancel)).OnNegative(new MyMaterialDialog());
-                        dialogBuilder.AlwaysCallSingleChoiceCallback();
-                        dialogBuilder.Build().Show();
+                        dialogBuilder.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+
+                        dialogBuilder.Show();
                     }
                 }
                 else if (text == GetString(Resource.String.Btn_GooglePlay))
-                { 
-                    BillingSupport?.PurchaseNow("membership");
+                {
+                    BillingSupport?.PurchaseNow(InAppBillingGoogle.Membership);
                 }
             }
             catch (Exception exception)
@@ -372,7 +372,7 @@ namespace DeepSound.Activities.Upgrade
         #endregion
 
         #region Billing
-         
+
         public void OnPaymentError(string error)
         {
             Console.WriteLine(error);

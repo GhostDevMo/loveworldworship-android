@@ -1,5 +1,4 @@
-﻿using System;
-using Android.Animation;
+﻿using Android.Animation;
 using Android.Content;
 using Android.Graphics;
 using Android.OS;
@@ -9,6 +8,7 @@ using Android.Views;
 using Android.Views.Animations;
 using Android.Widget;
 using DeepSound.Helpers.Utils;
+using System;
 
 namespace DeepSound.Library.Anjo
 {
@@ -18,7 +18,7 @@ namespace DeepSound.Library.Anjo
         private AnimatorSet PlayingSet, StopSet;
         private bool Animating;
         private int Duration = 3000;
-         
+
         protected EqualizerView(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
         }
@@ -31,8 +31,8 @@ namespace DeepSound.Library.Anjo
             }
             catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(e); 
-            }  
+                Methods.DisplayReportResultTrack(e);
+            }
         }
 
         public EqualizerView(Context context, IAttributeSet attrs) : base(context, attrs)
@@ -73,7 +73,7 @@ namespace DeepSound.Library.Anjo
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         //private void SetAttrs(Context context, IAttributeSet attrs)
         //{
         //    //TypedArray a = context.Theme.ObtainStyledAttributes(attrs,Resource.Styleable.EqualizerView,0, 0);
@@ -100,12 +100,12 @@ namespace DeepSound.Library.Anjo
                 MusicBar1.SetBackgroundColor(Color.ParseColor(AppSettings.MainColor));
                 MusicBar2.SetBackgroundColor(Color.ParseColor(AppSettings.MainColor));
                 MusicBar3.SetBackgroundColor(Color.ParseColor(AppSettings.MainColor));
-                SetPivots(); 
+                SetPivots();
             }
             catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(e); 
-            } 
+                Methods.DisplayReportResultTrack(e);
+            }
         }
 
         private void SetPivots()
@@ -114,12 +114,12 @@ namespace DeepSound.Library.Anjo
             {
                 MusicBar1.ViewTreeObserver?.AddOnGlobalLayoutListener(this);
                 MusicBar2.ViewTreeObserver?.AddOnGlobalLayoutListener(this);
-                MusicBar3.ViewTreeObserver?.AddOnGlobalLayoutListener(this);  
+                MusicBar3.ViewTreeObserver?.AddOnGlobalLayoutListener(this);
             }
             catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(e); 
-            } 
+                Methods.DisplayReportResultTrack(e);
+            }
         }
 
         public void OnGlobalLayout()
@@ -129,7 +129,7 @@ namespace DeepSound.Library.Anjo
                 if (MusicBar1.Height > 0)
                 {
                     MusicBar1.PivotY = MusicBar1.Height;
-                    if (Build.VERSION.SdkInt >= (BuildVersionCodes) 16)
+                    if (Build.VERSION.SdkInt >= (BuildVersionCodes)16)
                     {
                         MusicBar1.ViewTreeObserver?.RemoveOnGlobalLayoutListener(this);
                     }
@@ -143,7 +143,7 @@ namespace DeepSound.Library.Anjo
                         MusicBar2.ViewTreeObserver?.RemoveOnGlobalLayoutListener(this);
                     }
                 }
-                 
+
                 if (MusicBar3.Height > 0)
                 {
                     MusicBar3.PivotY = MusicBar3.Height;
@@ -151,7 +151,7 @@ namespace DeepSound.Library.Anjo
                     {
                         MusicBar3.ViewTreeObserver?.RemoveOnGlobalLayoutListener(this);
                     }
-                } 
+                }
             }
             catch (Exception e)
             {
@@ -198,10 +198,10 @@ namespace DeepSound.Library.Anjo
             }
             catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(e); 
-            } 
+                Methods.DisplayReportResultTrack(e);
+            }
         }
-         
+
         public void StopBars()
         {
             try
@@ -237,15 +237,15 @@ namespace DeepSound.Library.Anjo
             }
             catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(e); 
-            } 
+                Methods.DisplayReportResultTrack(e);
+            }
         }
 
         public bool IsAnimating()
         {
             return Animating;
         }
-         
+
         public void SetDuration(int duration)
         {
             try
@@ -254,8 +254,8 @@ namespace DeepSound.Library.Anjo
             }
             catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(e); 
-            } 
-        } 
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
     }
 }

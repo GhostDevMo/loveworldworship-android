@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
@@ -12,6 +9,9 @@ using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Global;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 
 namespace DeepSound.Activities.SettingsUser.Adapters
@@ -49,7 +49,7 @@ namespace DeepSound.Activities.SettingsUser.Adapters
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -57,7 +57,7 @@ namespace DeepSound.Activities.SettingsUser.Adapters
         public override void OnBindViewHolder(RecyclerView.ViewHolder viewHolder, int position)
         {
             try
-            { 
+            {
                 if (viewHolder is BlockedUsersAdapterViewHolder holder)
                 {
                     var item = BlockedUsersList[position];
@@ -74,7 +74,7 @@ namespace DeepSound.Activities.SettingsUser.Adapters
             }
         }
 
-       
+
         public override int ItemCount
         {
             get
@@ -152,9 +152,9 @@ namespace DeepSound.Activities.SettingsUser.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString())
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString())
                 .Apply(new RequestOptions().CircleCrop());
-        } 
+        }
     }
 
     public class BlockedUsersAdapterViewHolder : RecyclerView.ViewHolder
@@ -183,7 +183,7 @@ namespace DeepSound.Activities.SettingsUser.Adapters
                 Button = MainView.FindViewById<AppCompatButton>(Resource.Id.cont);
 
                 Button.Visibility = ViewStates.Gone;
-                 
+
                 //Event
                 itemView.Click += (sender, e) => clickListener(new BlockedUsersAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });
                 itemView.LongClick += (sender, e) => longClickListener(new BlockedUsersAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });
@@ -199,5 +199,5 @@ namespace DeepSound.Activities.SettingsUser.Adapters
     {
         public View View { get; set; }
         public int Position { get; set; }
-    } 
+    }
 }

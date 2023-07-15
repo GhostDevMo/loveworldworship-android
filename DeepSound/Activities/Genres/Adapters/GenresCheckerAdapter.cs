@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -16,6 +13,9 @@ using Bumptech.Glide.Request;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.User;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 using Object = Java.Lang.Object;
 
@@ -30,7 +30,7 @@ namespace DeepSound.Activities.Genres.Adapters
         public ObservableCollection<GenresObject.DataGenres> GenresList = new ObservableCollection<GenresObject.DataGenres>();
         public List<int> AlreadySelectedGenres = new List<int>();
         private readonly RequestOptions Options;
-         
+
         public GenresCheckerAdapter(Activity context)
         {
             try
@@ -62,7 +62,7 @@ namespace DeepSound.Activities.Genres.Adapters
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -83,7 +83,7 @@ namespace DeepSound.Activities.Genres.Adapters
                             holder.MainCardView.SetOutlineSpotShadowColor(Color.ParseColor(item.Color));
                         }
 
-                        Glide.With(ActivityContext).Load(item.BackgroundThumb).Apply(Options).Into(holder.GenresImage);
+                        Glide.With(ActivityContext?.BaseContext).Load(item.BackgroundThumb).Apply(Options).Into(holder.GenresImage);
 
                         holder.TxtName.Text = item.CateogryName;
 
@@ -161,7 +161,7 @@ namespace DeepSound.Activities.Genres.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString())
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString())
                 .Apply(new RequestOptions().CircleCrop());
         }
     }
@@ -189,7 +189,7 @@ namespace DeepSound.Activities.Genres.Adapters
                 GenresImage = (ImageView)MainView.FindViewById(Resource.Id.image);
                 TxtName = MainView.FindViewById<TextView>(Resource.Id.titleText);
                 Check = MainView.FindViewById<ImageView>(Resource.Id.Check);
-                 
+
                 //Event
                 itemView.Click += (sender, e) => clickListener(new GenresCheckerAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });
                 itemView.LongClick += (sender, e) => longClickListener(new GenresCheckerAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });

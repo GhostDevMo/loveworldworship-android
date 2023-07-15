@@ -1,7 +1,4 @@
-﻿using System;
-using System.Globalization;
-using System.Threading;
-using Android.Content;
+﻿using Android.Content;
 using Android.Content.Res;
 using Android.OS;
 using Android.Runtime;
@@ -9,6 +6,9 @@ using DeepSound.Activities.SettingsUser;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using Java.Util;
+using System;
+using System.Globalization;
+using System.Threading;
 
 namespace DeepSound.Helpers.Controller
 {
@@ -189,11 +189,11 @@ namespace DeepSound.Helpers.Controller
                         CultureInfo myCulture = new CultureInfo(language);
                         CultureInfo.DefaultThreadCurrentCulture = myCulture;
                     }
-                    catch 
+                    catch
                     {
-                         //
+                        //
                     }
-                   
+
                     context = context.CreateConfigurationContext(configuration);
                 }
                 else if (Build.VERSION.SdkInt >= BuildVersionCodes.JellyBeanMr1)
@@ -221,7 +221,7 @@ namespace DeepSound.Helpers.Controller
                 {
 #pragma warning disable 618
                     configuration.Locale = newLocale;
-                   // res.UpdateConfiguration(configuration, res.DisplayMetrics);
+                    // res.UpdateConfiguration(configuration, res.DisplayMetrics);
 #pragma warning restore 618
                 }
 
@@ -231,7 +231,7 @@ namespace DeepSound.Helpers.Controller
 
                 UserDetails.LangName = language;
                 AppSettings.Lang = language;
-                 
+
                 AppSettings.FlowDirectionRightToLeft = language.Contains("ar") || language.Contains("ku");
                 SetCulture(language);
                 SharedPref.SharedData?.Edit()?.PutString("Lang_key", language)?.Commit();

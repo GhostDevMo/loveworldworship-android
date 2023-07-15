@@ -1,5 +1,4 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
@@ -13,6 +12,7 @@ using AndroidX.Core.Content;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Requests;
+using System;
 
 namespace DeepSound.Activities.Default
 {
@@ -27,7 +27,7 @@ namespace DeepSound.Activities.Default
 
         private ImageView BackIcon, EmailIcon;
         private RelativeLayout EmailFrameLayout;
-     
+
         #endregion
 
         #region General
@@ -37,12 +37,14 @@ namespace DeepSound.Activities.Default
             try
             {
                 base.OnCreate(savedInstanceState);
+                Methods.App.FullScreenApp(this);
+                SetTheme(DeepSoundTools.IsTabDark() ? Resource.Style.MyTheme_Dark : Resource.Style.MyTheme);
 
                 // Create your application here
                 SetContentView(Resource.Layout.ForgotPasswordLayout);
 
                 //Get Value And Set Toolbar
-                InitComponent(); 
+                InitComponent();
             }
             catch (Exception e)
             {
@@ -128,13 +130,13 @@ namespace DeepSound.Activities.Default
                 BackIcon = FindViewById<ImageView>(Resource.Id.backArrow);
                 BackIcon.SetImageResource(AppSettings.FlowDirectionRightToLeft ? Resource.Drawable.icon_back_arrow_right : Resource.Drawable.icon_back_arrow_left);
                 BackIcon.ImageTintList = ColorStateList.ValueOf(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
-                
+
                 EmailFrameLayout = FindViewById<RelativeLayout>(Resource.Id.emailframelayout);
                 EmailEditText = FindViewById<EditText>(Resource.Id.edt_email);
                 EmailIcon = FindViewById<ImageView>(Resource.Id.emailicon);
-           
+
                 BtnSend = FindViewById<AppCompatButton>(Resource.Id.Lbl_Send);
-               
+
                 ProgressBar = FindViewById<ProgressBar>(Resource.Id.progressBar);
                 ProgressBar.Visibility = ViewStates.Gone;
 
@@ -209,13 +211,16 @@ namespace DeepSound.Activities.Default
                             {
                                 if (respond is MessageObject result)
                                 {
+                                    ProgressBar.Visibility = ViewStates.Gone;
+                                    BtnSend.Visibility = ViewStates.Visible;
+
                                     Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_VerificationFailed), result.Message, GetText(Resource.String.Lbl_Ok));
                                 }
                             }
                             else if (apiStatus == 400)
                             {
                                 if (respond is ErrorObject error)
-                                { 
+                                {
                                     string errorText = error.Error;
                                     switch (errorText)
                                     {
@@ -261,7 +266,7 @@ namespace DeepSound.Activities.Default
                 Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_VerificationFailed), exception.ToString(), GetText(Resource.String.Lbl_Ok));
             }
         }
-         
+
         private void EmailFrameLayout_FocusChange(object sender, View.FocusChangeEventArgs e)
         {
             try
@@ -296,7 +301,7 @@ namespace DeepSound.Activities.Default
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-        
+
         #endregion
     }
 }

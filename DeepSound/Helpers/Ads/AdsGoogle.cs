@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.Res;
 using Android.Gms.Ads;
@@ -15,6 +13,8 @@ using Android.Views;
 using AndroidX.RecyclerView.Widget;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
+using System;
+using System.Collections.Generic;
 using Exception = System.Exception;
 using Object = Java.Lang.Object;
 
@@ -339,12 +339,12 @@ namespace DeepSound.Helpers.Ads
                         break;
                 }
 
-                return null!;
+                return null;
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -727,7 +727,7 @@ namespace DeepSound.Helpers.Ads
                         base.OnAdDismissedFullScreenContent();
                         Listener?.OnAdDismissedFullScreenContent();
                         IsShowingAd = false;
-                        Ad = null!;
+                        Ad = null;
                         AppOpenAdManager.FetchAd();
                     }
                     catch (Exception e)
@@ -878,12 +878,12 @@ namespace DeepSound.Helpers.Ads
                         break;
                 }
 
-                return null!;
+                return null;
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 

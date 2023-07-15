@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Gms.Ads;
+﻿using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -23,6 +18,11 @@ using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.Tracks;
 using DeepSoundClient.Requests;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Songs
@@ -58,13 +58,13 @@ namespace DeepSound.Activities.Songs
         {
             try
             {
-                View view = inflater.Inflate(Resource.Layout.RecyclerDefaultLayout, container, false); 
+                View view = inflater.Inflate(Resource.Layout.RecyclerDefaultLayout, container, false);
                 return view;
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -158,7 +158,7 @@ namespace DeepSound.Activities.Songs
                 SwipeRefreshLayout.Enabled = true;
                 SwipeRefreshLayout.SetProgressBackgroundColorSchemeColor(DeepSoundTools.IsTabDark() ? Color.ParseColor("#424242") : Color.ParseColor("#f7f7f7"));
                 SwipeRefreshLayout.Refresh += SwipeRefreshLayoutOnRefresh;
-            
+
                 MAdView = view.FindViewById<AdView>(Resource.Id.adView);
                 AdsGoogle.InitAdView(MAdView, MRecycler);
             }
@@ -210,7 +210,7 @@ namespace DeepSound.Activities.Songs
         }
 
         #endregion
-         
+
         #region Event
 
         //Scroll
@@ -221,7 +221,7 @@ namespace DeepSound.Activities.Songs
                 //Code get last id where LoadMore >>
                 var item = MAdapter.SoundsList.LastOrDefault();
                 if (item != null && !string.IsNullOrEmpty(item.Id.ToString()) && !MainScrollEvent.IsLoading)
-                    StartApiService(item.Id.ToString()); 
+                    StartApiService(item.Id.ToString());
             }
             catch (Exception exception)
             {
@@ -234,13 +234,13 @@ namespace DeepSound.Activities.Songs
         {
             try
             {
-                   var item = MAdapter.GetItem(e.Position);
+                var item = MAdapter.GetItem(e.Position);
                 if (item != null)
                 {
                     if (item.IsPlay)
                     {
                         item.IsPlay = false;
-                        
+
                         var index = MAdapter.SoundsList.IndexOf(item);
                         MAdapter.NotifyItemChanged(index, "playerAction");
 
@@ -356,9 +356,9 @@ namespace DeepSound.Activities.Songs
                         {
                             var respondList = result.Tracks?.Data.SoundList?.Count;
                             if (respondList > 0)
-                            { 
+                            {
                                 List<SoundDataObject> list = DeepSoundTools.ListFilter(result.Tracks.Data.SoundList.Values.ToList());
-                                 
+
                                 if (countList > 0)
                                 {
                                     foreach (var item in from item in list let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
@@ -379,7 +379,7 @@ namespace DeepSound.Activities.Songs
                                 if (MAdapter.SoundsList.Count > 10 && !MRecycler.CanScrollVertically(1))
                                     Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_NoMoreSongs), ToastLength.Short)?.Show();
                             }
-                        } 
+                        }
                     }
                 }
                 else
@@ -397,7 +397,7 @@ namespace DeepSound.Activities.Songs
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -430,7 +430,7 @@ namespace DeepSound.Activities.Songs
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSound);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }

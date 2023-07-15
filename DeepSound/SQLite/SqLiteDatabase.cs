@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks; 
-using DeepSound.Activities.Chat;
+﻿using DeepSound.Activities.Chat;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
@@ -18,7 +12,14 @@ using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.User;
 using Newtonsoft.Json;
 using SQLite;
- 
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
+using static DeepSoundClient.Classes.Common.OptionsObject;
+
 //###############################################################
 // Author >> Elin Doughouz 
 // Copyright (c) DeepSound 25/04/2019 All Right Reserved
@@ -34,7 +35,7 @@ namespace DeepSound.SQLite
         private static readonly string Folder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
 
         public static readonly string PathCombine = Path.Combine(Folder, AppSettings.DatabaseName + "_.db");
-         
+
         //Open Connection in Database
         //*********************************************************
 
@@ -53,7 +54,7 @@ namespace DeepSound.SQLite
                     return OpenConnection();
                 else
                     Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -65,13 +66,12 @@ namespace DeepSound.SQLite
                 if (connection == null) return;
 
                 connection.CreateTable<DataTables.LoginTb>();
-                connection.CreateTable<DataTables.SettingsTb>(); 
+                connection.CreateTable<DataTables.SettingsTb>();
                 connection.CreateTable<DataTables.InfoUsersTb>();
                 connection.CreateTable<DataTables.GenresTb>();
                 connection.CreateTable<DataTables.PriceTb>();
                 connection.CreateTable<DataTables.SharedTb>();
                 connection.CreateTable<DataTables.LatestDownloadsTb>();
-                connection.CreateTable<DataTables.NotInterestedTb>();
                 connection.CreateTable<DataTables.LastChatTb>();
                 connection.CreateTable<DataTables.MessageTb>();
                 //Connection.Dispose();
@@ -85,7 +85,7 @@ namespace DeepSound.SQLite
                     Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         //Delete table
         public void DropAll()
         {
@@ -95,13 +95,12 @@ namespace DeepSound.SQLite
                 if (connection == null) return;
 
                 connection.DropTable<DataTables.LoginTb>();
-                connection.DropTable<DataTables.SettingsTb>(); 
+                connection.DropTable<DataTables.SettingsTb>();
                 connection.DropTable<DataTables.InfoUsersTb>();
                 connection.DropTable<DataTables.GenresTb>();
                 connection.DropTable<DataTables.PriceTb>();
                 connection.DropTable<DataTables.SharedTb>();
-                connection.DropTable<DataTables.LatestDownloadsTb>(); 
-                connection.DropTable<DataTables.NotInterestedTb>(); 
+                connection.DropTable<DataTables.LatestDownloadsTb>();
                 connection.DropTable<DataTables.LastChatTb>();
                 connection.DropTable<DataTables.MessageTb>();
             }
@@ -115,7 +114,7 @@ namespace DeepSound.SQLite
         }
 
         #endregion Connection
-         
+
         //############# CONNECTION #############
 
         //########################## End SQLite_Entity ##########################
@@ -216,7 +215,7 @@ namespace DeepSound.SQLite
                     dataUser.Lang = AppSettings.Lang;
                     dataUser.DeviceId = UserDetails.DeviceId;
                     dataUser.Email = UserDetails.Email;
-                         
+
                     connection.Update(dataUser);
                 }
                 else
@@ -239,7 +238,7 @@ namespace DeepSound.SQLite
             try
             {
                 using var connection = OpenConnection();
-                if (connection == null) return null!;
+                if (connection == null) return null;
 
                 var dataUser = connection.Table<DataTables.LoginTb>().FirstOrDefault();
                 if (dataUser != null)
@@ -264,7 +263,7 @@ namespace DeepSound.SQLite
                 }
                 else
                 {
-                    return null!;
+                    return null;
                 }
             }
             catch (Exception e)
@@ -273,12 +272,12 @@ namespace DeepSound.SQLite
                     return Get_data_Login_Credentials();
                 else
                     Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
-          
+
         #endregion
-         
+
         #region Settings
 
         public void InsertOrUpdateSettings(OptionsObject.Data settingsData)
@@ -299,6 +298,7 @@ namespace DeepSound.SQLite
                         {
                             db.BlogCategories = JsonConvert.SerializeObject(settingsData.BlogCategories);
                             db.ProductsCategories = JsonConvert.SerializeObject(settingsData.ProductsCategories);
+                            db.WithdrawalPaymentMethod = JsonConvert.SerializeObject(settingsData.WithdrawalPaymentMethod);
 
                             connection.Insert(db);
                         }
@@ -311,6 +311,7 @@ namespace DeepSound.SQLite
                         {
                             select.BlogCategories = JsonConvert.SerializeObject(settingsData.BlogCategories);
                             select.ProductsCategories = JsonConvert.SerializeObject(settingsData.ProductsCategories);
+                            select.WithdrawalPaymentMethod = JsonConvert.SerializeObject(settingsData.WithdrawalPaymentMethod);
 
                             connection.Update(select);
                         }
@@ -343,10 +344,13 @@ namespace DeepSound.SQLite
 
                         if (!string.IsNullOrEmpty(select.ProductsCategories))
                             db.ProductsCategories = JsonConvert.DeserializeObject<Dictionary<string, string>>(select.ProductsCategories);
-                         
-                        ListUtils.SettingsSiteList = null!;
+
+                        if (!string.IsNullOrEmpty(select.WithdrawalPaymentMethod))
+                            db.WithdrawalPaymentMethod = JsonConvert.DeserializeObject<WithdrawalPaymentMethod>(select.WithdrawalPaymentMethod);
+
+                        ListUtils.SettingsSiteList = null;
                         ListUtils.SettingsSiteList = db;
-                         
+
                         Task.Run(() =>
                         {
                             try
@@ -381,9 +385,9 @@ namespace DeepSound.SQLite
                         });
 
                         return db;
-                    } 
+                    }
                 }
-                return null!;
+                return null;
             }
             catch (Exception e)
             {
@@ -391,12 +395,12 @@ namespace DeepSound.SQLite
                     return GetSettings();
                 else
                     Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
         #endregion
-          
+
         #region Genres
 
         //Insert data Genres
@@ -406,7 +410,7 @@ namespace DeepSound.SQLite
             {
                 using var connection = OpenConnection();
                 if (connection == null) return;
-                     
+
                 var result = connection.Table<DataTables.GenresTb>().ToList();
 
                 List<DataTables.GenresTb> list = new List<DataTables.GenresTb>();
@@ -427,18 +431,18 @@ namespace DeepSound.SQLite
                     if (update != null)
                     {
                         update = item;
-                        connection.Update(update); 
+                        connection.Update(update);
                     }
                 }
-                      
+
                 if (list.Count <= 0) return;
-                      
+
                 connection.BeginTransaction();
                 //Bring new  
                 var newItemList = list.Where(c => !result.Select(fc => fc.Id).Contains(c.Id)).ToList();
                 if (newItemList.Count > 0)
                     connection.InsertAll(newItemList);
-                     
+
                 result = connection.Table<DataTables.GenresTb>().ToList();
                 var deleteItemList = result.Where(c => !list.Select(fc => fc.Id).Contains(c.Id)).ToList();
                 if (deleteItemList.Count > 0)
@@ -476,7 +480,7 @@ namespace DeepSound.SQLite
                         BackgroundThumb = cat.BackgroundThumb,
                         Time = cat.Time,
                     }).ToList();
-                          
+
                     return new ObservableCollection<GenresObject.DataGenres>(list);
                 }
                 else
@@ -495,7 +499,7 @@ namespace DeepSound.SQLite
         }
 
         #endregion
-         
+
         #region My Profile
 
         //Insert Or Update data My Profile Table
@@ -524,6 +528,7 @@ namespace DeepSound.SQLite
                         resultInfoTb.Store = JsonConvert.SerializeObject(info.Store);
                         resultInfoTb.Stations = JsonConvert.SerializeObject(info.Stations);
                         resultInfoTb.Events = JsonConvert.SerializeObject(info.Events);
+                        resultInfoTb.EmailPrivacy = JsonConvert.SerializeObject(info.EmailPrivacy);
 
                         connection.Update(resultInfoTb);
                     }
@@ -545,6 +550,7 @@ namespace DeepSound.SQLite
                         db.Store = JsonConvert.SerializeObject(info.Store);
                         db.Stations = JsonConvert.SerializeObject(info.Stations);
                         db.Events = JsonConvert.SerializeObject(info.Events);
+                        db.EmailPrivacy = JsonConvert.SerializeObject(info.EmailPrivacy);
 
                         connection.Insert(db);
                     }
@@ -556,7 +562,7 @@ namespace DeepSound.SQLite
                 UserDetails.FullName = info.Name;
                 UserDetails.Email = info.Email;
 
-                ListUtils.MyUserInfoList = new ObservableCollection<UserDataObject> {info};
+                ListUtils.MyUserInfoList = new ObservableCollection<UserDataObject> { info };
             }
             catch (Exception e)
             {
@@ -582,48 +588,49 @@ namespace DeepSound.SQLite
                     if (db != null)
                     {
                         UserDataObject asd = db;
-                        asd.Followers = new List<UserDataObject>();
-                        asd.Following = new List<UserDataObject>();
-                        asd.Albums = new List<DataAlbumsObject>();
-                        asd.Blocks = new List<UserDataObject>();
-                        asd.Favourites = new List<SoundDataObject>();
-                        asd.RecentlyPlayed = new List<SoundDataObject>();
-                        asd.Liked = new List<SoundDataObject>();
-                        asd.Latestsongs = new List<SoundDataObject>();
-                        asd.TopSongs = new List<SoundDataObject>();
-                        asd.Store = new List<SoundDataObject>();
+                        asd.Followers = new List<List<UserDataObject>>();
+                        asd.Following = new List<List<UserDataObject>>();
+                        asd.Albums = new List<List<DataAlbumsObject>>();
+                        asd.Blocks = new List<List<UserDataObject>>();
+                        asd.Favourites = new List<List<SoundDataObject>>();
+                        asd.RecentlyPlayed = new List<List<SoundDataObject>>();
+                        asd.Liked = new List<List<SoundDataObject>>();
+                        asd.Latestsongs = new List<List<SoundDataObject>>();
+                        asd.TopSongs = new List<List<SoundDataObject>>();
+                        asd.Store = new List<List<SoundDataObject>>();
                         asd.Stations = new List<SoundDataObject>();
                         asd.Events = new List<EventDataObject>();
+                        asd.EmailPrivacy = new EmailPrivacyObject();
 
                         if (!string.IsNullOrEmpty(info.Followers))
-                            asd.Followers = JsonConvert.DeserializeObject<List<UserDataObject>>(info.Followers);
+                            asd.Followers = JsonConvert.DeserializeObject<List<List<UserDataObject>>>(info.Followers);
 
                         if (!string.IsNullOrEmpty(info.Following))
-                            asd.Following = JsonConvert.DeserializeObject<List<UserDataObject>>(info.Following);
+                            asd.Following = JsonConvert.DeserializeObject<List<List<UserDataObject>>>(info.Following);
 
                         if (!string.IsNullOrEmpty(info.Albums))
-                            asd.Albums = JsonConvert.DeserializeObject<List<DataAlbumsObject>>(info.Albums);
+                            asd.Albums = JsonConvert.DeserializeObject<List<List<DataAlbumsObject>>>(info.Albums);
 
                         if (!string.IsNullOrEmpty(info.Blocks))
-                            asd.Blocks = JsonConvert.DeserializeObject<List<UserDataObject>>(info.Blocks);
+                            asd.Blocks = JsonConvert.DeserializeObject<List<List<UserDataObject>>>(info.Blocks);
 
                         if (!string.IsNullOrEmpty(info.Favourites))
-                            asd.Favourites = JsonConvert.DeserializeObject<List<SoundDataObject>>(info.Favourites);
+                            asd.Favourites = JsonConvert.DeserializeObject<List<List<SoundDataObject>>>(info.Favourites);
 
                         if (!string.IsNullOrEmpty(info.RecentlyPlayed))
-                            asd.RecentlyPlayed = JsonConvert.DeserializeObject<List<SoundDataObject>>(info.RecentlyPlayed);
+                            asd.RecentlyPlayed = JsonConvert.DeserializeObject<List<List<SoundDataObject>>>(info.RecentlyPlayed);
 
                         if (!string.IsNullOrEmpty(info.Liked))
-                            asd.Liked = JsonConvert.DeserializeObject<List<SoundDataObject>>(info.Liked);
+                            asd.Liked = JsonConvert.DeserializeObject<List<List<SoundDataObject>>>(info.Liked);
 
                         if (!string.IsNullOrEmpty(info.Latestsongs))
-                            asd.Latestsongs = JsonConvert.DeserializeObject<List<SoundDataObject>>(info.Latestsongs);
+                            asd.Latestsongs = JsonConvert.DeserializeObject<List<List<SoundDataObject>>>(info.Latestsongs);
 
                         if (!string.IsNullOrEmpty(info.TopSongs))
-                            asd.TopSongs = JsonConvert.DeserializeObject<List<SoundDataObject>>(info.TopSongs);
+                            asd.TopSongs = JsonConvert.DeserializeObject<List<List<SoundDataObject>>>(info.TopSongs);
 
                         if (!string.IsNullOrEmpty(info.Store))
-                            asd.Store = JsonConvert.DeserializeObject<List<SoundDataObject>>(info.Store);
+                            asd.Store = JsonConvert.DeserializeObject<List<List<SoundDataObject>>>(info.Store);
 
                         if (!string.IsNullOrEmpty(info.Stations))
                             asd.Stations = JsonConvert.DeserializeObject<List<SoundDataObject>>(info.Stations);
@@ -631,14 +638,17 @@ namespace DeepSound.SQLite
                         if (!string.IsNullOrEmpty(info.Events))
                             asd.Events = JsonConvert.DeserializeObject<List<EventDataObject>>(info.Events);
 
+                        if (!string.IsNullOrEmpty(info.EmailPrivacy))
+                            asd.EmailPrivacy = JsonConvert.DeserializeObject<EmailPrivacyObject>(info.EmailPrivacy);
+
                         UserDetails.Avatar = asd.Avatar;
                         UserDetails.Cover = asd.Cover;
                         UserDetails.Username = asd.Username;
                         UserDetails.FullName = asd.Name;
                         UserDetails.Email = asd.Email;
 
-                        ListUtils.MyUserInfoList = new ObservableCollection<UserDataObject> {asd};
-                    } 
+                        ListUtils.MyUserInfoList = new ObservableCollection<UserDataObject> { asd };
+                    }
                 }
             }
             catch (Exception e)
@@ -681,7 +691,7 @@ namespace DeepSound.SQLite
                         connection.Update(update);
                     }
                 }
-                     
+
                 if (list.Count <= 0) return;
 
                 connection.BeginTransaction();
@@ -689,7 +699,7 @@ namespace DeepSound.SQLite
                 var newItemList = list.Where(c => !result.Select(fc => fc.Id).Contains(c.Id)).ToList();
                 if (newItemList.Count > 0)
                     connection.InsertAll(newItemList);
-                     
+
                 result = connection.Table<DataTables.PriceTb>().ToList();
                 var deleteItemList = result.Where(c => !list.Select(fc => fc.Id).Contains(c.Id)).ToList();
                 if (deleteItemList.Count > 0)
@@ -713,7 +723,7 @@ namespace DeepSound.SQLite
             try
             {
                 using var connection = OpenConnection();
-                if (connection == null) return new ObservableCollection<PricesObject.DataPrice> ();
+                if (connection == null) return new ObservableCollection<PricesObject.DataPrice>();
 
                 var result = connection.Table<DataTables.PriceTb>().ToList();
                 if (result?.Count > 0)
@@ -742,7 +752,7 @@ namespace DeepSound.SQLite
         }
 
         #endregion
-         
+
         #region Shared Sound
 
         //Insert Or Update Shared Sound
@@ -807,18 +817,18 @@ namespace DeepSound.SQLite
                         if (!string.IsNullOrEmpty(item.Publisher))
                             db.Publisher = JsonConvert.DeserializeObject<UserDataObject>(item.Publisher);
 
-                        if (!string.IsNullOrEmpty(item.TagsArray)) 
+                        if (!string.IsNullOrEmpty(item.TagsArray))
                             db.TagsArray = JsonConvert.DeserializeObject<List<string>>(item.TagsArray);
 
-                        if (!string.IsNullOrEmpty(item.TagsFiltered)) 
+                        if (!string.IsNullOrEmpty(item.TagsFiltered))
                             db.TagsFiltered = JsonConvert.DeserializeObject<List<string>>(item.TagsFiltered);
 
-                        if (!string.IsNullOrEmpty(item.SongArray)) 
+                        if (!string.IsNullOrEmpty(item.SongArray))
                             db.SongArray = JsonConvert.DeserializeObject<SongArray>(item.SongArray);
 
                         if (!string.IsNullOrEmpty(item.TagsFiltered))
                             db.Comments = JsonConvert.DeserializeObject<List<CommentsDataObject>>(item.Comments);
-                            
+
                         list.Add(db);
                     }
 
@@ -842,7 +852,7 @@ namespace DeepSound.SQLite
         #endregion
 
         #region LatestDownloads Sound
-          
+
         //Insert Or Update Latest Downloads Sound
         public void Insert_LatestDownloadsSound(SoundDataObject info)
         {
@@ -905,7 +915,7 @@ namespace DeepSound.SQLite
                     Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         public void Update_LatestDownloadsSound(long Id, string path)
         {
             try
@@ -926,21 +936,21 @@ namespace DeepSound.SQLite
                     Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         //Get LatestDownloads Sound
         public ObservableCollection<SoundDataObject> Get_LatestDownloadsSound()
         {
             try
             {
                 using var connection = OpenConnection();
-                if (connection == null) return new ObservableCollection<SoundDataObject>(); 
+                if (connection == null) return new ObservableCollection<SoundDataObject>();
 
                 var select = connection.Table<DataTables.LatestDownloadsTb>().ToList();
                 if (select.Count > 0)
                 {
                     var list = new ObservableCollection<SoundDataObject>();
                     foreach (var item in select)
-                    { 
+                    {
                         var db = new SoundDataObject
                         {
                             ItunesAffiliateUrl = item.ItunesAffiliateUrl,
@@ -1008,7 +1018,7 @@ namespace DeepSound.SQLite
                             YoutubeUrl = item.YoutubeUrl,
                             IsPlay = false,
                         };
-                             
+
                         if (!string.IsNullOrEmpty(item.Publisher))
                             db.Publisher = JsonConvert.DeserializeObject<UserDataObject>(item.Publisher);
 
@@ -1043,14 +1053,14 @@ namespace DeepSound.SQLite
                 return new ObservableCollection<SoundDataObject>();
             }
         }
-         
+
         public SoundDataObject Get_LatestDownloadsSound(long soundId)
         {
             try
             {
                 using var connection = OpenConnection();
-                if (connection == null) return null!;
-                     
+                if (connection == null) return null;
+
                 var select = connection.Table<DataTables.LatestDownloadsTb>().FirstOrDefault(a => a.Id == soundId);
                 if (select != null)
                 {
@@ -1075,7 +1085,7 @@ namespace DeepSound.SQLite
                 }
                 else
                 {
-                    return null!;
+                    return null;
                 }
             }
             catch (Exception e)
@@ -1084,110 +1094,11 @@ namespace DeepSound.SQLite
                     return Get_LatestDownloadsSound(soundId);
                 else
                     Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
         #endregion
-         
-        #region Not Interested Sound
-
-        //Insert or Update NotInterested Sound
-        public void Insert_NotInterestedSound(SoundDataObject info)
-        {
-            try
-            {
-                using var connection = OpenConnection();
-                if (info != null)
-                {
-                    var select = connection.Table<DataTables.NotInterestedTb>().FirstOrDefault(a => a.Id == info.Id);
-                    if (select != null)
-                    {
-                        select = ClassMapper.Mapper?.Map<DataTables.NotInterestedTb>(info);
-                        select.Publisher = JsonConvert.SerializeObject(info.Publisher);
-                        select.TagsArray = JsonConvert.SerializeObject(info.TagsArray);
-                        select.TagsFiltered = JsonConvert.SerializeObject(info.TagsFiltered);
-                        select.SongArray = JsonConvert.SerializeObject(info.SongArray);
-                        select.Comments = JsonConvert.SerializeObject(info.Comments);
-                        connection.Update(select);
-                    }
-                    else
-                    {
-                        var db = ClassMapper.Mapper?.Map<DataTables.NotInterestedTb>(info);
-                        db.Publisher = JsonConvert.SerializeObject(info.Publisher);
-                        db.TagsArray = JsonConvert.SerializeObject(info.TagsArray);
-                        db.TagsFiltered = JsonConvert.SerializeObject(info.TagsFiltered);
-                        db.SongArray = JsonConvert.SerializeObject(info.SongArray);
-                        db.Comments = JsonConvert.SerializeObject(info.Comments);
-                        connection.Insert(db);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                if (e.Message.Contains("database is locked"))
-                    Insert_NotInterestedSound(info);
-                else
-                    Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-        //Get NotInterested Sound
-        public ObservableCollection<SoundDataObject> Get_NotInterestedSound()
-        {
-            try
-            {
-                using var connection = OpenConnection();
-                if (connection == null) return new ObservableCollection<SoundDataObject>();
-
-                var select = connection.Table<DataTables.NotInterestedTb>().ToList();
-                if (select.Count > 0)
-                {
-                    var list = new ObservableCollection<SoundDataObject>();
-                    foreach (var item in select)
-                    {
-                        var db = ClassMapper.Mapper?.Map<SoundDataObject>(item);
-                        db.IsPlay = false;
-
-                        if (!string.IsNullOrEmpty(item.Publisher))
-                            db.Publisher = JsonConvert.DeserializeObject<UserDataObject>(item.Publisher);
-
-                        if (!string.IsNullOrEmpty(item.TagsArray))
-                            db.TagsArray = JsonConvert.DeserializeObject<List<string>>(item.TagsArray);
-
-                        if (!string.IsNullOrEmpty(item.TagsFiltered))
-                            db.TagsFiltered = JsonConvert.DeserializeObject<List<string>>(item.TagsFiltered);
-
-                        if (!string.IsNullOrEmpty(item.SongArray))
-                            db.SongArray = JsonConvert.DeserializeObject<SongArray>(item.SongArray);
-
-                        if (!string.IsNullOrEmpty(item.TagsFiltered))
-                            db.Comments = JsonConvert.DeserializeObject<List<CommentsDataObject>>(item.Comments);
-
-                        list.Add(db);
-                    }
-
-                    return list;
-                }
-                else
-                {
-                    return new ObservableCollection<SoundDataObject>();
-                }
-            }
-            catch (Exception e)
-            {
-                if (e.Message.Contains("database is locked"))
-                    return Get_NotInterestedSound();
-                else
-                {
-                    Methods.DisplayReportResultTrack(e);
-                    return new ObservableCollection<SoundDataObject>();
-                }
-            }
-        }
-
-        #endregion
-
 
         #region Last Chat
 
@@ -1285,7 +1196,7 @@ namespace DeepSound.SQLite
 
                         if (user.User != null)
                             item.User = JsonConvert.DeserializeObject<UserDataObject>(user.User);
-                             
+
                         list.Add(item);
                     }
                     return new ObservableCollection<DataConversation>(list);
@@ -1704,7 +1615,7 @@ namespace DeepSound.SQLite
             {
                 using var connection = OpenConnection();
                 if (connection == null) return;
-               
+
                 connection.DeleteAll<DataTables.MessageTb>();
             }
             catch (Exception e)

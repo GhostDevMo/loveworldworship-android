@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
@@ -22,12 +18,16 @@ using DeepSoundClient;
 using DeepSoundClient.Classes.Auth;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Requests;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using Exception = System.Exception;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Default
 {
-    [Activity(Icon ="@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class VerificationAccountActivity : BaseActivity
     {
         #region Variables Basic
@@ -217,7 +217,7 @@ namespace DeepSound.Activities.Default
                         //Show a progress 
                         AndHUD.Shared.Show(this, GetText(Resource.String.Lbl_Loading));
 
-                         var (apiStatus, respond) = await RequestsAsync.Auth.ConfirmUserUnusalLoginAsync(UserDetails.UserId.ToString(), TxtNumber1.Text);
+                        var (apiStatus, respond) = await RequestsAsync.Auth.ConfirmUserUnusalLoginAsync(UserDetails.UserId.ToString(), TxtNumber1.Text);
                         if (apiStatus == 200)
                         {
                             if (respond is LoginObject auth)
@@ -227,7 +227,7 @@ namespace DeepSound.Activities.Default
                                 SetDataLogin(auth);
 
                                 StartActivity(new Intent(this, typeof(HomeActivity)));
-                                Finish(); 
+                                Finish();
                             }
                         }
                         else
@@ -323,8 +323,8 @@ namespace DeepSound.Activities.Default
                 UserDetails.AccessToken = Current.AccessToken = auth.AccessToken;
                 UserDetails.UserId = auth.Data.Id;
                 UserDetails.Status = "Active";
-                UserDetails.Cookie = auth.AccessToken; 
-            
+                UserDetails.Cookie = auth.AccessToken;
+
                 //Insert user data to database
                 var user = new DataTables.LoginTb
                 {
@@ -337,7 +337,7 @@ namespace DeepSound.Activities.Default
                     Lang = "",
                     DeviceId = UserDetails.DeviceId,
                     Email = UserDetails.Email,
-                }; 
+                };
 
                 ListUtils.DataUserLoginList = new ObservableCollection<DataTables.LoginTb> { user };
                 UserDetails.IsLogin = true;
@@ -347,7 +347,7 @@ namespace DeepSound.Activities.Default
 
                 if (auth.Data != null)
                 {
-                    ListUtils.MyUserInfoList= new ObservableCollection<UserDataObject> { auth.Data };
+                    ListUtils.MyUserInfoList = new ObservableCollection<UserDataObject> { auth.Data };
                     PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => ApiRequest.GetInfoData(this, UserDetails.UserId.ToString()) });
                 }
             }

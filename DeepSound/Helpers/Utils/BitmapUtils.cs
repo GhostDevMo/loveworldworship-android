@@ -1,7 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Net;
-using Android.Content;
+﻿using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
@@ -11,6 +8,10 @@ using Android.Views;
 using Java.Lang;
 using Java.Nio;
 using Javax.Microedition.Khronos.Opengles;
+using System;
+using System.IO;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Exception = System.Exception;
 using IOException = Java.IO.IOException;
 
@@ -60,18 +61,18 @@ namespace DeepSound.Helpers.Utils
                 catch (GLException e)
                 {
                     Methods.DisplayReportResultTrack(e);
-                    return null!;
+                    return null;
                 }
                 catch (OutOfMemoryError e)
                 {
                     Methods.DisplayReportResultTrack(e);
-                    return null!;
+                    return null;
                 }
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -94,7 +95,7 @@ namespace DeepSound.Helpers.Utils
             catch (IOException e)
             {
                 e.PrintStackTrace();
-                return null!;
+                return null;
             }
         }
 
@@ -175,7 +176,7 @@ namespace DeepSound.Helpers.Utils
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -193,27 +194,37 @@ namespace DeepSound.Helpers.Utils
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
-        public static Bitmap GetImageBitmapFromUrl(string url)
+        public static async Task<Bitmap> GetImageBitmapFromUrl(string url)
         {
             try
             {
-                if (Methods.CheckConnectivity())
-                    using (var webClient = new WebClient())
+                if (url.Contains("http"))
+                {
+                    if (Methods.CheckConnectivity())
                     {
-                        var imageBytes = webClient.DownloadData(url);
-                        if (imageBytes != null && imageBytes.Length > 0)
+                        HttpClient client = new HttpClient();
+
+                        var imageBytes = await client.GetByteArrayAsync(new Uri(url));
+                        if (imageBytes is { Length: > 0 })
                             return BitmapFactory.DecodeByteArray(imageBytes, 0, imageBytes.Length);
                     }
-                return null!;
+                }
+                else
+                {
+                    BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+                    return BitmapFactory.DecodeFile(url, bmOptions);
+                }
+
+                return null;
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 

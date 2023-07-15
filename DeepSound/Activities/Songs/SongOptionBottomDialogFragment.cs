@@ -1,34 +1,33 @@
 ﻿using Android;
 using Android.Content;
-using Android.OS;
-using Android.Views;
-using Android.Media;
-using Android.Provider;
-using Android.Widget;
-using AndroidX.Core.Content;
-using System;
-using System.IO;
-using System.Net;
-using System.Linq;
 using Android.Graphics;
+using Android.Media;
+using Android.OS;
+using Android.Provider;
+using Android.Views;
+using Android.Widget;
 using DeepSound.Activities.Tabbes;
+using DeepSound.Helpers.CacheLoaders;
+using DeepSound.Helpers.Controller;
+using DeepSound.Helpers.MediaPlayerController;
+using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
+using DeepSoundClient;
 using DeepSoundClient.Classes.Global;
 using Google.Android.Material.BottomSheet;
 using Newtonsoft.Json;
-using DeepSound.Helpers.Model;
-using DeepSound.Helpers.CacheLoaders;
-using DeepSound.Helpers.MediaPlayerController;
-using DeepSound.Helpers.Controller;
-using DeepSoundClient;
+using System;
+using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using Exception = System.Exception;
 using File = Java.IO.File;
 using IOException = Java.IO.IOException;
-using Exception = System.Exception;
-using Path = System.IO.Path;
 
 namespace DeepSound.Activities.Songs
 {
-    public class SongOptionBottomDialogFragment : BottomSheetDialogFragment 
+    public class SongOptionBottomDialogFragment : BottomSheetDialogFragment
     {
         #region Variables Basic
 
@@ -36,7 +35,7 @@ namespace DeepSound.Activities.Songs
         private ImageView Image, IconHeart;
         private TextView TxtTitle, TxtSeconderText;
 
-        private LinearLayout PlayNextLayout, PlayingQueueLayout, EditSongLayout, AddPlaylistLayout, GoToAlbumLayout, GoToArtistLayout, DetailsLayout, RePostLayout, ReportLayout, ReportCopyrightLayout, SetRingtoneLayout, AddToBlackListLayout, ShareLayout, DeleteLayout;
+        private LinearLayout PlayNextLayout, PlayingQueueLayout, EditSongLayout, AddPlaylistLayout, GoToAlbumLayout, GoToArtistLayout, DetailsLayout, RePostLayout, ShareLayout, DeleteLayout;
 
         private SoundDataObject SongsClass;
         private string NamePage;
@@ -69,7 +68,7 @@ namespace DeepSound.Activities.Songs
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -131,10 +130,6 @@ namespace DeepSound.Activities.Songs
                 GoToArtistLayout = view.FindViewById<LinearLayout>(Resource.Id.GoToArtistLayout);
                 DetailsLayout = view.FindViewById<LinearLayout>(Resource.Id.DetailsLayout);
                 RePostLayout = view.FindViewById<LinearLayout>(Resource.Id.RePostLayout);
-                ReportLayout = view.FindViewById<LinearLayout>(Resource.Id.ReportLayout);
-                ReportCopyrightLayout = view.FindViewById<LinearLayout>(Resource.Id.ReportCopyrightLayout);
-                SetRingtoneLayout = view.FindViewById<LinearLayout>(Resource.Id.SetRingtoneLayout);
-                AddToBlackListLayout = view.FindViewById<LinearLayout>(Resource.Id.AddToBlackListLayout);
                 ShareLayout = view.FindViewById<LinearLayout>(Resource.Id.ShareLayout);
                 DeleteLayout = view.FindViewById<LinearLayout>(Resource.Id.DeleteLayout);
 
@@ -147,10 +142,6 @@ namespace DeepSound.Activities.Songs
                 GoToArtistLayout.Click += GoToArtistLayoutOnClick;
                 DetailsLayout.Click += DetailsLayoutOnClick;
                 RePostLayout.Click += RePostLayoutOnClick;
-                ReportLayout.Click += ReportLayoutOnClick;
-                ReportCopyrightLayout.Click += ReportCopyrightLayoutOnClick;
-                SetRingtoneLayout.Click += SetRingtoneLayoutOnClick;
-                AddToBlackListLayout.Click += AddToBlackListLayoutOnClick;
                 ShareLayout.Click += ShareLayoutOnClick;
                 DeleteLayout.Click += DeleteLayoutOnClick;
 
@@ -183,14 +174,15 @@ namespace DeepSound.Activities.Songs
         {
             try
             {
-                if (Constant.ArrayListPlay.Count > 1)
+                if (Constant.ArrayListPlay.Count > 0)
                 {
                     Constant.ArrayListPlay.Insert(1, SongsClass);
                 }
                 else
                 {
-                    Constant.ArrayListPlay.Add(SongsClass);
+                    ClickListeners.AddPlaylistOnClick(new MoreClickEventArgs() { SongsClass = SongsClass });
                 }
+
                 Dismiss();
             }
             catch (Exception exception)
@@ -202,9 +194,9 @@ namespace DeepSound.Activities.Songs
         private void PlayingQueueLayoutOnClick(object sender, EventArgs e)
         {
             try
-            {   
-                if (Constant.ArrayListPlay.Count > 0)
-                    Constant.ArrayListPlay.Add(SongsClass);
+            {
+                if (!Constant.ArrayPlayingQueue.Contains(SongsClass))
+                    Constant.ArrayPlayingQueue.Add(SongsClass);
 
                 Dismiss();
             }
@@ -226,7 +218,7 @@ namespace DeepSound.Activities.Songs
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-          
+
         private void AddPlaylistLayoutOnClick(object sender, EventArgs e)
         {
             try
@@ -243,7 +235,7 @@ namespace DeepSound.Activities.Songs
         private void GoToAlbumLayoutOnClick(object sender, EventArgs e)
         {
             try
-            { 
+            {
                 ClickListeners.AddAlbumOnClick(new MoreClickEventArgs() { SongsClass = SongsClass });
                 Dismiss();
             }
@@ -256,7 +248,7 @@ namespace DeepSound.Activities.Songs
         private void GoToArtistLayoutOnClick(object sender, EventArgs e)
         {
             try
-            { 
+            {
                 GlobalContext?.OpenProfile(SongsClass.Publisher.Id, SongsClass.Publisher);
                 Dismiss();
             }
@@ -292,219 +284,34 @@ namespace DeepSound.Activities.Songs
             }
         }
 
-        private void ReportLayoutOnClick(object sender, EventArgs e)
+        private bool CheckSystemWritePermission()
         {
             try
             {
-                ClickListeners.OnMenuReportSongOnClick(new MoreClickEventArgs() { SongsClass = SongsClass });
-                Dismiss();
-            }
-            catch (Exception exception)
-            {
-                Methods.DisplayReportResultTrack(exception);
-            }
-        }
-
-        private void ReportCopyrightLayoutOnClick(object sender, EventArgs e)
-        {
-            try
-            {
-                ClickListeners.OnMenuReportCopyrightSongOnClick(new MoreClickEventArgs() { SongsClass = SongsClass });
-                Dismiss();
-            }
-            catch (Exception exception)
-            {
-                Methods.DisplayReportResultTrack(exception);
-            }
-        }
-
-        private void SetRingtoneLayoutOnClick(object sender, EventArgs e)
-        {
-            try
-            {
-                // Check if we're running on Android 5.0 or higher
-                if ((int)Build.VERSION.SdkInt < 23)
-                { 
-                    SetRingtone();
-                }
-                else
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.M)
                 {
-                    if (PermissionsController.CheckPermissionStorage())
-                    { 
-                        SetRingtone();
-                    }
+                    if (Settings.System.CanWrite(Context))
+                        return true;
                     else
                     {
-                        GlobalContext.RequestPermissions(new[]
-                        {
-                            Manifest.Permission.ReadExternalStorage,
-                            Manifest.Permission.WriteExternalStorage,
-                            Manifest.Permission.ManageExternalStorage,
-                            Manifest.Permission.AccessMediaLocation,
-                            Manifest.Permission.WriteSettings,
-                        }, 1325);
+                        Intent intent = new Intent(Settings.ActionManageWriteSettings);
+                        intent.SetData(Android.Net.Uri.Parse("package:" + Context?.PackageName));
+                        Context.StartActivity(intent);
                     }
                 }
-            }
-            catch (Exception exception)
-            {
-                Methods.DisplayReportResultTrack(exception);
-            }
-        }
-
-        public void SetRingtone()
-        {
-            try
-            {
-                Methods.Path.Chack_MyFolder();
-                if (SongsClass.AudioLocation.Contains("http"))
-                {
-                    string folderDestination = Methods.Path.FolderDcimSound;
-
-                    string filePath = Path.Combine(folderDestination);
-
-                    string filename = SongsClass.Title;
-                    if (!SongsClass.Title.Contains(".mp3"))
-                        filename = SongsClass.Title + ".mp3";
-
-                    string mediaFile = filePath + "/" + filename;
-
-                    if (System.IO.File.Exists(mediaFile))
-                    {
-                        File file2 = new File(mediaFile);
-                        var uri = FileProvider.GetUriForFile(Activity, Activity?.PackageName + ".fileprovider", file2);
-
-                        if (CheckSystemWritePermission())
-                        {
-                            ContentValues values = new ContentValues();
-                            values.Put("_data", uri.ToString());
-                            values.Put("title", SongsClass.Title);
-                            //values.Put("_size", 215454);
-                            values.Put("mime_type", MimeTypeMap.GetMimeType(SongsClass.AudioLocation.Split('.').LastOrDefault()));
-                            values.Put(MediaStore.Audio.IAudioColumns.Artist, DeepSoundTools.GetNameFinal(SongsClass.Publisher));
-                            //values.Put(MediaStore.Audio.IAudioColumns.Duration, 230);
-                            values.Put(MediaStore.Audio.IAudioColumns.IsRingtone, true);
-                            values.Put(MediaStore.Audio.IAudioColumns.IsNotification, false);
-                            values.Put(MediaStore.Audio.IAudioColumns.IsAlarm, true);
-                            values.Put(MediaStore.Audio.IAudioColumns.IsMusic, false);
-
-                            // Setting ringtone....
-                            Activity.ContentResolver?.Delete(MediaStore.Audio.Media.InternalContentUri, "title" + " = \"Sonify\"", null);
-                            // To avoid duplicate inserts
-                            var ringUri = Activity.ContentResolver?.Insert(MediaStore.Audio.Media.InternalContentUri, values);
-                            RingtoneManager.SetActualDefaultRingtoneUri(Activity, RingtoneType.Ringtone, ringUri);
-
-                            Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_SetRingtoneSuccessfully), ToastLength.Short)?.Show();
-                        }
-
-                        return;
-                    }
-
-                    WebClient webClient = new WebClient();
-                    webClient.DownloadDataAsync(new Uri(SongsClass.AudioLocation));
-                    webClient.DownloadDataCompleted += (o, args) =>
-                    {
-                        try
-                        {
-                            //Downloading Cancelled
-                            if (args.Cancelled)
-                                return;
-
-                            if (args.Error != null)
-                            {
-                                Console.WriteLine(args.Error);
-                                return;
-                            }
-
-                            if (!System.IO.File.Exists(mediaFile))
-                            {
-                                using FileStream fs = new FileStream(mediaFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
-                                fs.Write(args.Result, 0, args.Result.Length);
-                                 
-                                MediaScannerConnection.ScanFile(Activity, new []{ mediaFile }, null, null);
-                                //File.WriteAllBytes(mediaFile, e.Result);
-                            }
-
-                            File file2 = new File(mediaFile);
-                            var uri = FileProvider.GetUriForFile(Activity, Activity?.PackageName + ".fileprovider", file2);
-
-                            if (CheckSystemWritePermission())
-                            {
-                                ContentValues values = new ContentValues();
-                                values.Put("_data", uri.ToString());
-                                values.Put("title", SongsClass.Title);
-                                //values.Put("_size", 215454);
-                                values.Put("mime_type", MimeTypeMap.GetMimeType(SongsClass.AudioLocation.Split('.').LastOrDefault()));
-                                values.Put(MediaStore.Audio.IAudioColumns.Artist, DeepSoundTools.GetNameFinal(SongsClass.Publisher));
-                                //values.Put(MediaStore.Audio.IAudioColumns.Duration, 230);
-                                values.Put(MediaStore.Audio.IAudioColumns.IsRingtone, true);
-                                values.Put(MediaStore.Audio.IAudioColumns.IsNotification, false);
-                                values.Put(MediaStore.Audio.IAudioColumns.IsAlarm, true);
-                                values.Put(MediaStore.Audio.IAudioColumns.IsMusic, false);
-
-                                // Setting ringtone....
-                                Activity.ContentResolver?.Delete(MediaStore.Audio.Media.InternalContentUri, "title" + " = \"Sonify\"", null);
-                                // To avoid duplicate inserts
-                                var ringUri = Activity.ContentResolver?.Insert(MediaStore.Audio.Media.InternalContentUri, values);
-                                RingtoneManager.SetActualDefaultRingtoneUri(Activity, RingtoneType.Ringtone, ringUri);
-
-                                Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_SetRingtoneSuccessfully), ToastLength.Short)?.Show();
-                            } 
-                        }
-                        catch (IOException xed)
-                        {
-                            Methods.DisplayReportResultTrack(xed);
-                        }
-                        catch (Exception xed)
-                        {
-                            Methods.DisplayReportResultTrack(xed);
-                        }
-                    };
-                }
-                Dismiss();
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
-        }
-
-        private bool CheckSystemWritePermission()
-        {
-            if (Build.VERSION.SdkInt >= BuildVersionCodes.M)
-            {
-                if (Settings.System.CanWrite(Activity))
-                    return true;
-                else
-                {
-                    Intent intent = new Intent(Settings.ActionManageWriteSettings);
-                    intent.SetData(Android.Net.Uri.Parse("package:" + Activity?.PackageName));
-                    Activity.StartActivity(intent);
-                }
-            }
             return false;
-        }
-         
-        private void AddToBlackListLayoutOnClick(object sender, EventArgs e)
-        {
-            try
-            {
-                ClickListeners.OnNotInterestedSongsClick(new MoreClickEventArgs { Button = IconHeart, SongsClass = SongsClass }, NamePage);
-                Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_SongRemoved), ToastLength.Short)?.Show();
-
-                Dismiss();
-            }
-            catch (Exception exception)
-            {
-                Methods.DisplayReportResultTrack(exception);
-            }
         }
 
         private void ShareLayoutOnClick(object sender, EventArgs e)
         {
             try
             {
-                ClickListeners.OnShareClick(new MoreClickEventArgs(){SongsClass = SongsClass});
+                ClickListeners.OnShareClick(new MoreClickEventArgs() { SongsClass = SongsClass });
                 Dismiss();
             }
             catch (Exception exception)
@@ -525,9 +332,9 @@ namespace DeepSound.Activities.Songs
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
-          
+
         private void SetData()
         {
             try
@@ -547,19 +354,6 @@ namespace DeepSound.Activities.Songs
                         DeleteLayout.Visibility = ViewStates.Gone;
                     }
 
-                    if (UserDetails.IsLogin)
-                    {
-                        RePostLayout.Visibility = ViewStates.Visible;
-                        ReportLayout.Visibility = ViewStates.Visible;
-                        ReportCopyrightLayout.Visibility = ViewStates.Visible;
-                    }
-                    else
-                    {
-                        RePostLayout.Visibility = ViewStates.Gone;
-                        ReportLayout.Visibility = ViewStates.Gone;
-                        ReportCopyrightLayout.Visibility = ViewStates.Gone;
-                    }
-
                     GlideImageLoader.LoadImage(Activity, SongsClass.Thumbnail, Image, ImageStyle.CenterCrop, ImagePlaceholders.Drawable);
 
                     TxtTitle.Text = Methods.FunString.SubStringCutOf(Methods.FunString.DecodeString(SongsClass.Title), 25);
@@ -568,14 +362,14 @@ namespace DeepSound.Activities.Songs
                     if (SongsClass.Publisher != null)
                         seconderText = DeepSoundTools.GetNameFinal(SongsClass.Publisher);
                     else
-                        seconderText = SongsClass.CategoryName + " " + Activity.GetText(Resource.String.Lbl_Music);
+                        seconderText = SongsClass.CategoryName + " " + Context.GetText(Resource.String.Lbl_Music);
 
                     if (SongsClass.Src == "radio")
                     {
 
                     }
                     else
-                        seconderText += "   |   " + SongsClass.Duration + " " + Activity.GetText(Resource.String.Lbl_CutMinutes);
+                        seconderText += "   |   " + SongsClass.Duration + " " + Context.GetText(Resource.String.Lbl_CutMinutes);
 
                     TxtSeconderText.Text = seconderText;
 
@@ -598,6 +392,6 @@ namespace DeepSound.Activities.Songs
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
     }
 }

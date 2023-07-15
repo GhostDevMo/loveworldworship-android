@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Globalization;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Timers;
-using Android;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
@@ -15,12 +6,14 @@ using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Activity.Result;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.AppCompat.Widget;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
 using AT.Markushi.UI;
+using Com.Canhub.Cropper;
 using DeepSound.Activities.Chat.Adapters;
 using DeepSound.Activities.SettingsUser;
 using DeepSound.Activities.Tabbes;
@@ -34,17 +27,22 @@ using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Requests;
 using Developer.SEmojis.Actions;
 using Developer.SEmojis.Helper;
-using Java.IO;
 using Newtonsoft.Json;
-using TheArtOfDev.Edmodo.Cropper;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using System.Timers;
 using Console = System.Console;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
-using Uri = Android.Net.Uri;
 
 namespace DeepSound.Activities.Chat
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ResizeableActivity = true, ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class MessagesBoxActivity : AppCompatActivity
+    public class MessagesBoxActivity : AppCompatActivity, IActivityResultCallback
     {
         #region Variables Basic
 
@@ -62,8 +60,10 @@ namespace DeepSound.Activities.Chat
         private static Timer Timer;
         private SwipeRefreshLayout SwipeRefreshLayout;
         private UserDataObject UserInfoData;
-        private HomeActivity GlobalContext; 
+        private HomeActivity GlobalContext;
         private static MessagesBoxActivity Instance;
+        private DialogGalleryController GalleryController;
+
         #endregion
 
         #region General
@@ -96,6 +96,7 @@ namespace DeepSound.Activities.Chat
                 InitComponent();
                 InitToolbar();
                 SetRecyclerViewAdapters();
+                GalleryController = new DialogGalleryController(this, this);
 
                 //Set Title ToolBar and data chat user After that get messages 
                 LoadData_ItemUser();
@@ -119,7 +120,7 @@ namespace DeepSound.Activities.Chat
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -136,7 +137,7 @@ namespace DeepSound.Activities.Chat
                     Timer.Start();
                 }
 
-                
+
             }
             catch (Exception e)
             {
@@ -157,7 +158,7 @@ namespace DeepSound.Activities.Chat
                     Timer.Stop();
                 }
 
-                
+
             }
             catch (Exception e)
             {
@@ -168,7 +169,7 @@ namespace DeepSound.Activities.Chat
         public override void OnTrimMemory(TrimMemory level)
         {
             try
-            { 
+            {
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
                 base.OnTrimMemory(level);
             }
@@ -199,13 +200,11 @@ namespace DeepSound.Activities.Chat
                 {
                     Timer.Enabled = false;
                     Timer.Stop();
-                    Timer = null!;
+                    Timer = null;
                 }
 
                 MAdapter?.MessageList.Clear();
                 MAdapter?.NotifyDataSetChanged();
-
-                
 
                 base.OnDestroy();
             }
@@ -364,7 +363,7 @@ namespace DeepSound.Activities.Chat
                 if (UserInfoData != null)
                 {
                     SupportActionBar.Title = DeepSoundTools.GetNameFinal(UserInfoData);
-                    
+
                     //string timeAgo;
                     //if (UserInfoData.Time != null)
                     //    timeAgo = Methods.Time.TimeAgo(UserInfoData.Time.Value, false);
@@ -817,7 +816,7 @@ namespace DeepSound.Activities.Chat
                     string replacement = Regex.Replace(EmojisIconEditTextView.Text, @"\t|\n|\r", "");
 
                     if (Methods.CheckConnectivity())
-                    {   
+                    {
                         ChatMessagesDataObject message = new ChatMessagesDataObject
                         {
                             Id = Convert.ToInt32(unixTimestamp),
@@ -848,7 +847,7 @@ namespace DeepSound.Activities.Chat
                             ChatBoxRecyclerView.ScrollToPosition(index);
                         }
 
-                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => MessageController.SendMessageTask(Userid, EmojisIconEditTextView.Text, "", time2, UserInfoData) }); 
+                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => MessageController.SendMessageTask(Userid, EmojisIconEditTextView.Text, "", time2, UserInfoData) });
                     }
                     else
                     {
@@ -889,14 +888,14 @@ namespace DeepSound.Activities.Chat
         {
             try
             {
-                OpenDialogGallery();
+                GalleryController?.OpenDialogGallery();
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-          
+
         #endregion
 
         #region Scroll
@@ -989,25 +988,25 @@ namespace DeepSound.Activities.Chat
             MenuInflater.Inflate(Resource.Menu.MessagesBox_Menu, menu);
             return base.OnCreateOptionsMenu(menu);
         }
-         
+
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
             switch (item.ItemId)
             {
                 case Android.Resource.Id.Home:
                     Finish();
-                    return true; 
+                    return true;
                 case Resource.Id.menu_block:
                     MenuBlockClick();
                     break;
                 case Resource.Id.menu_clear_chat:
                     MenuClearChatClick();
-                    break; 
+                    break;
             }
 
             return base.OnOptionsItemSelected(item);
         }
-          
+
         //Block User
         private void MenuBlockClick()
         {
@@ -1025,12 +1024,12 @@ namespace DeepSound.Activities.Chat
                             GlobalContext?.ProfileFragment?.ContactsFragment?.MAdapter.NotifyDataSetChanged();
                         }
                     }
-                     
+
                     MenuClearChatClick();
 
                     Toast.MakeText(this, GetText(Resource.String.Lbl_Blocked_successfully), ToastLength.Short)?.Show();
 
-                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.BlockUnBlockUserAsync(Userid.ToString(),true) });
+                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.BlockUnBlockUserAsync(Userid.ToString(), true) });
                     Finish();
                 }
                 else
@@ -1078,85 +1077,11 @@ namespace DeepSound.Activities.Chat
             {
                 Methods.DisplayReportResultTrack(e);
             }
-        }  
+        }
 
         #endregion
-           
+
         #region Permissions && Result
-
-        //Result
-        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
-        {
-            try
-            {
-                base.OnActivityResult(requestCode, resultCode, data);
-                if (requestCode == 108 || requestCode == CropImage.CropImageActivityRequestCode)
-                {
-                    if (Methods.CheckConnectivity())
-                    {
-                        var result = CropImage.GetActivityResult(data);
-                        if (result.IsSuccessful)
-                        {
-                            var resultPathImage = result.Uri.Path;
-                            if (!string.IsNullOrEmpty(resultPathImage))
-                            {
-                                var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                                string time2 = unixTimestamp.ToString(CultureInfo.InvariantCulture);
-
-                                //Sent image 
-                                ChatMessagesDataObject message = new ChatMessagesDataObject
-                                {
-                                    Id = Convert.ToInt32(unixTimestamp),
-                                    FromId = UserDetails.UserId,
-                                    ToId = Userid,
-                                    Text = "",
-                                    Seen = 0,
-                                    Time = unixTimestamp,
-                                    FromDeleted = 0,
-                                    ToDeleted = 0,
-                                    SentPush = 0,
-                                    NotificationId = "",
-                                    TypeTwo = "",
-                                    Image = resultPathImage,
-                                    FullImage = resultPathImage,
-                                    ApiPosition = ApiPosition.Right,
-                                    ApiType = ApiType.Image,
-                                    Hash = time2
-                                };
-
-                                MAdapter.MessageList.Add(message);
-
-                                int index = MAdapter.MessageList.IndexOf(MAdapter.MessageList.Last());
-                                if (index > -1)
-                                {
-                                    MAdapter.NotifyItemInserted(index);
-
-                                    //Scroll Down >> 
-                                    ChatBoxRecyclerView.ScrollToPosition(index);
-                                }
-
-                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => MessageController.SendMessageTask(Userid, "", resultPathImage, time2, UserInfoData) });
-
-                                EmojisIconEditTextView.Text = "";
-
-                            }
-                        }
-                        else
-                        {
-                            Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
-                        }
-                    }
-                    else
-                    {
-                        Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
 
         //Permissions
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
@@ -1169,13 +1094,13 @@ namespace DeepSound.Activities.Chat
                 {
                     if (grantResults.Length > 0 && grantResults[0] == Permission.Granted)
                     {
-                        OpenDialogGallery();
+                        GalleryController?.OpenDialogGallery();
                     }
                     else
                     {
                         Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
                     }
-                } 
+                }
             }
             catch (Exception e)
             {
@@ -1186,11 +1111,71 @@ namespace DeepSound.Activities.Chat
 
         #endregion
 
-        public override void OnBackPressed()
+        #region Result Gallery
+
+        public void OnActivityResult(Java.Lang.Object p0)
         {
             try
             {
-                base.OnBackPressed();
+                if (p0 is CropImageView.CropResult result)
+                {
+                    if (result.IsSuccessful)
+                    {
+                        var resultUri = result.UriContent;
+                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        if (!string.IsNullOrEmpty(filepath))
+                        {
+                            //Do something with your Uri 
+                            var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                            string time2 = unixTimestamp.ToString(CultureInfo.InvariantCulture);
+
+                            //Sent image 
+                            ChatMessagesDataObject message = new ChatMessagesDataObject
+                            {
+                                Id = Convert.ToInt32(unixTimestamp),
+                                FromId = UserDetails.UserId,
+                                ToId = Userid,
+                                Text = "",
+                                Seen = 0,
+                                Time = unixTimestamp,
+                                FromDeleted = 0,
+                                ToDeleted = 0,
+                                SentPush = 0,
+                                NotificationId = "",
+                                TypeTwo = "",
+                                Image = filepath,
+                                FullImage = filepath,
+                                ApiPosition = ApiPosition.Right,
+                                ApiType = ApiType.Image,
+                                Hash = time2
+                            };
+
+                            MAdapter.MessageList.Add(message);
+
+                            int index = MAdapter.MessageList.IndexOf(MAdapter.MessageList.Last());
+                            if (index > -1)
+                            {
+                                MAdapter.NotifyItemInserted(index);
+
+                                //Scroll Down >> 
+                                ChatBoxRecyclerView.ScrollToPosition(index);
+                            }
+
+                            PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => MessageController.SendMessageTask(Userid, "", filepath, time2, UserInfoData) });
+
+                            EmojisIconEditTextView.Text = "";
+
+                        }
+                        else
+                        {
+                            Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
+                        }
+                    }
+                    else
+                    {
+                        Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
+                    }
+                }
             }
             catch (Exception e)
             {
@@ -1198,52 +1183,7 @@ namespace DeepSound.Activities.Chat
             }
         }
 
-        private void OpenDialogGallery()
-        {
-            try
-            {
-                // Check if we're running on Android 5.0 or higher
-                if ((int)Build.VERSION.SdkInt < 23)
-                {
-                    Methods.Path.Chack_MyFolder();
+        #endregion
 
-                    //Open Image 
-                    var myUri = Uri.FromFile(new File(Methods.Path.FolderDiskImage, Methods.GetTimestamp(DateTime.Now) + ".jpeg"));
-                    CropImage.Activity()
-                        .SetInitialCropWindowPaddingRatio(0)
-                        .SetAutoZoomEnabled(true)
-                        .SetMaxZoom(4)
-                        .SetGuidelines(CropImageView.Guidelines.On)
-                        .SetCropMenuCropButtonTitle(GetText(Resource.String.Lbl_Crop))
-                        .SetOutputUri(myUri).Start(this);
-                }
-                else
-                {
-                    if (!CropImage.IsExplicitCameraPermissionRequired(this) && PermissionsController.CheckPermissionStorage() && CheckSelfPermission(Manifest.Permission.Camera) == Permission.Granted)
-                    {
-                        Methods.Path.Chack_MyFolder();
-
-                        //Open Image 
-                        var myUri = Uri.FromFile(new File(Methods.Path.FolderDiskImage, Methods.GetTimestamp(DateTime.Now) + ".jpeg"));
-                        CropImage.Activity()
-                            .SetInitialCropWindowPaddingRatio(0)
-                            .SetAutoZoomEnabled(true)
-                            .SetMaxZoom(4)
-                            .SetGuidelines(CropImageView.Guidelines.On)
-                            .SetCropMenuCropButtonTitle(GetText(Resource.String.Lbl_Crop))
-                            .SetOutputUri(myUri).Start(this);
-                    }
-                    else
-                    {
-                        //request Code 108
-                        new PermissionsController(this).RequestPermission(108);
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        } 
     }
 }

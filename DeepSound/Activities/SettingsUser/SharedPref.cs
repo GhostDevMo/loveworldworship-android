@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.Res;
 using Android.OS;
@@ -10,6 +7,9 @@ using AndroidX.Preference;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DeepSound.Activities.SettingsUser
 {
@@ -34,11 +34,11 @@ namespace DeepSound.Activities.SettingsUser
         public static void Init()
         {
             try
-            { 
+            {
                 SharedData = PreferenceManager.GetDefaultSharedPreferences(Application.Context);
                 InAppReview = Application.Context.GetSharedPreferences("In_App_Review", FileCreationMode.Private);
 
-                UserDetails.IsOptimizationApp = SharedData.GetBoolean(PrefKeyOptimizationApp, false); 
+                UserDetails.IsOptimizationApp = SharedData.GetBoolean(PrefKeyOptimizationApp, false);
 
                 string getValue = SharedData.GetString("Night_Mode_key", string.Empty);
                 ApplyTheme(getValue);
@@ -117,7 +117,7 @@ namespace DeepSound.Activities.SettingsUser
                 Methods.DisplayReportResultTrack(e);
             }
         }
-        
+
         public static void StoreInterestedGenresValue(List<int> interestedGenres)
         {
             try
@@ -130,7 +130,7 @@ namespace DeepSound.Activities.SettingsUser
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-            } 
+            }
         }
 
         public static List<int> GetInterestedGenresValue()
@@ -155,7 +155,7 @@ namespace DeepSound.Activities.SettingsUser
             {
                 Methods.DisplayReportResultTrack(e);
                 return new List<int>();
-            } 
-        } 
+            }
+        }
     }
 }

@@ -1,18 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using MaterialDialogsCore;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Graphics;
 using Android.OS;
 using Android.Text;
+using Android.Util;
 using Android.Views;
 using Android.Widget;
 using DeepSound.Activities.Albums;
 using DeepSound.Activities.Playlist;
+using DeepSound.Activities.Songs;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Activities.Upload;
 using DeepSound.Helpers.Controller;
@@ -23,16 +19,19 @@ using DeepSound.Library.Anjo.Share.Abstractions;
 using DeepSound.SQLite;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Requests;
+using Google.Android.Material.Dialog;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 using ClipboardManager = Android.Content.ClipboardManager;
 using Exception = System.Exception;
-using Android.Util;
-using DeepSound.Activities.Songs;
-using Java.Util;
 
 namespace DeepSound.Helpers.MediaPlayerController
 {
-    public class SocialIoClickListeners : Java.Lang.Object, MaterialDialog.IListCallbackMultiChoice, MaterialDialog.ISingleButtonCallback
+    public class SocialIoClickListeners
     {
         private readonly Activity MainContext;
         private readonly HomeActivity GlobalContext;
@@ -44,7 +43,7 @@ namespace DeepSound.Helpers.MediaPlayerController
             try
             {
                 MainContext = context;
-                GlobalContext = (HomeActivity)MainContext ?? HomeActivity.GetInstance();
+                GlobalContext = HomeActivity.GetInstance();
                 TypeDialog = string.Empty;
             }
             catch (Exception e)
@@ -53,7 +52,7 @@ namespace DeepSound.Helpers.MediaPlayerController
             }
         }
 
-        public void SetPlaySongs(ImageView playButton , bool isPlay)
+        public void SetPlaySongs(ImageView playButton, bool isPlay)
         {
             try
             {
@@ -63,7 +62,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                 if (isPlay)
                 {
                     int dimensionInDp = (int)TypedValue.ApplyDimension(ComplexUnitType.Dip, dimensionInPixel2, playButton.Context.Resources.DisplayMetrics);
-                    playButton.SetImageResource(Resource.Drawable.new_icon_pause);
+                    playButton.SetImageResource(Resource.Drawable.icon_player2_pause);
                     playButton.Tag = "playing";
                     playButton.LayoutParameters.Height = dimensionInDp;
                     playButton.LayoutParameters.Width = dimensionInDp;
@@ -140,7 +139,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                         }
                     }
                     else if (name == "PlaylistProfileFragment")
-                    {  
+                    {
                         var list = PlaylistProfileFragment.Instance?.MAdapter?.SoundsList;
                         var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id);
                         if (dataSong != null)
@@ -216,7 +215,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                             GlobalContext?.LibraryFragment.LikedFragment?.MAdapter?.NotifyItemChanged(index);
                         }
                     }
-                    else if (name == "PurchasesFragment") 
+                    else if (name == "PurchasesFragment")
                     {
                         //var list = GlobalContext?.LibraryFragment.PurchasesFragment?.MAdapter?.PurchasesList;
                         //var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id.ToString());
@@ -248,7 +247,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                             int index = list.IndexOf(dataSong);
                             GlobalContext?.LibraryFragment.SharedFragment?.MAdapter?.NotifyItemChanged(index);
                         }
-                    } 
+                    }
                     else if (name == "SongsByTypeFragment")
                     {
                         var list = SongsByTypeFragment.Instance?.MAdapter?.SoundsList;
@@ -318,8 +317,8 @@ namespace DeepSound.Helpers.MediaPlayerController
                         ListUtils.GlobalNotInterestedList.Add(e.SongsClass);
                     }
 
-                    var sqlEntity = new SqLiteDatabase();
-                    sqlEntity.Insert_NotInterestedSound(e.SongsClass);
+                    if (Methods.CheckConnectivity())
+                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Tracks.AddDeleteNotInterestedAsync(e.SongsClass.Id.ToString(), true) });
 
                     if (name == "AlbumsFragment")
                     {
@@ -327,13 +326,13 @@ namespace DeepSound.Helpers.MediaPlayerController
                         var dataSong = list?.SoundsList?.FirstOrDefault(a => a.Id == e.SongsClass.Id);
                         if (dataSong != null)
                         {
-                            int index = list.SoundsList.IndexOf(dataSong); 
-                            list.SoundsList.Remove(dataSong); 
+                            int index = list.SoundsList.IndexOf(dataSong);
+                            list.SoundsList.Remove(dataSong);
                             AlbumsFragment.Instance.MAdapter?.NotifyItemChanged(index);
                         }
                     }
                     else if (name == "PlaylistProfileFragment")
-                    {  
+                    {
                         var list = PlaylistProfileFragment.Instance?.MAdapter;
                         var dataSong = list?.SoundsList?.FirstOrDefault(a => a.Id == e.SongsClass.Id);
                         if (dataSong != null)
@@ -407,17 +406,6 @@ namespace DeepSound.Helpers.MediaPlayerController
                             int index = list.SoundsList.IndexOf(dataSong);
                             list.SoundsList.Remove(dataSong);
                             GlobalContext?.LibraryFragment.LikedFragment?.MAdapter?.NotifyItemChanged(index);
-                        }
-                    }
-                    else if (name == "PurchasesFragment") 
-                    {
-                        var list = GlobalContext?.LibraryFragment.PurchasesFragment?.MAdapter?.PurchasesList;
-                        var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id.ToString());
-                        if (dataSong != null)
-                        {
-                            //dataSong.IsLiked = refs;
-                            int index = list.IndexOf(dataSong);
-                            GlobalContext?.LibraryFragment.PurchasesFragment?.MAdapter?.NotifyItemChanged(index);
                         }
                     }
                     else if (name == "RecentlyPlayedFragment")
@@ -524,7 +512,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                         }
                     }
                     else if (name == "PlaylistProfileFragment")
-                    { 
+                    {
                         var list = PlaylistProfileFragment.Instance?.MAdapter?.SoundsList;
                         var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id);
                         if (dataSong != null)
@@ -562,12 +550,11 @@ namespace DeepSound.Helpers.MediaPlayerController
                     return;
                 }
 
-
                 if (Methods.CheckConnectivity())
                 {
                     var refs = SetFav(e.Button);
                     e.SongsClass.IsFavoriated = refs;
-                     
+
                     var page = GlobalContext?.FavoritesFragment;
                     if (page?.MAdapter != null)
                     {
@@ -651,7 +638,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                 {
                     Arguments = bundle
                 };
-                songOptionBottomDialogFragment.Show(GlobalContext.SupportFragmentManager, songOptionBottomDialogFragment.Tag); 
+                songOptionBottomDialogFragment.Show(GlobalContext.SupportFragmentManager, songOptionBottomDialogFragment.Tag);
             }
             catch (Exception exception)
             {
@@ -660,105 +647,6 @@ namespace DeepSound.Helpers.MediaPlayerController
         }
 
         #region MaterialDialog
-
-        public void OnClick(MaterialDialog p0, DialogAction p1)
-        {
-            try
-            {
-                if (p1 == DialogAction.Positive)
-                {
-                    if (TypeDialog == "AddPlaylist")
-                    {
-                        TotalIdPlaylistChecked = TotalIdPlaylistChecked.Remove(TotalIdPlaylistChecked.Length - 1, 1);
-                        if (Methods.CheckConnectivity())
-                        {
-                            var item = Constant.ArrayListPlay[Constant.PlayPos];
-                            if (item != null)
-                            {
-                                //Sent Api
-                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Playlist.AddToPlaylistAsync(item.Id.ToString(), TotalIdPlaylistChecked) });
-                            }
-                        }
-                        else
-                        {
-                            Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
-                        }
-                    }
-                    else if (TypeDialog == "AddAlbum")
-                    {
-                        TotalIdAlbumChecked = TotalIdAlbumChecked.Remove(TotalIdAlbumChecked.Length - 1, 1);
-                        if (Methods.CheckConnectivity())
-                        {
-                            var item = Constant.ArrayListPlay[Constant.PlayPos];
-                            if (item != null)
-                            {
-                                //wael add Api after update 
-                                //PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Albums.AddToAlbumAsync(item.Id.ToString(), TotalIdAlbumChecked) });
-                            }
-                        }
-                        else
-                        {
-                            Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
-                        }
-                    } 
-                }
-                else if (p1 == DialogAction.Neutral)
-                {
-                    if (TypeDialog == "AddPlaylist")
-                    {
-                        CreatePlaylistBottomSheet createPlaylistBottomSheet = new CreatePlaylistBottomSheet();
-                        createPlaylistBottomSheet.Show(GlobalContext.SupportFragmentManager, createPlaylistBottomSheet.Tag);
-                    }
-                    else if (TypeDialog == "AddAlbum")
-                    {
-                        MainContext.StartActivity(new Intent(MainContext, typeof(UploadAlbumActivity)));
-                    }
-                }
-                else if (p1 == DialogAction.Negative)
-                {
-                    p0.Dismiss();
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-        public bool OnSelection(MaterialDialog dialog, int[] which, string[] text)
-        {
-            try
-            {
-                if (TypeDialog == "AddPlaylist")
-                {
-                    var list = ListUtils.PlaylistList;
-                    if (list?.Count > 0)
-                    {
-                        for (int i = 0; i < which.Length; i++)
-                        {
-                            TotalIdPlaylistChecked += list[i].Id + ",";
-                        }
-                    }
-                }
-                else if (TypeDialog == "AddAlbum")
-                {
-                    var list = ListUtils.AlbumList;
-                    if (list?.Count > 0)
-                    {
-                        for (int i = 0; i < which.Length; i++)
-                        {
-                            TotalIdAlbumChecked += list[i].Id + ",";
-                        }
-                    }
-                } 
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-                return true;
-            }
-            return true;
-        }
 
         public bool RemoveDiskSoundFile(string fileName, long id)
         {
@@ -815,7 +703,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                     dialog.ShowNormalDialog(MainContext.GetText(Resource.String.Lbl_Login), MainContext.GetText(Resource.String.Lbl_Message_Sorry_signin), MainContext.GetText(Resource.String.Lbl_Yes), MainContext.GetText(Resource.String.Lbl_No));
                     return;
                 }
-                 
+
                 if (Methods.CheckConnectivity())
                 {
                     TypeDialog = "DeleteSong";
@@ -824,10 +712,10 @@ namespace DeepSound.Helpers.MediaPlayerController
                     var showDeleteFromCacheDialog = MoreSongArgs.SongsClass.UserId != UserDetails.UserId && AppSettings.AllowDeletingDownloadedSongs && NamePage == "LatestDownloadsFragment";
                     var content = showDeleteFromCacheDialog ? MainContext.GetText(Resource.String.Lbl_Do_You_want_to_remove_Song) : MainContext.GetText(Resource.String.Lbl_AreYouSureDeleteSong);
 
-                    var dialog = new MaterialDialog.Builder(MainContext).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                    dialog.Title(MainContext.GetText(Resource.String.Lbl_DeleteSong));
-                    dialog.Content(content);
-                    dialog.PositiveText(MainContext.GetText(Resource.String.Lbl_Yes)).OnPositive((materialDialog, action) =>
+                    var dialog = new MaterialAlertDialogBuilder(MainContext);
+                    dialog.SetTitle(MainContext.GetText(Resource.String.Lbl_DeleteSong));
+                    dialog.SetMessage(content);
+                    dialog.SetPositiveButton(MainContext.GetText(Resource.String.Lbl_Yes), (materialDialog, action) =>
                     {
                         try
                         {
@@ -837,8 +725,8 @@ namespace DeepSound.Helpers.MediaPlayerController
                                 {
                                     if (Methods.CheckConnectivity())
                                     {
-                                        SoundDataObject dataSong = null!;
-                                        dynamic mAdapter = null!;
+                                        SoundDataObject dataSong = null;
+                                        dynamic mAdapter = null;
 
                                         switch (NamePage)
                                         {
@@ -923,9 +811,9 @@ namespace DeepSound.Helpers.MediaPlayerController
                             Methods.DisplayReportResultTrack(e);
                         }
                     });
-                    dialog.NegativeText(MainContext.GetText(Resource.String.Lbl_No)).OnNegative(new MyMaterialDialog());
-                    dialog.AlwaysCallSingleChoiceCallback();
-                    dialog.Build().Show();
+                    dialog.SetNegativeButton(MainContext.GetText(Resource.String.Lbl_No), new MaterialDialogUtils());
+
+                    dialog.Show();
                 }
                 else
                 {
@@ -949,7 +837,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                     dialog.ShowNormalDialog(MainContext.GetText(Resource.String.Lbl_Login), MainContext.GetText(Resource.String.Lbl_Message_Sorry_signin), MainContext.GetText(Resource.String.Lbl_Yes), MainContext.GetText(Resource.String.Lbl_No));
                     return;
                 }
-                 
+
                 Intent intent = new Intent(MainContext, typeof(EditSongActivity));
                 intent.PutExtra("ItemDataSong", JsonConvert.SerializeObject(song.SongsClass));
                 intent.PutExtra("NamePage", NamePage);
@@ -989,7 +877,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         //ReportSong
         public void OnMenuReportSongOnClick(MoreClickEventArgs song)
         {
@@ -1002,21 +890,29 @@ namespace DeepSound.Helpers.MediaPlayerController
                     return;
                 }
 
-                var dialogBuilder = new MaterialDialog.Builder(MainContext).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                dialogBuilder.Title(Resource.String.Lbl_ReportSong).TitleColorRes(Resource.Color.primary);
-                dialogBuilder.Input(0, 0, false, (materialDialog, s) =>
+                var dialogBuilder = new MaterialAlertDialogBuilder(MainContext);
+                dialogBuilder.SetTitle(Resource.String.Lbl_ReportSong);
+
+                EditText input = new EditText(MainContext);
+
+                input.InputType = InputTypes.ClassText | InputTypes.TextFlagMultiLine;
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+                input.LayoutParameters = lp;
+
+                dialogBuilder.SetView(input);
+
+                dialogBuilder.SetPositiveButton(MainContext.GetText(Resource.String.Lbl_Submit), (sender, args) =>
                 {
                     try
                     {
-                        if (s.Length <= 0) return;
+                        var text = input.Text ?? "";
+                        if (text.Length <= 0) return;
 
                         if (Methods.CheckConnectivity())
                         {
                             Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_YourReportSong), ToastLength.Short)?.Show();
                             //Sent Api >>
-                            PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Tracks.ReportUnReportTrackAsync(song.SongsClass.Id.ToString(), s.ToString(), true) });
-
-
+                            PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Tracks.ReportUnReportTrackAsync(song.SongsClass.Id.ToString(), text, true) });
                         }
                         else
                         {
@@ -1025,21 +921,19 @@ namespace DeepSound.Helpers.MediaPlayerController
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e); 
+                        Console.WriteLine(e);
                     }
                 });
-                dialogBuilder.InputType(InputTypes.TextFlagImeMultiLine);
-                dialogBuilder.PositiveText(MainContext.GetText(Resource.String.Lbl_Submit)).OnPositive(new MyMaterialDialog());
-                dialogBuilder.NegativeText(MainContext.GetText(Resource.String.Lbl_Cancel)).OnNegative(new MyMaterialDialog());
-                dialogBuilder.AlwaysCallSingleChoiceCallback();
-                dialogBuilder.Build().Show(); 
+                dialogBuilder.SetNegativeButton(MainContext.GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+
+                dialogBuilder.Show();
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         //Report Copyright Song
         public void OnMenuReportCopyrightSongOnClick(MoreClickEventArgs song)
         {
@@ -1052,43 +946,44 @@ namespace DeepSound.Helpers.MediaPlayerController
                     return;
                 }
 
-                var dialogBuilder = new MaterialDialog.Builder(MainContext).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                dialogBuilder.Title(Resource.String.Lbl_ReportCopyright).TitleColorRes(Resource.Color.primary);
-                dialogBuilder.Input(0, 0, false, (materialDialog, s) =>
+                var dialogBuilder = new MaterialAlertDialogBuilder(MainContext);
+                dialogBuilder.SetTitle(Resource.String.Lbl_ReportCopyright);
+                dialogBuilder.SetMessage(Resource.String.Lbl_copyright_Des);
+
+                EditText input = new EditText(MainContext);
+
+                input.InputType = InputTypes.ClassText | InputTypes.TextFlagMultiLine;
+                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+                input.LayoutParameters = lp;
+
+                dialogBuilder.SetView(input);
+
+                dialogBuilder.SetPositiveButton(MainContext.GetText(Resource.String.Lbl_Submit), (sender, args) =>
                 {
                     try
                     {
-                        if (s.Length <= 0) return;
+                        var text = input.Text ?? "";
+                        if (text.Length <= 0) return;
 
-                        if (!materialDialog.PromptCheckBoxChecked)
+                        if (Methods.CheckConnectivity())
                         {
-                            Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_copyright_Error), ToastLength.Short)?.Show();
+                            Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_YourReportSong), ToastLength.Short)?.Show();
+                            //Sent Api >>
+                            PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Common.CreateCopyrightAsync(song.SongsClass.Id.ToString(), text) });
                         }
                         else
                         {
-                            if (Methods.CheckConnectivity())
-                            {
-                                Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_YourReportSong), ToastLength.Short)?.Show();
-                                //Sent Api >>
-                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Common.CreateCopyrightAsync(song.SongsClass.Id.ToString(), s.ToString()) });
-                            }
-                            else
-                            {
-                                Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
-                            }
-                        } 
+                            Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
+                        }
                     }
                     catch (Exception e)
                     {
                         Console.WriteLine(e);
                     }
                 });
-                dialogBuilder.InputType(InputTypes.TextFlagImeMultiLine);
-                dialogBuilder.CheckBoxPromptRes(Resource.String.Lbl_copyright_Des, false, null);
-                dialogBuilder.PositiveText(MainContext.GetText(Resource.String.Lbl_Submit)).OnPositive(new MyMaterialDialog());
-                dialogBuilder.NegativeText(MainContext.GetText(Resource.String.Lbl_Cancel)).OnNegative(new MyMaterialDialog());
-                dialogBuilder.AlwaysCallSingleChoiceCallback();
-                dialogBuilder.Build().Show();
+                dialogBuilder.SetNegativeButton(MainContext.GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+
+                dialogBuilder.Show();
             }
             catch (Exception e)
             {
@@ -1125,22 +1020,89 @@ namespace DeepSound.Helpers.MediaPlayerController
                     return;
                 }
 
+                MoreSongArgs = song;
                 TypeDialog = "AddPlaylist";
 
-                var arrayAdapter = new List<string>();
-                var arrayIndexAdapter = new int[] { };
-                var dialogList = new MaterialDialog.Builder(MainContext).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var listItems = new List<string>();
 
-                if (ListUtils.PlaylistList?.Count > 0) arrayAdapter.AddRange(ListUtils.PlaylistList.Select(playlistDataObject => Methods.FunString.DecodeString(playlistDataObject.Name)));
+                if (ListUtils.PlaylistList?.Count > 0)
+                    listItems.AddRange(ListUtils.PlaylistList.Select(playlistDataObject => Methods.FunString.DecodeString(playlistDataObject.Name)));
 
-                dialogList.Title(MainContext.GetText(Resource.String.Lbl_SelectPlaylist))
-                    .Items(arrayAdapter)
-                    .ItemsCallbackMultiChoice(arrayIndexAdapter, this)
-                    .AlwaysCallMultiChoiceCallback()
-                    .NegativeText(MainContext.GetText(Resource.String.Lbl_Close)).OnNegative(this)
-                    .PositiveText(MainContext.GetText(Resource.String.Lbl_Done)).OnPositive(new MyMaterialDialog())
-                    .NeutralText(MainContext.GetText(Resource.String.Lbl_Create)).OnNeutral(new MyMaterialDialog())
-                    .Build().Show();
+                var checkedItems = new bool[listItems.Count];
+                var selectedItems = new List<string>(listItems);
+
+                var dialogList = new MaterialAlertDialogBuilder(MainContext);
+
+                dialogList.SetTitle(Resource.String.Lbl_SelectPlaylist);
+                dialogList.SetCancelable(false);
+                dialogList.SetMultiChoiceItems(listItems.ToArray(), checkedItems, (o, args) =>
+                {
+                    try
+                    {
+                        checkedItems[args.Which] = args.IsChecked;
+
+                        var text = selectedItems[args.Which] ?? "";
+                        Console.WriteLine(text);
+                    }
+                    catch (Exception exception)
+                    {
+                        Methods.DisplayReportResultTrack(exception);
+                    }
+                });
+                dialogList.SetPositiveButton(MainContext.GetText(Resource.String.Lbl_Done), (o, args) =>
+                {
+                    try
+                    {
+                        TotalIdPlaylistChecked = "";
+                        for (int i = 0; i < checkedItems.Length; i++)
+                        {
+                            if (checkedItems[i])
+                            {
+                                var text = selectedItems[i];
+                                var check = ListUtils.PlaylistList.FirstOrDefault(a => a.Name == text);
+                                if (check != null)
+                                {
+                                    TotalIdPlaylistChecked += check.Id + ",";
+                                }
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(TotalIdPlaylistChecked))
+                        {
+                            TotalIdPlaylistChecked = TotalIdPlaylistChecked.Remove(TotalIdPlaylistChecked.Length - 1, 1);
+                            if (Methods.CheckConnectivity())
+                            {
+                                if (MoreSongArgs?.SongsClass != null)
+                                {
+                                    //Sent Api
+                                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Playlist.AddToPlaylistAsync(MoreSongArgs?.SongsClass.Id.ToString(), TotalIdPlaylistChecked) });
+                                }
+                            }
+                            else
+                            {
+                                Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
+                            }
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        Methods.DisplayReportResultTrack(exception);
+                    }
+                });
+                dialogList.SetNeutralButton(Resource.String.Lbl_Create, (o, args) =>
+                {
+                    try
+                    {
+                        CreatePlaylistBottomSheet createPlaylistBottomSheet = new CreatePlaylistBottomSheet();
+                        createPlaylistBottomSheet.Show(GlobalContext.SupportFragmentManager, createPlaylistBottomSheet.Tag);
+                    }
+                    catch (Exception ex)
+                    {
+                        Methods.DisplayReportResultTrack(ex);
+                    }
+                });
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -1160,21 +1122,99 @@ namespace DeepSound.Helpers.MediaPlayerController
                     return;
                 }
 
+                MoreSongArgs = song;
                 TypeDialog = "AddAlbum";
-                var arrayAdapter = new List<string>();
-                var arrayIndexAdapter = new int[] { };
-                var dialogList = new MaterialDialog.Builder(MainContext).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
 
-                if (ListUtils.AlbumList?.Count > 0) arrayAdapter.AddRange(ListUtils.AlbumList.Select(albumDataObject => Methods.FunString.DecodeString(albumDataObject.Title)));
+                var listItems = new List<string>();
 
-                dialogList.Title(MainContext.GetText(Resource.String.Lbl_SelectAlbum))
-                    .Items(arrayAdapter)
-                    .ItemsCallbackMultiChoice(arrayIndexAdapter, this)
-                    .AlwaysCallMultiChoiceCallback()
-                    .NegativeText(MainContext.GetText(Resource.String.Lbl_Close)).OnNegative(this)
-                    .PositiveText(MainContext.GetText(Resource.String.Lbl_Done)).OnPositive(new MyMaterialDialog())
-                    .NeutralText(MainContext.GetText(Resource.String.Lbl_Create)).OnNeutral(new MyMaterialDialog())
-                    .Build().Show();
+                if (ListUtils.AlbumList?.Count > 0)
+                    listItems.AddRange(ListUtils.AlbumList.Select(albumDataObject => Methods.FunString.DecodeString(albumDataObject.Title)));
+
+                var checkedItems = new bool[listItems.Count];
+                var selectedItems = new List<string>(listItems);
+
+                var dialogList = new MaterialAlertDialogBuilder(MainContext);
+
+                dialogList.SetTitle(Resource.String.Lbl_SelectAlbum);
+                dialogList.SetCancelable(false);
+                dialogList.SetMultiChoiceItems(listItems.ToArray(), checkedItems, (o, args) =>
+                {
+                    try
+                    {
+                        checkedItems[args.Which] = args.IsChecked;
+
+                        var text = selectedItems[args.Which] ?? "";
+                        Console.WriteLine(text);
+                    }
+                    catch (Exception exception)
+                    {
+                        Methods.DisplayReportResultTrack(exception);
+                    }
+                });
+                dialogList.SetPositiveButton(MainContext.GetText(Resource.String.Lbl_Done), (o, args) =>
+                {
+                    try
+                    {
+                        TotalIdAlbumChecked = "";
+                        for (int i = 0; i < checkedItems.Length; i++)
+                        {
+                            if (checkedItems[i])
+                            {
+                                var text = selectedItems[i];
+                                var check = ListUtils.AlbumList.FirstOrDefault(a => a.Title == text);
+                                if (check != null)
+                                {
+                                    TotalIdAlbumChecked += check.Id + ",";
+                                }
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(TotalIdAlbumChecked))
+                        {
+                            TotalIdAlbumChecked = TotalIdAlbumChecked.Remove(TotalIdAlbumChecked.Length - 1, 1);
+                            if (Methods.CheckConnectivity())
+                            {
+                                if (MoreSongArgs?.SongsClass != null)
+                                {
+                                    //wael add Api after update 
+                                    //Sent Api
+                                    //PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Albums.AddToAlbumAsync(MoreSongArgs?.SongsClass.Id.ToString(), TotalIdAlbumChecked) });
+                                }
+                            }
+                            else
+                            {
+                                Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
+                            }
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        Methods.DisplayReportResultTrack(exception);
+                    }
+                });
+                dialogList.SetNeutralButton(Resource.String.Lbl_Create, (o, args) =>
+                {
+                    try
+                    {
+                        GlobalContext.StartActivity(new Intent(GlobalContext, typeof(UploadAlbumActivity)));
+                    }
+                    catch (Exception ex)
+                    {
+                        Methods.DisplayReportResultTrack(ex);
+                    }
+                });
+
+                dialogList.Show();
+
+
+                //dialogList.SetTitle(MainContext.GetText(Resource.String.Lbl_SelectAlbum))
+                //    .SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this))
+                //    .ItemsCallbackMultiChoice(arrayIndexAdapter, this)
+                //    .AlwaysCallMultiChoiceCallback()
+                //    .SetNegativeButton(MainContext.GetText(Resource.String.Lbl_Close) , new MaterialDialogUtils())
+                //    .SetPositiveButton(MainContext.GetText(Resource.String.Lbl_Done) , this)
+                //    .NeutralText(MainContext.GetText(Resource.String.Lbl_Create)).OnNeutral(this)
+                //    .Show();
             }
             catch (Exception exception)
             {
@@ -1188,8 +1228,17 @@ namespace DeepSound.Helpers.MediaPlayerController
             {
                 if (likeButton?.Tag?.ToString() == "Liked")
                 {
-                    likeButton.SetImageResource(Resource.Drawable.icon_player_heart);
-                    likeButton.ClearColorFilter();
+                    if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                    {
+                        likeButton.SetImageResource(Resource.Drawable.icon_player_heart);
+                        likeButton.SetColorFilter(Color.White);
+                    }
+                    else if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
+                    {
+                        likeButton.SetImageResource(Resource.Drawable.icon_player2_heart);
+                        likeButton.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
+                    }
+
                     likeButton.Tag = "Like";
                     return false;
                 }
@@ -1214,14 +1263,29 @@ namespace DeepSound.Helpers.MediaPlayerController
             {
                 if (likeButton?.Tag?.ToString() == "Disliked")
                 {
-                    likeButton.SetImageResource(Resource.Drawable.icon_player_dislike);
-                    likeButton.SetColorFilter(Color.Argb(255, 255, 255, 255));
+                    if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                    {
+                        likeButton.SetImageResource(Resource.Drawable.icon_player_dislike);
+                        likeButton.SetColorFilter(Color.White);
+                    }
+                    else if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
+                    {
+                        likeButton.SetImageResource(Resource.Drawable.icon_player2_dislike);
+                        likeButton.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
+                    }
                     likeButton.Tag = "Dislike";
                     return false;
                 }
                 else
                 {
-                    likeButton.SetImageResource(Resource.Drawable.icon_player_dislike);
+                    if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                    {
+                        likeButton.SetImageResource(Resource.Drawable.icon_player_dislike);
+                    }
+                    else
+                    {
+                        likeButton.SetImageResource(Resource.Drawable.icon_player2_dislike);
+                    }
                     likeButton.SetColorFilter(Color.ParseColor("#f55a4e"));
                     likeButton.Tag = "Disliked";
                     return true;
@@ -1240,8 +1304,17 @@ namespace DeepSound.Helpers.MediaPlayerController
             {
                 if (favButton?.Tag?.ToString() == "Added")
                 {
-                    favButton.SetImageResource(Resource.Drawable.icon_player_star);
-                    favButton.SetColorFilter(Color.Argb(255, 255, 255, 255));
+                    if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                    {
+                        favButton.SetImageResource(Resource.Drawable.icon_player_star);
+                        favButton.SetColorFilter(Color.White);
+                    }
+                    else if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
+                    {
+                        favButton.SetImageResource(Resource.Drawable.icon_player2_star);
+                        favButton.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
+                    }
+
                     favButton.Tag = "Add";
                     return false;
                 }
@@ -1258,7 +1331,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                 Methods.DisplayReportResultTrack(exception);
                 return false;
             }
-        } 
+        }
     }
 
     public class MoreClickEventArgs : EventArgs
@@ -1267,5 +1340,5 @@ namespace DeepSound.Helpers.MediaPlayerController
         public SoundDataObject SongsClass { get; set; }
 
         public ImageView Button { get; set; }
-    }  
+    }
 }

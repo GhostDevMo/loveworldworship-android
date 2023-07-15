@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Android.App;
+﻿using Android.App;
 using Android.Graphics;
 using Android.OS;
 using Android.Widget;
@@ -11,6 +8,9 @@ using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.SuperTextLibrary;
 using DeepSoundClient.Classes.Chat;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DeepSound.Helpers.Controller
 {

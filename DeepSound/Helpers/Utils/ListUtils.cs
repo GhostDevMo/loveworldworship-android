@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Reflection;
-using DeepSound.Helpers.MediaPlayerController;
+﻿using DeepSound.Helpers.MediaPlayerController;
 using DeepSound.SQLite;
 using DeepSoundClient.Classes.Albums;
 using DeepSoundClient.Classes.Chat;
@@ -11,6 +6,11 @@ using DeepSoundClient.Classes.Common;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.Playlist;
 using DeepSoundClient.Classes.User;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reflection;
 
 namespace DeepSound.Helpers.Utils
 {
@@ -37,7 +37,7 @@ namespace DeepSound.Helpers.Utils
             {
                 Constant.ArrayListPlay.Clear();
                 DataUserLoginList.Clear();
-                SettingsSiteList = null!;
+                SettingsSiteList = null;
                 MyUserInfoList.Clear();
                 GenresList.Clear();
                 PriceList.Clear();
@@ -48,7 +48,7 @@ namespace DeepSound.Helpers.Utils
             }
             catch (Exception e)
             {
-               Methods.DisplayReportResultTrack(e);
+                Methods.DisplayReportResultTrack(e);
             }
         }
 
@@ -151,6 +151,6 @@ namespace DeepSound.Helpers.Utils
             // incrementing the count whenever there's a successful removal
             return toRemove.Count(observableCollection.Remove);
         }
-         
+
     }
 }

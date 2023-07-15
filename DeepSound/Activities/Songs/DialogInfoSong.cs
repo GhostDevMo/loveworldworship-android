@@ -1,5 +1,4 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
 using Android.Widget;
@@ -7,17 +6,16 @@ using Bumptech.Glide;
 using Bumptech.Glide.Load.Engine;
 using Bumptech.Glide.Load.Resource.Bitmap;
 using Bumptech.Glide.Request;
-using DeepSound.Library.Anjo.SuperTextLibrary;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Fonts;
 using DeepSound.Helpers.Utils;
+using DeepSound.Library.Anjo.SuperTextLibrary;
 using DeepSoundClient.Classes.Global;
+using System;
 using String = Java.Lang.String;
-using System.Text.RegularExpressions;
-using System.Net;
 
 namespace DeepSound.Activities.Songs
 {
@@ -44,7 +42,7 @@ namespace DeepSound.Activities.Songs
             try
             {
                 ActivityContext = activity;
-                 
+
                 ReadMoreOption = new StReadMoreOption.Builder()
                     .TextLength(200, StReadMoreOption.TypeCharacter)
                     .MoreLabel(activity.GetText(Resource.String.Lbl_ReadMore))
@@ -52,7 +50,7 @@ namespace DeepSound.Activities.Songs
                     .MoreLabelColor(Color.ParseColor(AppSettings.MainColor))
                     .LessLabelColor(Color.ParseColor(AppSettings.MainColor))
                     .LabelUnderLine(true)
-                    .Build(); 
+                    .Build();
             }
             catch (Exception e)
             {
@@ -66,7 +64,7 @@ namespace DeepSound.Activities.Songs
             {
                 DataObject = dataObject;
 
-                InfoSongWindow = new Dialog(ActivityContext, DeepSoundTools.IsTabDark() ? Resource.Style.MyDialogThemeDark : Resource.Style.MyDialogTheme);
+                InfoSongWindow = new Dialog(ActivityContext, DeepSoundTools.IsTabDark() ? Resource.Style.MyTheme_Dark : Resource.Style.MyTheme);
                 InfoSongWindow?.SetContentView(Resource.Layout.DialogInfoSongLayout);
 
                 InitComponent();
@@ -165,7 +163,7 @@ namespace DeepSound.Activities.Songs
         #endregion
 
         #region Events
-           
+
         //Open profile 
         private void TxtPublisherNameOnClick(object sender, EventArgs e)
         {
@@ -207,7 +205,7 @@ namespace DeepSound.Activities.Songs
                 if (DataObject != null)
                 {
                     var glideRequestOptions = new RequestOptions().Error(Resource.Drawable.ImagePlacholder).Placeholder(Resource.Drawable.ImagePlacholder).SetDiskCacheStrategy(DiskCacheStrategy.All).SetPriority(Priority.High);
-                    var fullGlideRequestBuilder = Glide.With(ActivityContext).AsBitmap().Apply(glideRequestOptions).Transition(new BitmapTransitionOptions().CrossFade(100));
+                    var fullGlideRequestBuilder = Glide.With(ActivityContext?.BaseContext).AsBitmap().Apply(glideRequestOptions).Transition(new BitmapTransitionOptions().CrossFade(100));
                     fullGlideRequestBuilder.Load(DataObject.Thumbnail).Into(ImageCover);
 
                     GlideImageLoader.LoadImage(ActivityContext, DataObject.Thumbnail, ImageSong, ImageStyle.CenterCrop, ImagePlaceholders.Drawable);
@@ -232,23 +230,16 @@ namespace DeepSound.Activities.Songs
                     TextSanitizer tagsSanitizer = new TextSanitizer(TxtTags, ActivityContext);
                     tagsSanitizer.Load(Methods.FunString.DecodeString(DataObject.Tags.Replace(",", " #")));
 
-                    ReadMoreOption.AddReadMoreTo(TxtLyrics, new String(StripHTML(DataObject.Lyrics))); 
+                    if (!string.IsNullOrEmpty(DataObject.Lyrics))
+                        ReadMoreOption.AddReadMoreTo(TxtLyrics, new String(Methods.FunString.DecodeString(DataObject.Lyrics)));
+                    else
+                        TxtLyrics.Text = ActivityContext.GetText(Resource.String.Lbl_NotAvailable);
                 }
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
-        }
-
-        public string StripHTML(string html)
-        {
-            if (!string.IsNullOrEmpty(html))
-            {
-                var regex = new Regex("<[^>]+>", RegexOptions.IgnoreCase);
-                return WebUtility.HtmlDecode((regex.Replace(html, "")));
-            }
-            return html;
         }
     }
 }

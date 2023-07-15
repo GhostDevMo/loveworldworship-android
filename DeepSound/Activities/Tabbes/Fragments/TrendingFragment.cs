@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Content;
+﻿using Android.Content;
 using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
 using Android.OS;
@@ -30,10 +25,15 @@ using DeepSoundClient.Classes.Playlist;
 using DeepSoundClient.Classes.Product;
 using DeepSoundClient.Requests;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DeepSound.Activities.Tabbes.Fragments
 {
-    public class TrendingFragment : Fragment 
+    public class TrendingFragment : Fragment
     {
         #region Variables Basic
 
@@ -79,7 +79,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -92,7 +92,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 InitComponent(view);
                 SetRecyclerViewAdapters();
 
-                StartApiService(); 
+                StartApiService();
             }
             catch (Exception e)
             {
@@ -128,7 +128,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 SearchBox.SetHintTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.Gray);
                 SearchBox.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.Gray);
                 SearchBox.Click += SearchBoxOnClick;
-                 
+
                 EventViewStub = (ViewStub)view.FindViewById(Resource.Id.viewStubEvent);
                 BlogViewStub = (ViewStub)view.FindViewById(Resource.Id.viewStubBlog);
                 PublicPlaylistViewStub = (ViewStub)view.FindViewById(Resource.Id.viewStubPublicePlaylist);
@@ -141,14 +141,14 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 SwipeRefreshLayout.Enabled = true;
                 SwipeRefreshLayout.SetProgressBackgroundColorSchemeColor(DeepSoundTools.IsTabDark() ? Color.ParseColor("#424242") : Color.ParseColor("#f7f7f7"));
                 SwipeRefreshLayout.Refresh += SwipeRefreshLayoutOnRefresh;
-                 
+
                 var publisherAdView = view.FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
                 AdsGoogle.InitPublisherAdView(publisherAdView);
-                 
+
                 if (!AppSettings.ShowProduct || !UserDetails.IsLogin)
                     CartIcon.Visibility = ViewStates.Gone;
                 else
-                    CartIcon.Visibility = ViewStates.Visible; 
+                    CartIcon.Visibility = ViewStates.Visible;
             }
             catch (Exception e)
             {
@@ -163,15 +163,15 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 //Public Playlist RecyclerView
                 PublicPlaylistAdapter = new PlaylistAdapter(Activity) { PlaylistList = new ObservableCollection<PlaylistDataObject>() };
                 PublicPlaylistAdapter.ItemClick += PublicPlaylistAdapterOnItemClick;
-                 
+
                 //Event RecyclerView
                 EventAdapter = new EventAdapter(Activity) { EventsList = new ObservableCollection<EventDataObject>() };
                 EventAdapter.ItemClick += EventAdapterItemClick;
 
                 //Blog RecyclerView
-                BlogAdapter = new BlogAdapter(Activity) { BlogList = new ObservableCollection<ArticleDataObject>()};
+                BlogAdapter = new BlogAdapter(Activity) { BlogList = new ObservableCollection<ArticleDataObject>() };
                 BlogAdapter.ItemClick += BlogAdapterOnItemClick;
-               
+
                 // Product RecyclerView >> LinearLayoutManager.Horizontal
                 ProductAdapter = new ProductAdapter(Activity) { ProductsList = new ObservableCollection<ProductDataObject>() };
                 ProductAdapter.ItemClick += ProductAdapterOnItemClick;
@@ -215,16 +215,16 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
 
         #region Get Public Playlist , Event =>> Api 
-         
+
         private void StartApiService()
         {
             if (Methods.CheckConnectivity())
             {
-                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => GetPublicPlaylist() , () => GetEvent(), () => LoadProduct(), GetBlog });
+                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => GetPublicPlaylist(), () => GetEvent(), () => LoadProduct(), GetBlog });
             }
             else
             {
@@ -235,7 +235,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -243,15 +243,15 @@ namespace DeepSound.Activities.Tabbes.Fragments
             }
         }
 
-        private async Task GetPublicPlaylist(string offset  = "0")
+        private async Task GetPublicPlaylist(string offset = "0")
         {
             if (PublicPlaylistScrollEvent != null && PublicPlaylistScrollEvent.IsLoading)
                 return;
-             
+
             if (PublicPlaylistScrollEvent != null) PublicPlaylistScrollEvent.IsLoading = true;
 
             int countList = PublicPlaylistAdapter.PlaylistList.Count;
-             var (apiStatus, respond) = await RequestsAsync.Playlist.GetPublicPlaylistAsync("15", offset);
+            var (apiStatus, respond) = await RequestsAsync.Playlist.GetPublicPlaylistAsync("15", offset);
             if (apiStatus.Equals(200))
             {
                 if (respond is PlaylistObject result)
@@ -275,7 +275,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                                 PublicPlaylistInflated ??= PublicPlaylistViewStub.Inflate();
 
                                 RecyclerInflaterPublicPlaylist = new TemplateRecyclerInflater();
-                                RecyclerInflaterPublicPlaylist.InflateLayout<PlaylistDataObject>(Activity, PublicPlaylistInflated, PublicPlaylistAdapter, TemplateRecyclerInflater.TypeLayoutManager.LinearLayoutManagerHorizontal, 0, true, Activity.GetString(Resource.String.Lbl_Hot_Playlist) , false);
+                                RecyclerInflaterPublicPlaylist.InflateLayout<PlaylistDataObject>(Activity, PublicPlaylistInflated, PublicPlaylistAdapter, TemplateRecyclerInflater.TypeLayoutManager.LinearLayoutManagerHorizontal, 0, true, Activity.GetString(Resource.String.Lbl_Hot_Playlist), false);
 
                                 if (PublicPlaylistScrollEvent == null)
                                 {
@@ -300,7 +300,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
 
             Activity?.RunOnUiThread(() => { ShowEmptyPage("PublicPlaylist"); });
         }
-        
+
         private async Task GetEvent(string offset = "0")
         {
             if (!AppSettings.ShowEvent)
@@ -308,11 +308,11 @@ namespace DeepSound.Activities.Tabbes.Fragments
 
             if (EventScrollEvent != null && EventScrollEvent.IsLoading)
                 return;
-             
+
             if (EventScrollEvent != null) EventScrollEvent.IsLoading = true;
 
             int countList = EventAdapter.EventsList.Count;
-             var (apiStatus, respond) = await RequestsAsync.Event.GetEventsAsync("15", offset);
+            var (apiStatus, respond) = await RequestsAsync.Event.GetEventsAsync("15", offset);
             if (apiStatus.Equals(200))
             {
                 if (respond is GetEventObject result)
@@ -339,7 +339,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                                 RecyclerInflaterEvent.InflateLayout<EventDataObject>(Activity, EventInflated, EventAdapter, TemplateRecyclerInflater.TypeLayoutManager.LinearLayoutManagerHorizontal, 0, true, Activity.GetString(Resource.String.Lbl_Event));
                                 if (!RecyclerInflaterEvent.MainLinear.HasOnClickListeners)
                                 {
-                                    RecyclerInflaterEvent.MainLinear.Click += null!;
+                                    RecyclerInflaterEvent.MainLinear.Click += null;
                                     RecyclerInflaterEvent.MainLinear.Click += EventMoreOnClick;
                                 }
 
@@ -366,14 +366,14 @@ namespace DeepSound.Activities.Tabbes.Fragments
 
             Activity?.RunOnUiThread(() => { ShowEmptyPage("Event"); });
         }
-         
+
         private async Task GetBlog()
         {
             if (!AppSettings.ShowBlog)
                 return;
-              
+
             int countList = BlogAdapter.BlogList.Count;
-             var (apiStatus, respond) = await RequestsAsync.Articles.GetArticlesAsync("15", "0");
+            var (apiStatus, respond) = await RequestsAsync.Articles.GetArticlesAsync("15", "0");
             if (apiStatus.Equals(200))
             {
                 if (respond is GetArticlesObject result)
@@ -400,9 +400,9 @@ namespace DeepSound.Activities.Tabbes.Fragments
                                 RecyclerInflaterBlog.InflateLayout<EventDataObject>(Activity, BlogInflated, BlogAdapter, TemplateRecyclerInflater.TypeLayoutManager.LinearLayoutManagerHorizontal, 0, true, Activity.GetString(Resource.String.Lbl_Article));
                                 if (!RecyclerInflaterBlog.MainLinear.HasOnClickListeners)
                                 {
-                                    RecyclerInflaterBlog.MainLinear.Click += null!;
+                                    RecyclerInflaterBlog.MainLinear.Click += null;
                                     RecyclerInflaterBlog.MainLinear.Click += BlogMoreOnClick;
-                                } 
+                                }
                             });
                         }
                     }
@@ -418,7 +418,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
 
             Activity?.RunOnUiThread(() => { ShowEmptyPage("Blog"); });
         }
-         
+
         private async Task LoadProduct(string offsetProduct = "0")
         {
             if (!AppSettings.ShowProduct)
@@ -454,7 +454,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                                 RecyclerInflaterProduct.InflateLayout<ProductDataObject>(Activity, ProductInflated, ProductAdapter, TemplateRecyclerInflater.TypeLayoutManager.LinearLayoutManagerHorizontal, 0, true, Context.GetText(Resource.String.Lbl_Products));
                                 if (!RecyclerInflaterProduct.MainLinear.HasOnClickListeners)
                                 {
-                                    RecyclerInflaterProduct.MainLinear.Click += null!;
+                                    RecyclerInflaterProduct.MainLinear.Click += null;
                                     RecyclerInflaterProduct.MainLinear.Click += ProductMoreOnClick;
                                 }
                             });
@@ -479,7 +479,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 if (EventScrollEvent != null) EventScrollEvent.IsLoading = false;
 
                 SwipeRefreshLayout.Refreshing = false;
-                 
+
                 if (type == "PublicPlaylist")
                 {
                     if (PublicPlaylistAdapter?.PlaylistList?.Count > 0)
@@ -488,9 +488,9 @@ namespace DeepSound.Activities.Tabbes.Fragments
                             RecyclerInflaterPublicPlaylist.Recyler.Visibility = ViewStates.Visible;
 
                         EmptyStateLayout.Visibility = ViewStates.Gone;
-                    } 
-                } 
-                
+                    }
+                }
+
                 if (type == "Event")
                 {
                     if (EventAdapter?.EventsList?.Count > 0)
@@ -499,7 +499,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                             RecyclerInflaterEvent.Recyler.Visibility = ViewStates.Visible;
 
                         EmptyStateLayout.Visibility = ViewStates.Gone;
-                    } 
+                    }
                 }
 
                 if (type == "Blog")
@@ -510,7 +510,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                             RecyclerInflaterBlog.Recyler.Visibility = ViewStates.Visible;
 
                         EmptyStateLayout.Visibility = ViewStates.Gone;
-                    } 
+                    }
                 }
 
                 if (type == "Product")
@@ -521,7 +521,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                             RecyclerInflaterProduct.Recyler.Visibility = ViewStates.Visible;
 
                         EmptyStateLayout.Visibility = ViewStates.Gone;
-                    } 
+                    }
                 }
 
                 if (PublicPlaylistAdapter?.PlaylistList?.Count == 0 && EventAdapter?.EventsList?.Count == 0 && BlogAdapter?.BlogList?.Count == 0 && ProductAdapter?.ProductsList?.Count == 0)
@@ -532,18 +532,18 @@ namespace DeepSound.Activities.Tabbes.Fragments
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSound);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }
-                 
+
             }
             catch (Exception e)
             {
                 if (PublicPlaylistScrollEvent != null) PublicPlaylistScrollEvent.IsLoading = false;
                 if (EventScrollEvent != null) EventScrollEvent.IsLoading = false;
 
-                SwipeRefreshLayout.Refreshing = false; 
+                SwipeRefreshLayout.Refreshing = false;
                 Methods.DisplayReportResultTrack(e);
             }
         }
@@ -598,7 +598,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
         #endregion
 
         #region Event 
-         
+
         private void ProductAdapterOnAddButtonItemClick(object sender, ProductAdapterClickEventArgs e)
         {
             try
@@ -688,7 +688,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void EventMoreOnClick(object sender, EventArgs e)
         {
             try
@@ -698,10 +698,10 @@ namespace DeepSound.Activities.Tabbes.Fragments
             }
             catch (Exception exception)
             {
-                Methods.DisplayReportResultTrack(exception); 
+                Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void BlogAdapterOnItemClick(object sender, BlogAdapterClickEventArgs e)
         {
             try
@@ -716,7 +716,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
             }
             catch (Exception exception)
             {
-                Methods.DisplayReportResultTrack(exception); 
+                Methods.DisplayReportResultTrack(exception);
             }
         }
 
@@ -784,9 +784,9 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
-         
+
         #region SearchView
 
         private void SearchBoxOnClick(object sender, EventArgs e)
@@ -805,9 +805,9 @@ namespace DeepSound.Activities.Tabbes.Fragments
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-            } 
+            }
         }
-         
+
         #endregion
     }
 }

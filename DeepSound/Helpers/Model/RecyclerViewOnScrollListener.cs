@@ -1,6 +1,6 @@
-﻿using System;
-using AndroidX.RecyclerView.Widget;
+﻿using AndroidX.RecyclerView.Widget;
 using DeepSound.Helpers.Utils;
+using System;
 
 namespace DeepSound.Helpers.Model
 {
@@ -37,7 +37,7 @@ namespace DeepSound.Helpers.Model
                 var visibleItemCount = recyclerView.ChildCount;
                 var totalItemCount = recyclerView.GetAdapter().ItemCount;
 
-                dynamic pastVisibleItems; 
+                dynamic pastVisibleItems;
                 if (LayoutManager is LinearLayoutManager managerLinear)
                 {
                     pastVisibleItems = managerLinear.FindFirstVisibleItemPosition();
@@ -49,7 +49,7 @@ namespace DeepSound.Helpers.Model
                 else if (LayoutManager is StaggeredGridLayoutManager managerStaggeredGrid)
                 {
                     int[] firstVisibleItemPositions = new int[SpanCount];
-                    pastVisibleItems = managerStaggeredGrid.FindFirstVisibleItemPositions(firstVisibleItemPositions)[0]; 
+                    pastVisibleItems = managerStaggeredGrid.FindFirstVisibleItemPositions(firstVisibleItemPositions)[0];
                 }
                 else
                 {
@@ -58,7 +58,7 @@ namespace DeepSound.Helpers.Model
 
                 if (visibleItemCount + pastVisibleItems + 4 < totalItemCount)
                     return;
-                 
+
                 if (IsLoading) //&& !recyclerView.CanScrollVertically(1)
                     return;
 

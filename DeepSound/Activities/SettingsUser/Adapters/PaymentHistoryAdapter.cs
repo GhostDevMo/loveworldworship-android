@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Common;
+using System;
+using System.Collections.ObjectModel;
 
 namespace DeepSound.Activities.SettingsUser.Adapters
 {
@@ -46,7 +46,7 @@ namespace DeepSound.Activities.SettingsUser.Adapters
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -61,10 +61,10 @@ namespace DeepSound.Activities.SettingsUser.Adapters
                     if (item != null)
                     {
                         if (item.Id == "000")
-                        {               
-                            holder.Amount.Text =  item.Amount;
+                        {
+                            holder.Amount.Text = item.Amount;
                             holder.Requested.Text = item.Requested;
-                            holder.Status.Text = item.Status; 
+                            holder.Status.Text = item.Status;
                         }
                         else
                         {
@@ -83,7 +83,7 @@ namespace DeepSound.Activities.SettingsUser.Adapters
                                     holder.Status.Text = ActivityContext.GetText(Resource.String.Lbl_Declined);
                                     break;
                             }
-                        } 
+                        }
                     }
                 }
             }
@@ -123,7 +123,7 @@ namespace DeepSound.Activities.SettingsUser.Adapters
                 return 0;
             }
         }
-          
+
         private void Click(PaymentHistoryAdapterClickEventArgs args)
         {
             ItemClick?.Invoke(this, args);
@@ -137,7 +137,7 @@ namespace DeepSound.Activities.SettingsUser.Adapters
 
     public class PaymentHistoryAdapterViewHolder : RecyclerView.ViewHolder
     {
-        public PaymentHistoryAdapterViewHolder(View itemView,  Action<PaymentHistoryAdapterClickEventArgs> clickListener, Action<PaymentHistoryAdapterClickEventArgs> longClickListener) : base(itemView)
+        public PaymentHistoryAdapterViewHolder(View itemView, Action<PaymentHistoryAdapterClickEventArgs> clickListener, Action<PaymentHistoryAdapterClickEventArgs> longClickListener) : base(itemView)
         {
             try
             {
@@ -146,11 +146,11 @@ namespace DeepSound.Activities.SettingsUser.Adapters
                 Amount = MainView.FindViewById<TextView>(Resource.Id.amount);
                 Requested = MainView.FindViewById<TextView>(Resource.Id.requested);
                 Status = MainView.FindViewById<TextView>(Resource.Id.status);
-                
+
                 //Event  
                 itemView.Click += (sender, e) => clickListener(new PaymentHistoryAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });
                 itemView.LongClick += (sender, e) => longClickListener(new PaymentHistoryAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });
-                 
+
             }
             catch (Exception e)
             {
@@ -163,9 +163,9 @@ namespace DeepSound.Activities.SettingsUser.Adapters
         public View MainView { get; }
 
         public TextView Amount { get; private set; }
-        public TextView Requested { get; private set; } 
-        public TextView Status { get; private set; } 
-        
+        public TextView Requested { get; private set; }
+        public TextView Status { get; private set; }
+
         #endregion
     }
 

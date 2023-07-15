@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Gms.Ads;
+﻿using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -34,6 +29,11 @@ using DeepSoundClient.Classes.Playlist;
 using DeepSoundClient.Classes.User;
 using DeepSoundClient.Requests;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Artists
@@ -81,7 +81,7 @@ namespace DeepSound.Activities.Artists
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -195,40 +195,40 @@ namespace DeepSound.Activities.Artists
                 switch (Type)
                 {
                     case "UserProfileLatestSongs":
-                    {
-                        GlobalContext.SetToolBar(toolbar, Context.GetString(Resource.String.Lbl_LatestSongs_Title));
-                        break;
-                    }
+                        {
+                            GlobalContext.SetToolBar(toolbar, Context.GetString(Resource.String.Lbl_LatestSongs_Title));
+                            break;
+                        }
                     case "UserProfileTopSongs":
-                    {
-                        GlobalContext.SetToolBar(toolbar, Context.GetString(Resource.String.Lbl_TopSongs_Title));
-                        break;
-                    }
+                        {
+                            GlobalContext.SetToolBar(toolbar, Context.GetString(Resource.String.Lbl_TopSongs_Title));
+                            break;
+                        }
                     case "UserProfileStore":
-                    {
-                        GlobalContext.SetToolBar(toolbar, Context.GetString(Resource.String.Lbl_Store_Title));
-                        break;
-                    }
+                        {
+                            GlobalContext.SetToolBar(toolbar, Context.GetString(Resource.String.Lbl_Store_Title));
+                            break;
+                        }
                     case "UserProfileStations":
-                    {
-                        GlobalContext.SetToolBar(toolbar, Context.GetString(Resource.String.Lbl_Stations));
-                        break;
-                    }
+                        {
+                            GlobalContext.SetToolBar(toolbar, Context.GetString(Resource.String.Lbl_Stations));
+                            break;
+                        }
                     case "UserProfileAlbums":
-                    {
-                        GlobalContext.SetToolBar(toolbar, Context.GetString(Resource.String.Lbl_Albums));
-                        break;
-                    }
+                        {
+                            GlobalContext.SetToolBar(toolbar, Context.GetString(Resource.String.Lbl_Albums));
+                            break;
+                        }
                     case "UserProfileEvents":
-                    {
-                        GlobalContext.SetToolBar(toolbar, Context.GetString(Resource.String.Lbl_Event));
-                        break;
-                    }
+                        {
+                            GlobalContext.SetToolBar(toolbar, Context.GetString(Resource.String.Lbl_Event));
+                            break;
+                        }
                     case "UserProfilePlaylist":
-                    {
-                        GlobalContext.SetToolBar(toolbar, Context.GetString(Resource.String.Lbl_Playlist));
-                        break;
-                    }
+                        {
+                            GlobalContext.SetToolBar(toolbar, Context.GetString(Resource.String.Lbl_Playlist));
+                            break;
+                        }
                     default:
                         GlobalContext.SetToolBar(toolbar, Type);
                         break;
@@ -394,7 +394,7 @@ namespace DeepSound.Activities.Artists
                     if (item.IsPlay)
                     {
                         item.IsPlay = false;
-                        
+
                         var index = SoundAdapter.SoundsList.IndexOf(item);
                         SoundAdapter.NotifyItemChanged(index, "playerAction");
 
@@ -460,25 +460,25 @@ namespace DeepSound.Activities.Artists
                         switch (Type)
                         {
                             case "UserProfileLatestSongs":
-                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> {() => LoadLatestSongs(id)});
+                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => LoadLatestSongs(id) });
                                 break;
                             case "UserProfileTopSongs":
-                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> {() => LoadTopSongsUser(id)});
+                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => LoadTopSongsUser(id) });
                                 break;
                             case "UserProfileStore":
-                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> {() => LoadStoreUser(id)});
+                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => LoadStoreUser(id) });
                                 break;
                             case "UserProfileStations":
-                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> {() => LoadStationUser(id)});
+                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => LoadStationUser(id) });
                                 break;
                             case "UserProfileAlbums":
-                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> {() => LoadAlbumsUser(id)});
+                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => LoadAlbumsUser(id) });
                                 break;
                             case "UserProfileEvents":
-                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> {() => LoadEventUser(id)});
+                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => LoadEventUser(id) });
                                 break;
                             case "UserProfilePlaylist":
-                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> {() => LoadPlaylistUser(id)});
+                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => LoadPlaylistUser(id) });
                                 break;
                         }
                     }
@@ -501,7 +501,7 @@ namespace DeepSound.Activities.Artists
                 if (Methods.CheckConnectivity())
                 {
                     switch (Type)
-                    { 
+                    {
                         case "UserProfileLatestSongs":
                             {
                                 if (ArtistsProfileFragment?.LatestSongsAdapter?.SoundsList?.Count > 0)
@@ -510,13 +510,22 @@ namespace DeepSound.Activities.Artists
                                     SoundAdapter.NotifyDataSetChanged();
                                 }
                                 break;
-                            } 
+                            }
                         case "UserProfileTopSongs":
                             {
                                 if (ArtistsProfileFragment?.TopSongsAdapter?.SoundsList?.Count > 0)
                                 {
                                     SoundAdapter.SoundsList = ArtistsProfileFragment?.TopSongsAdapter?.SoundsList;
                                     SoundAdapter.NotifyDataSetChanged();
+                                }
+                                break;
+                            }
+                        case "UserProfileAlbums":
+                            {
+                                if (ArtistsProfileFragment?.AlbumsAdapter?.AlbumsList?.Count > 0)
+                                {
+                                    AlbumsAdapter.AlbumsList = ArtistsProfileFragment?.AlbumsAdapter?.AlbumsList;
+                                    AlbumsAdapter.NotifyDataSetChanged();
                                 }
                                 break;
                             }
@@ -549,7 +558,7 @@ namespace DeepSound.Activities.Artists
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                     if (!x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                         x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                     }
 
@@ -616,7 +625,7 @@ namespace DeepSound.Activities.Artists
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -681,7 +690,7 @@ namespace DeepSound.Activities.Artists
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -746,7 +755,7 @@ namespace DeepSound.Activities.Artists
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -813,7 +822,7 @@ namespace DeepSound.Activities.Artists
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -880,7 +889,7 @@ namespace DeepSound.Activities.Artists
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -947,7 +956,7 @@ namespace DeepSound.Activities.Artists
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -956,7 +965,7 @@ namespace DeepSound.Activities.Artists
             }
             MainScrollEvent.IsLoading = false;
         }
-         
+
         private async Task LoadLatestSongs(string offset = "0")
         {
             if (MainScrollEvent.IsLoading)
@@ -1014,7 +1023,7 @@ namespace DeepSound.Activities.Artists
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -1023,7 +1032,7 @@ namespace DeepSound.Activities.Artists
             }
             MainScrollEvent.IsLoading = false;
         }
-         
+
         private void ShowEmptyPage()
         {
             try
@@ -1077,10 +1086,10 @@ namespace DeepSound.Activities.Artists
                     {
                         x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSound);
                     }
-                     
+
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }

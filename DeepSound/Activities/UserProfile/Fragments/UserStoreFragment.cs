@@ -1,29 +1,29 @@
-﻿using Android.OS;
+﻿using Android.Graphics;
+using Android.OS;
 using Android.Views;
 using Android.Widget;
+using AndroidX.Fragment.App;
+using AndroidX.RecyclerView.Widget;
+using AndroidX.SwipeRefreshLayout.Widget;
 using Bumptech.Glide.Util;
+using Com.Adcolony.Sdk;
 using DeepSound.Activities.Songs.Adapters;
 using DeepSound.Activities.Tabbes;
+using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
+using DeepSound.Helpers.MediaPlayerController;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
+using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Global;
+using DeepSoundClient.Classes.User;
+using DeepSoundClient.Requests;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Android.Graphics;
-using DeepSound.Helpers.Ads;
-using DeepSound.Helpers.MediaPlayerController;
-using DeepSoundClient.Classes.User;
-using DeepSoundClient.Requests;
 using Xamarin.Facebook.Ads;
-using AndroidX.Fragment.App;
-using AndroidX.SwipeRefreshLayout.Widget;
-using AndroidX.RecyclerView.Widget;
-using Com.Adcolony.Sdk;
-using DeepSound.Library.Anjo.IntegrationRecyclerView;
 
 namespace DeepSound.Activities.UserProfile.Fragments
 {
@@ -73,10 +73,10 @@ namespace DeepSound.Activities.UserProfile.Fragments
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
-          
+
         public override void OnDestroy()
         {
             try
@@ -112,7 +112,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 if (AppSettings.ShowFbBannerAds)
                     BannerAd = AdsFacebook.InitAdView(Activity, adContainer, MRecycler);
                 else
-                    AdsColony.InitBannerAd(Activity, adContainer, AdColonyAdSize.Banner, MRecycler); 
+                    AdsColony.InitBannerAd(Activity, adContainer, AdColonyAdSize.Banner, MRecycler);
             }
             catch (Exception e)
             {
@@ -124,7 +124,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
         {
             try
             {
-                MAdapter = new HSoundAdapter(Activity) { SoundsList = new ObservableCollection<SoundDataObject>()};
+                MAdapter = new HSoundAdapter(Activity) { SoundsList = new ObservableCollection<SoundDataObject>() };
                 MAdapter.ItemClick += MAdapterItemClick;
                 MLayoutManager = new GridLayoutManager(Activity, 2);
                 MLayoutManager.SetSpanSizeLookup(new MySpanSizeLookup(4, 1, 1)); //5, 1, 2 
@@ -245,7 +245,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 else
                 {
                     StartApiService();
-                }  
+                }
             }
             catch (Exception e)
             {
@@ -271,7 +271,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 MainScrollEvent.IsLoading = true;
 
                 int countList = MAdapter.SoundsList.Count;
-                 var (apiStatus, respond) = await RequestsAsync.User.GetUserStoreAsync(UserId, "15", offset);
+                var (apiStatus, respond) = await RequestsAsync.User.GetUserStoreAsync(UserId, "15", offset);
                 if (apiStatus == 200)
                 {
                     if (respond is GetSoundDataObject result)
@@ -318,7 +318,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -351,7 +351,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSound);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }

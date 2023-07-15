@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Android.Gms.Ads;
+﻿using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -18,6 +15,9 @@ using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSound.SQLite;
 using DeepSoundClient.Classes.Global;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace DeepSound.Activities.Library
 {
@@ -32,7 +32,7 @@ namespace DeepSound.Activities.Library
         private LinearLayoutManager LayoutManager;
         private ViewStub EmptyStateLayout;
         private View Inflated;
-        
+
         private AdView MAdView;
 
         #endregion
@@ -51,13 +51,13 @@ namespace DeepSound.Activities.Library
         {
             try
             {
-                View view = inflater.Inflate(Resource.Layout.RecyclerDefaultLayout, container, false); 
+                View view = inflater.Inflate(Resource.Layout.RecyclerDefaultLayout, container, false);
                 return view;
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
         public override void OnViewCreated(View view, Bundle savedInstanceState)
@@ -72,7 +72,7 @@ namespace DeepSound.Activities.Library
 
                 LoadSharedSounds();
 
-                AdsGoogle.Ad_RewardedVideo(Activity); 
+                AdsGoogle.Ad_RewardedVideo(Activity);
             }
             catch (Exception e)
             {
@@ -99,7 +99,7 @@ namespace DeepSound.Activities.Library
             try
             {
                 base.OnResume();
-                
+
                 MAdView?.Resume();
             }
             catch (Exception e)
@@ -113,7 +113,7 @@ namespace DeepSound.Activities.Library
             try
             {
                 base.OnPause();
-                
+
                 MAdView?.Pause();
             }
             catch (Exception e)
@@ -126,8 +126,8 @@ namespace DeepSound.Activities.Library
         {
             try
             {
-                
-                MAdView?.Destroy(); 
+
+                MAdView?.Destroy();
                 base.OnDestroy();
             }
             catch (Exception exception)
@@ -198,21 +198,21 @@ namespace DeepSound.Activities.Library
         }
 
         #endregion
-         
+
         #region Event
-         
+
         //Start Play Sound 
         private void MAdapterItemClick(object sender, RowSoundAdapterClickEventArgs e)
         {
             try
             {
-                   var item = MAdapter.GetItem(e.Position);
+                var item = MAdapter.GetItem(e.Position);
                 if (item != null)
                 {
                     if (item.IsPlay)
                     {
                         item.IsPlay = false;
-                        
+
                         var index = MAdapter.SoundsList.IndexOf(item);
                         MAdapter.NotifyItemChanged(index, "playerAction");
 
@@ -285,9 +285,9 @@ namespace DeepSound.Activities.Library
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
 
         #endregion
-         
+
     }
 }

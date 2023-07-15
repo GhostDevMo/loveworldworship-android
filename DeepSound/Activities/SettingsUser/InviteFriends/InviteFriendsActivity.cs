@@ -1,6 +1,3 @@
-using System;
-using System.Collections.ObjectModel;
-using System.Linq;
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
@@ -16,6 +13,9 @@ using DeepSound.Activities.SettingsUser.InviteFriends.Adapter;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Utils;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Exception = Java.Lang.Exception;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
@@ -206,13 +206,13 @@ namespace DeepSound.Activities.SettingsUser.InviteFriends
             {
                 MAdapter = new InviteFriendsAdapter(this)
                 {
-                    MUsersPhoneContacts =  new ObservableCollection<Methods.PhoneContactManager.UserContact>()
+                    MUsersPhoneContacts = new ObservableCollection<Methods.PhoneContactManager.UserContact>()
                 };
                 LayoutManager = new LinearLayoutManager(this);
                 MRecycler.SetLayoutManager(LayoutManager);
                 MRecycler.HasFixedSize = true;
                 MRecycler.SetItemViewCacheSize(10);
-                MRecycler.GetLayoutManager().ItemPrefetchEnabled = true; 
+                MRecycler.GetLayoutManager().ItemPrefetchEnabled = true;
                 MRecycler.SetAdapter(MAdapter);
             }
             catch (Exception e)
@@ -220,7 +220,7 @@ namespace DeepSound.Activities.SettingsUser.InviteFriends
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void AddOrRemoveEvent(bool addEvent)
         {
             try
@@ -247,11 +247,11 @@ namespace DeepSound.Activities.SettingsUser.InviteFriends
             {
                 MAdView?.Destroy();
 
-                MAdapter = null!;
-                SwipeRefreshLayout = null!;
-                MRecycler = null!;
-                EmptyStateLayout = null!;
-                MAdView = null!;
+                MAdapter = null;
+                SwipeRefreshLayout = null;
+                MRecycler = null;
+                EmptyStateLayout = null;
+                MAdView = null;
             }
             catch (System.Exception e)
             {
@@ -270,17 +270,17 @@ namespace DeepSound.Activities.SettingsUser.InviteFriends
                 switch (position)
                 {
                     case >= 0:
-                    {
-                        var item = MAdapter.GetItem(position);
-
-                        Contact = item;
-                        if (item != null)
                         {
-                            new IntentController(this).OpenIntentSendSms(item.PhoneNumber, InviteSmsText);
-                        }
+                            var item = MAdapter.GetItem(position);
 
-                        break;
-                    }
+                            Contact = item;
+                            if (item != null)
+                            {
+                                new IntentController(this).OpenIntentSendSms(item.PhoneNumber, InviteSmsText);
+                            }
+
+                            break;
+                        }
                 }
             }
             catch (Exception e)
@@ -295,7 +295,7 @@ namespace DeepSound.Activities.SettingsUser.InviteFriends
         {
             try
             {
-                var listContacts =new ObservableCollection<Methods.PhoneContactManager.UserContact>(Methods.PhoneContactManager.GetAllContacts());
+                var listContacts = new ObservableCollection<Methods.PhoneContactManager.UserContact>(Methods.PhoneContactManager.GetAllContacts());
                 var orderBydate = listContacts.OrderBy(a => a.UserDisplayName);
 
                 MAdapter.MUsersPhoneContacts = new ObservableCollection<Methods.PhoneContactManager.UserContact>(orderBydate);
@@ -311,6 +311,6 @@ namespace DeepSound.Activities.SettingsUser.InviteFriends
             {
                 Methods.DisplayReportResultTrack(e);
             }
-        } 
+        }
     }
 }

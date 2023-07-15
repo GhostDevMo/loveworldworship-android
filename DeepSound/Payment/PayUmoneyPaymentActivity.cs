@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
@@ -16,7 +14,9 @@ using DeepSound.Activities.Base;
 using DeepSound.Activities.SettingsUser.General;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Requests;
-using Card = Com.Stripe.Android.Model.Card;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Exception = System.Exception;
 using Math = System.Math;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
@@ -33,7 +33,7 @@ namespace DeepSound.Payment
         private AppCompatButton BtnApply;
         private CardMultilineWidget MultilineWidget;
 
-        private string Price;
+        private string Price, PayType;
 
         #endregion
 
@@ -53,6 +53,7 @@ namespace DeepSound.Payment
                 SetContentView(Resource.Layout.PaymentCardDetailsLayout);
 
                 Price = Intent?.GetStringExtra("Price") ?? "";
+                PayType = Intent?.GetStringExtra("PayType") ?? "";
 
                 //Get Value And Set Toolbar
                 InitComponent();
@@ -173,11 +174,10 @@ namespace DeepSound.Payment
                     SupportActionBar.SetDisplayHomeAsUpEnabled(true);
                     SupportActionBar.SetHomeButtonEnabled(true);
                     SupportActionBar.SetDisplayShowHomeEnabled(true);
-                     
+
                     var icon = AppCompatResources.GetDrawable(this, AppSettings.FlowDirectionRightToLeft ? Resource.Drawable.icon_back_arrow_right : Resource.Drawable.icon_back_arrow_left);
                     icon?.SetTint(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                     SupportActionBar.SetHomeAsUpIndicator(icon);
-
                 }
             }
             catch (Exception e)
@@ -193,13 +193,13 @@ namespace DeepSound.Payment
                 // true +=  // false -=
                 if (addEvent)
                 {
-                    MultilineWidget.CvcComplete += MultilineWidgetOnCvcComplete;
+                    MultilineWidget.CvcEditText.AfterTextChanged += CvcEditTextOnAfterTextChanged;
                     EtName.TextChanged += EtNameOnTextChanged;
                     BtnApply.Click += BtnApplyOnClick;
                 }
                 else
                 {
-                    MultilineWidget.CvcComplete -= MultilineWidgetOnCvcComplete;
+                    MultilineWidget.CvcEditText.AfterTextChanged -= CvcEditTextOnAfterTextChanged;
                     EtName.TextChanged -= EtNameOnTextChanged;
                     BtnApply.Click -= BtnApplyOnClick;
                 }
@@ -214,32 +214,19 @@ namespace DeepSound.Payment
 
         #region Events
 
-        private void MultilineWidgetOnCvcComplete(object sender, EventArgs e)
+        private void CvcEditTextOnAfterTextChanged(object sender, AfterTextChangedEventArgs e)
         {
             try
             {
-                if (MultilineWidget.Card != null && MultilineWidget.Card.ValidateCard() && MultilineWidget.ValidateAllFields())
+                if (MultilineWidget.CardParams != null && MultilineWidget.ValidateAllFields())
                 {
-                    if (MultilineWidget.Card.Number.Trim().Length == 0)
-                    {
-                        CardNumber.Text = "**** **** **** ****";
-                    }
-                    else
-                    {
-                        string number = InsertPeriodically(MultilineWidget.Card.Number.Trim(), " ", 4);
-                        CardNumber.Text = number;
-                    }
+                    var cardNumber = MultilineWidget.CardNumberEditText.Text;
+                    var cardExpire = MultilineWidget.ExpiryDateEditText.Text;
+                    var cardCvv = MultilineWidget.CvcEditText.Text;
 
-                    if (MultilineWidget.Card.ExpMonth.ToString().Trim().Length == 0 && MultilineWidget.Card.ExpYear.ToString().Trim().Length == 0)
-                    {
-                        CardExpire.Text = "MM/YY";
-                    }
-                    else
-                    {
-                        CardExpire.Text = MultilineWidget.Card.ExpMonth + "/" + MultilineWidget.Card.ExpYear;
-                    }
-
-                    CardCvv.Text = MultilineWidget.Card.CVC.Trim().Length == 0 ? "***" : MultilineWidget.Card.CVC.Trim();
+                    CardNumber.Text = cardNumber.Trim().Length == 0 ? "**** **** **** ****" : InsertPeriodically(cardNumber.Trim(), " ", 4);
+                    CardExpire.Text = cardExpire.Trim().Length == 0 ? "MM/YY" : cardExpire;
+                    CardCvv.Text = cardCvv.Trim().Length == 0 ? "***" : cardCvv.Trim();
                 }
             }
             catch (Exception exception)
@@ -248,11 +235,12 @@ namespace DeepSound.Payment
             }
         }
 
+
         private void EtNameOnTextChanged(object sender, TextChangedEventArgs e)
         {
             try
             {
-                CardName.Text = e?.Text?.ToString().Trim().Length == 0 ? GetString(Resource.String.Lbl_YourName) : e?.Text?.ToString().Trim();
+                CardName.Text = e?.Text?.ToString()?.Trim().Length == 0 ? GetString(Resource.String.Lbl_YourName) : e?.Text?.ToString()?.Trim();
             }
             catch (Exception exception)
             {
@@ -265,22 +253,33 @@ namespace DeepSound.Payment
         {
             try
             {
-                if (MultilineWidget.Card.ValidateCard() && !string.IsNullOrEmpty(EtName.Text))
+                if (MultilineWidget.ValidateAllFields() && !string.IsNullOrEmpty(EtName.Text))
                 {
                     if (!InitWalletPayUmoney())
                         return;
-                     
-                    Card card = MultilineWidget.Card;
-                     
+
+                    var cardNumber = MultilineWidget.CardNumberEditText.Text;
+                    var cardExpire = MultilineWidget.ExpiryDateEditText.Text;
+
+                    var ExpMonth = cardExpire.Split("\\").First();
+                    var ExpYear = cardExpire.Split("\\").Last();
+
+                    var cardCvv = MultilineWidget.CvcEditText.Text;
+
+                    //EncryptTransactionObject transactionObject = PrepareTransactionObject(card);
+
+                    //Make a call to get Token API
+                    //apiClient.GetTokenWithRequest(transactionObject, this); 
+
                     if (Methods.CheckConnectivity())
-                    {                   
+                    {
                         //Show a progress
                         AndHUD.Shared.Show(this, GetText(Resource.String.Lbl_Loading));
 
                         var tabbedWallet = WalletActivity.GetInstance();
                         if (tabbedWallet != null)
                         {
-                            var (apiStatus, respond) = await RequestsAsync.Payments.TopWalletPayUmoneyAsync(card.Number, card.ExpMonth.ToString(), card.ExpYear.ToString(), card.CVC, Price);
+                            var (apiStatus, respond) = await RequestsAsync.Payments.TopWalletPayUmoneyAsync(cardNumber, ExpMonth, ExpYear, cardCvv, Price);
                             switch (apiStatus)
                             {
                                 case 200:
@@ -343,14 +342,13 @@ namespace DeepSound.Payment
 
         #region PayUmoney
 
-       
         private bool InitWalletPayUmoney()
         {
             try
             {
                 var payuMerchantId = ListUtils.SettingsSiteList?.PayuMerchantId ?? "";
                 if (!string.IsNullOrEmpty(payuMerchantId))
-                { 
+                {
                     return true;
                 }
                 else
@@ -366,8 +364,41 @@ namespace DeepSound.Payment
                 return false;
             }
         }
-         
+
         #endregion
 
+        //public void OnErrorReceived(ErrorTransactionResponse errorResponse)
+        //{
+        //    try
+        //    {
+        //        AndHUD.Shared.Dismiss(this);
+
+        //        //error
+
+        //        Message error = errorResponse.FirstErrorMessage;
+
+        //        Console.WriteLine("code" + error.MessageCode + "\n" + "message" + error.MessageText); 
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Methods.DisplayReportResultTrack(e);
+        //    }
+        //}
+
+        //public void OnEncryptionFinished(EncryptTransactionResponse response)
+        //{
+        //    try
+        //    { 
+        //        AndHUD.Shared.Dismiss(this);
+
+        //        //
+        //        Console.WriteLine("DataDescriptor" + response.DataDescriptor + "\n" + "DataValue" + response.DataValue); 
+
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Methods.DisplayReportResultTrack(e);
+        //    }
+        //}
     }
 }

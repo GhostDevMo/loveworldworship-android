@@ -1,25 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Android.App;
-using Android.Graphics;
-using Android.Util;
-using Android.Webkit;
+﻿using Android.App;
 using Android.Widget;
-using AndroidHUD; 
-using DeepSound.Helpers.Fonts;
+using AndroidHUD;
+using Com.Cashfree.PG.Api;
+using Com.Cashfree.PG.Core.Api;
+using Com.Cashfree.PG.Core.Api.Callback;
+using Com.Cashfree.PG.Core.Api.Utils;
+using Com.Cashfree.PG.UI.Api;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Payment;
 using DeepSoundClient.Requests;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Exception = System.Exception;
+using Object = Java.Lang.Object;
 
 namespace DeepSound.Payment
 {
-    public class InitCashFreePayment 
-    { 
+    public class InitCashFreePayment : Object, ICFCheckoutResponseCallback
+    {
         private readonly Activity ActivityContext;
-        private Dialog CashFreeWindow;
-        private WebView HybridView;
         private string Price;
         private CashFreeObject CashFreeObject;
 
@@ -28,6 +27,11 @@ namespace DeepSound.Payment
             try
             {
                 ActivityContext = context;
+
+                CFPaymentGatewayService.Initialize(context); // Application Context.
+                AnalyticsUtil.SendPaymentEventsToBackend(); // required for error reporting.
+
+                CFPaymentGatewayService.Instance?.SetCheckoutCallback(this);
             }
             catch (Exception e)
             {
@@ -37,86 +41,90 @@ namespace DeepSound.Payment
 
         public void DisplayCashFreePayment(CashFreeObject cashFreeObject, string price)
         {
+            ActivityContext.RunOnUiThread(() =>
+            {
+                try
+                {
+                    CashFreeObject = cashFreeObject;
+                    Price = price;
+
+                    CFSession.Environment cfEnvironment = ListUtils.SettingsSiteList?.CashfreeMode switch
+                    {
+                        "SandBox" => CFSession.Environment.Sandbox,
+                        "Live" => CFSession.Environment.Production,
+                        _ => CFSession.Environment.Sandbox
+                    };
+
+                    CFSession cfSession = new CFSession.CFSessionBuilder()
+                        .SetEnvironment(cfEnvironment)
+                        .SetPaymentSessionID(CashFreeObject.OrderLinkObject.PaymentSessionId)
+                        .SetOrderId(CashFreeObject.OrderId)
+                        .Build();
+
+                    //CFPaymentComponent cfPaymentComponent = new CFPaymentComponent.CFPaymentComponentBuilder()
+                    //    .Add(CFPaymentComponent.CFPaymentModes.Card)
+                    //    .Add(CFPaymentComponent.CFPaymentModes.Upi)
+                    //    .Add(CFPaymentComponent.CFPaymentModes.Wallet)
+                    //    .Build();
+
+                    CFTheme cfTheme = new CFTheme.CFThemeBuilder()
+                        .SetNavigationBarBackgroundColor(AppSettings.MainColor)
+                        .SetNavigationBarTextColor("#ffffff")
+                        .SetButtonBackgroundColor(AppSettings.MainColor)
+                        .SetButtonTextColor("#ffffff")
+                        .SetPrimaryTextColor("#000000")
+                        .SetSecondaryTextColor("#000000")
+                        .Build();
+
+                    CFDropCheckoutPayment cfDropCheckoutPayment = new CFDropCheckoutPayment.CFDropCheckoutPaymentBuilder()
+                        .SetSession(cfSession)
+                        //By default all modes are enabled. If you want to restrict the payment modes uncomment the next line
+                        //.SetCFUIPaymentModes(cfPaymentComponent)
+                        .SetCFNativeCheckoutUITheme(cfTheme)
+                        .Build();
+
+                    CFPaymentGatewayService gatewayService = CFPaymentGatewayService.Instance;
+                    gatewayService.DoPayment(ActivityContext, cfDropCheckoutPayment);
+                }
+                catch (Exception e)
+                {
+                    Methods.DisplayReportResultTrack(e);
+                }
+            });
+        }
+
+        public void OnPaymentFailure(CFErrorResponse cfErrorResponse, string orderId)
+        {
             try
             {
-                CashFreeObject = cashFreeObject;
-                Price = price;
-
-                CashFreeWindow = new Dialog(ActivityContext, DeepSoundTools.IsTabDark() ? Resource.Style.MyDialogThemeDark : Resource.Style.MyDialogTheme);
-                CashFreeWindow.SetContentView(Resource.Layout.PaymentWebViewLayout);
-
-                var title = (TextView)CashFreeWindow.FindViewById(Resource.Id.toolbar_title);
-                if (title != null)
-                    title.Text = ActivityContext.GetText(Resource.String.Lbl_PayWith) + " " + ActivityContext.GetText(Resource.String.Lbl_CashFree);
-
-                var closeButton = (TextView)CashFreeWindow.FindViewById(Resource.Id.toolbar_close);
-                if (closeButton != null)
-                {
-                    FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, closeButton, IonIconsFonts.Close);
-
-                    closeButton.SetTextSize(ComplexUnitType.Sp, 20f);
-                    closeButton.Click += CloseButtonOnClick;
-                }
-
-                HybridView = CashFreeWindow.FindViewById<WebView>(Resource.Id.LocalWebView);
-
-                //Set WebView
-                HybridView.SetWebViewClient(new MyWebViewClient(this));
-                if (HybridView.Settings != null)
-                {
-                    HybridView.Settings.LoadsImagesAutomatically = true;
-                    HybridView.Settings.JavaScriptEnabled = true;
-                    HybridView.Settings.JavaScriptCanOpenWindowsAutomatically = true;
-                    HybridView.Settings.SetLayoutAlgorithm(WebSettings.LayoutAlgorithm.TextAutosizing);
-                    HybridView.Settings.DomStorageEnabled = true;
-                    HybridView.Settings.AllowFileAccess = true;
-                    HybridView.Settings.DefaultTextEncodingName = "utf-8";
-
-                    HybridView.Settings.UseWideViewPort = true;
-                    HybridView.Settings.LoadWithOverviewMode = true;
-
-                    HybridView.Settings.SetSupportZoom(false);
-                    HybridView.Settings.BuiltInZoomControls = false;
-                    HybridView.Settings.DisplayZoomControls = false;
-
-                    switch (string.IsNullOrEmpty(CashFreeObject.JsonForm))
-                    {
-                        case false:
-                            //Load url to be rendered on WebView
-                            HybridView.LoadUrl(CashFreeObject.JsonForm);
-
-                            CashFreeWindow.Show();
-                            break;
-                    }
-                } 
+                //Error  
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-          
-        private void CloseButtonOnClick(object sender, EventArgs e)
-        {
-            try
-            {
-                CashFreeWindow.Hide();
-                CashFreeWindow.Dismiss();
-            }
-            catch (Exception exception)
-            {
-                Methods.DisplayReportResultTrack(exception);
-            }
-        }
 
-        public void StopCashFree()
+        public async void OnPaymentVerify(string orderId)
         {
             try
             {
-                if (CashFreeWindow != null)
+                //verifyPayment triggered 
+                // wael update after update api system 
+                if (Methods.CheckConnectivity())
                 {
-                    CashFreeWindow.Hide();
-                    CashFreeWindow.Dismiss();
+                    var (apiStatus, respond) = await RequestsAsync.Payments.CashFreeGetStatusAsync(CashFreeObject.AppId, ListUtils.SettingsSiteList?.CashfreeSecretKey ?? "", orderId, ListUtils.SettingsSiteList?.CashfreeMode);
+                    if (apiStatus == 200)
+                    {
+                        if (respond is CashFreeGetStatusObject result) 
+                            await CashFree(result, "pay");
+                    }
+                    else
+                        Methods.DisplayReportResult(ActivityContext, respond);
+                }
+                else
+                {
+                    Toast.MakeText(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
                 }
             }
             catch (Exception e)
@@ -134,26 +142,25 @@ namespace DeepSound.Payment
                     var keyValues = new Dictionary<string, string>
                     {
                         {"txStatus", statusObject.TxStatus},
-                        {"orderId", CashFreeObject.OrderId},  
+                        {"orderId", CashFreeObject.OrderId},
                         {"orderAmount", statusObject.OrderAmount},
                         {"referenceId", statusObject.ReferenceId},
                         {"paymentMode", statusObject.PaymentMode},
                         {"txMsg", statusObject.TxMsg},
-                        {"txTime", statusObject.TxTime},  
-                        {"signature", CashFreeObject.Signature}, 
+                        {"txTime", statusObject.TxTime},
+                        {"signature", CashFreeObject.Signature},
+                        {"price", Price}
                     };
-
-                    keyValues.Add("price", Price);
-
-                    var (apiStatus, respond) = await RequestsAsync.Payments.CashFreeAsync(request, keyValues);
+                    //wael change after update system
+                    var (apiStatus, respond) = await RequestsAsync.Payments.TopWalletPaypalAsync(Price);
+                    //var (apiStatus, respond) = await RequestsAsync.Payments.CashFreeAsync(request, keyValues);
                     switch (apiStatus)
                     {
                         case 200:
                             AndHUD.Shared.Dismiss(ActivityContext);
 
                             Toast.MakeText(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_PaymentSuccessfully), ToastLength.Short)?.Show();
-
-                            StopCashFree();
+                             
                             break;
                         default:
                             Methods.DisplayAndHudErrorResult(ActivityContext, respond);
@@ -170,54 +177,6 @@ namespace DeepSound.Payment
                 AndHUD.Shared.Dismiss(ActivityContext);
                 Methods.DisplayReportResultTrack(e);
             }
-        }
-
-        private class MyWebViewClient : WebViewClient 
-        {
-            private readonly InitCashFreePayment MActivity;
-            public MyWebViewClient(InitCashFreePayment mActivity)
-            {
-                MActivity = mActivity;
-            }
-
-            public override async void OnPageStarted(WebView view, string url, Bitmap favicon)
-            {
-                try
-                { 
-                    if (url.Contains("requests.php?f=cashfree"))
-                    {
-                        //Show a progress
-                        AndHUD.Shared.Show(MActivity.ActivityContext, MActivity.ActivityContext.GetText(Resource.String.Lbl_Processing));
-
-                        var (apiStatus, respond) = await RequestsAsync.Payments.CashFreeGetStatusAsync(MActivity.CashFreeObject.AppId, ListUtils.SettingsSiteList?.CashfreeSecretKey ?? "", MActivity.CashFreeObject.OrderId, ListUtils.SettingsSiteList?.CashfreeMode);
-                        switch (apiStatus)
-                        {
-                            case 200:
-                            {
-                                switch (respond)
-                                {
-                                    case CashFreeGetStatusObject result:
-                                        await MActivity.CashFree(result, "pay"); 
-                                        break;
-                                }
-
-                                break;
-                            }
-                            default:
-                                Methods.DisplayReportResult(MActivity.ActivityContext, respond);
-                                break;
-                        } 
-                    }
-                    else
-                    {
-                        base.OnPageStarted(view, url, favicon);
-                    }
-                }
-                catch (Exception e)
-                {
-                    Methods.DisplayReportResultTrack(e); 
-                } 
-            } 
         }
     }
 }

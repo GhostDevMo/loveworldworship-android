@@ -1,7 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using Android.Util;
+﻿using Android.Util;
 using DeepSound.Helpers.Utils;
+using System;
+using System.Collections.Generic;
 
 namespace DeepSound.Library.Anjo.SuperTextLibrary
 {

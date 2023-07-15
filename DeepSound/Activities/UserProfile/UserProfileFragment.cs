@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using MaterialDialogsCore;
-using Android.Content;
+﻿using Android.Content;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -17,6 +13,7 @@ using DeepSound.Activities.Tabbes;
 using DeepSound.Activities.UserProfile.Fragments;
 using DeepSound.Adapters;
 using DeepSound.Helpers.Ads;
+using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
@@ -24,15 +21,19 @@ using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.User;
 using DeepSoundClient.Requests;
 using Google.Android.Material.AppBar;
+using Google.Android.Material.Dialog;
 using Google.Android.Material.Tabs;
 using Newtonsoft.Json;
 using Refractored.Controls;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Exception = System.Exception;
-using DeepSound.Helpers.CacheLoaders;
 
 namespace DeepSound.Activities.UserProfile
 {
-    public class UserProfileFragment : Fragment, MaterialDialog.IListCallback, MaterialDialog.ISingleButtonCallback, TabLayoutMediator.ITabConfigurationStrategy
+    public class UserProfileFragment : Fragment, IDialogListCallBack, TabLayoutMediator.ITabConfigurationStrategy
     {
         #region Variables Basic
 
@@ -55,7 +56,7 @@ namespace DeepSound.Activities.UserProfile
         private UserStoreFragment StoreFragment;
         private UserEventsFragment EventFragment;
         private Details DetailsCounter;
-         
+
         private UserDataObject DataUser;
         private string UserId;
         private MainTabAdapter Adapter;
@@ -76,13 +77,13 @@ namespace DeepSound.Activities.UserProfile
         {
             try
             {
-                View view = inflater.Inflate(Resource.Layout.UserProfileLayout, container, false); 
+                View view = inflater.Inflate(Resource.Layout.UserProfileLayout, container, false);
                 return view;
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -125,7 +126,7 @@ namespace DeepSound.Activities.UserProfile
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #endregion
 
         #region Functions
@@ -152,7 +153,7 @@ namespace DeepSound.Activities.UserProfile
                 IconInfo = (ImageView)view.FindViewById(Resource.Id.info);
                 IconInfo.Click += IconInfoOnClick;
 
-                ImageAvatar = (CircleImageView)view.FindViewById(Resource.Id.imageAvatar); 
+                ImageAvatar = (CircleImageView)view.FindViewById(Resource.Id.imageAvatar);
 
                 TxtFullName = (TextView)view.FindViewById(Resource.Id.fullNameTextView);
 
@@ -173,7 +174,7 @@ namespace DeepSound.Activities.UserProfile
                 ChatButton.Click += ChatButtonOnClick;
 
                 ViewPagerView = (ViewPager2)view.FindViewById(Resource.Id.profilePager);
-                Tabs = (TabLayout)view.FindViewById(Resource.Id.sectionTab); 
+                Tabs = (TabLayout)view.FindViewById(Resource.Id.sectionTab);
             }
             catch (Exception e)
             {
@@ -319,7 +320,7 @@ namespace DeepSound.Activities.UserProfile
                 }
             }
         }
-         
+
         private int GetSelectedTab(int number)
         {
             try
@@ -369,7 +370,7 @@ namespace DeepSound.Activities.UserProfile
         #endregion
 
         #region Event
-         
+
         //Back
         private void IconBackOnClick(object sender, EventArgs e)
         {
@@ -382,12 +383,12 @@ namespace DeepSound.Activities.UserProfile
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         //open chat 
         private void ChatButtonOnClick(object sender, EventArgs e)
         {
             try
-            { 
+            {
                 Intent intent = new Intent(Context, typeof(MessagesBoxActivity));
                 intent.PutExtra("UserId", UserId);
                 intent.PutExtra("UserItem", JsonConvert.SerializeObject(DataUser));
@@ -398,7 +399,7 @@ namespace DeepSound.Activities.UserProfile
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         //Open Edit page profile
         private void BtnFollowOnClick(object sender, EventArgs e)
         {
@@ -417,7 +418,7 @@ namespace DeepSound.Activities.UserProfile
 
                         //BtnFollow.SetBackgroundResource(Resource.Drawable.SubcribeButton);
                         //BtnFollow.BackgroundTintList = ColorStateList.ValueOf(Color.ParseColor(AppSettings.MainColor));
-                         
+
                         //icon
                         var iconTick = Activity.GetDrawable(Resource.Drawable.icon_tick_vector);
                         //iconTick.Bounds = new Rect(10, 10, 10, 7);
@@ -427,7 +428,7 @@ namespace DeepSound.Activities.UserProfile
 
                         Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_Sent_successfully_followed), ToastLength.Short)?.Show();
 
-                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> {() => RequestsAsync.User.FollowUnFollowUserAsync(UserId, true) });
+                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.FollowUnFollowUserAsync(UserId, true) });
                         break;
                     case "friends": //Sent un follow 
 
@@ -449,8 +450,8 @@ namespace DeepSound.Activities.UserProfile
             else
             {
                 Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
-            } 
-            
+            }
+
         }
 
         //More 
@@ -459,17 +460,17 @@ namespace DeepSound.Activities.UserProfile
             try
             {
                 var arrayAdapter = new List<string>();
-                var dialogList = new MaterialDialog.Builder(Context).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-              
+                var dialogList = new MaterialAlertDialogBuilder(Context);
+
                 if (UserDetails.IsLogin)
                     arrayAdapter.Add(Context.GetText(Resource.String.Lbl_Block));
-               
+
                 arrayAdapter.Add(Context.GetText(Resource.String.Lbl_CopyLinkToProfile));
-               
-                dialogList.Items(arrayAdapter);
-                dialogList.PositiveText(Context.GetText(Resource.String.Lbl_Close)).OnPositive(this);
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetPositiveButton(Context.GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -485,7 +486,7 @@ namespace DeepSound.Activities.UserProfile
                 Intent intent = new Intent(Activity, typeof(DialogInfoUserActivity));
                 intent.PutExtra("ItemDataUser", JsonConvert.SerializeObject(DataUser));
                 intent.PutExtra("ItemDataDetails", JsonConvert.SerializeObject(DetailsCounter));
-                Activity.StartActivity(intent); 
+                Activity.StartActivity(intent);
             }
             catch (Exception exception)
             {
@@ -536,7 +537,7 @@ namespace DeepSound.Activities.UserProfile
         }
 
         #endregion
-         
+
         #region Load Data User
 
         private void GetMyInfoData()
@@ -576,12 +577,12 @@ namespace DeepSound.Activities.UserProfile
                     {
                         //BtnFollow.SetBackgroundResource(Resource.Drawable.SubcribeButton);
                         //BtnFollow.BackgroundTintList = ColorStateList.ValueOf(Color.ParseColor(AppSettings.MainColor));
-                        
+
                         //icon
                         var iconTick = Activity.GetDrawable(Resource.Drawable.icon_tick_vector);
                         //iconTick.Bounds = new Rect(10, 10, 10, 7);
                         iconTick.SetTint(Color.White);
-                            
+
                         BtnFollow.SetCompoundDrawablesWithIntrinsicBounds(iconTick, null, null, null);
                         BtnFollow.Tag = "friends";
                     }
@@ -589,7 +590,7 @@ namespace DeepSound.Activities.UserProfile
                     {
                         //BtnFollow.SetBackgroundResource(Resource.Drawable.SubcribeButton);
                         //BtnFollow.BackgroundTintList = ColorStateList.ValueOf(Color.ParseColor("#444444"));
-                         
+
                         //icon
                         var iconAdd = Activity.GetDrawable(Resource.Drawable.icon_add_fill_vector);
                         //iconAdd.Bounds = new Rect(10, 10, 10, 7);
@@ -597,27 +598,27 @@ namespace DeepSound.Activities.UserProfile
                         BtnFollow.SetCompoundDrawablesWithIntrinsicBounds(iconAdd, null, null, null);
                         BtnFollow.Tag = "Add";
                     }
-                     
+
                     if (SongsFragment?.IsCreated == true)
-                        SongsFragment.PopulateData(dataUser.Latestsongs);
+                        SongsFragment.PopulateData(dataUser.Latestsongs?.FirstOrDefault());
 
                     if (AlbumsFragment?.IsCreated == true)
-                        AlbumsFragment.PopulateData(dataUser.Albums);
+                        AlbumsFragment.PopulateData(dataUser.Albums?.FirstOrDefault());
 
                     if (PlaylistFragment?.IsCreated == true)
-                        PlaylistFragment.PopulateData(dataUser.Playlists);
+                        PlaylistFragment.PopulateData(dataUser.Playlists?.FirstOrDefault());
 
                     if (LikedFragment?.IsCreated == true)
-                        LikedFragment.PopulateData(dataUser.Liked);
+                        LikedFragment.PopulateData(dataUser.Liked?.FirstOrDefault());
 
                     if (ActivitiesFragment?.IsCreated == true)
-                        ActivitiesFragment.PopulateData(dataUser.Activities);
+                        ActivitiesFragment.PopulateData(dataUser.Activities?.FirstOrDefault());
 
                     if (StationsFragment?.IsCreated == true)
                         StationsFragment.PopulateData(dataUser.Stations);
 
                     if (StoreFragment?.IsCreated == true)
-                        StoreFragment.PopulateData(dataUser.Store);
+                        StoreFragment.PopulateData(dataUser.Store?.FirstOrDefault());
 
                     if (EventFragment?.IsCreated == true)
                         EventFragment.PopulateData(dataUser.Events);
@@ -630,7 +631,7 @@ namespace DeepSound.Activities.UserProfile
         }
 
         private void StartApiService()
-        { 
+        {
             if (!Methods.CheckConnectivity())
                 Toast.MakeText(Activity, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
             else
@@ -671,7 +672,7 @@ namespace DeepSound.Activities.UserProfile
                                     TxtCountFollowers.Text = Methods.FunString.FormatPriceValue(result.Details.Followers);
                                     TxtCountFollowing.Text = Methods.FunString.FormatPriceValue(result.Details.Following);
                                     //TxtCountTracks.Text = Methods.FunString.FormatPriceValue(result.Details.LatestSongs);
-                                } 
+                                }
                             }
                             catch (Exception e)
                             {
@@ -688,10 +689,10 @@ namespace DeepSound.Activities.UserProfile
         }
 
         #endregion
-         
+
         #region MaterialDialog
 
-        public void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+        public void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
             {
@@ -701,7 +702,7 @@ namespace DeepSound.Activities.UserProfile
                     if (Methods.CheckConnectivity())
                     {
                         Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_Blocked_successfully), ToastLength.Long)?.Show();
-                           
+
                         PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.BlockUnBlockUserAsync(DataUser.Id.ToString(), true) });
 
                         GlobalContext.FragmentNavigatorBack();
@@ -716,25 +717,6 @@ namespace DeepSound.Activities.UserProfile
                     string url = DataUser?.Url;
                     GlobalContext.SoundController.ClickListeners.OnMenuCopyOnClick(url);
                 }
-
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-        public void OnClick(MaterialDialog p0, DialogAction p1)
-        {
-            try
-            {
-                if (p1 == DialogAction.Positive)
-                {
-                }
-                else if (p1 == DialogAction.Negative)
-                {
-                    p0.Dismiss();
-                }
             }
             catch (Exception e)
             {
@@ -744,4 +726,4 @@ namespace DeepSound.Activities.UserProfile
 
         #endregion
     }
-} 
+}

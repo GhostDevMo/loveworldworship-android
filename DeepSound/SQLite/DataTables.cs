@@ -37,8 +37,9 @@ namespace DeepSound.SQLite
             [PrimaryKey, AutoIncrement]
             public int AutoIdSettings { get; set; }
 
-            public new string BlogCategories { get; set; } 
-            public new string ProductsCategories { get; set; } 
+            public new string BlogCategories { get; set; }
+            public new string ProductsCategories { get; set; }
+            public new string WithdrawalPaymentMethod { get; set; }
         }
 
         [Table("InfoUsersTb")]
@@ -46,24 +47,25 @@ namespace DeepSound.SQLite
         {
             [PrimaryKey, AutoIncrement]
             public int AutoIdInfoUsers { get; set; }
-             
-            public new string Followers { get; set; }  
-            public new string Following { get; set; }  
-            public new string  Albums { get; set; } 
-            public new string Playlists { get; set; } 
-            public new string Blocks { get; set; } 
-            public new string Favourites { get; set; } 
-            public new string RecentlyPlayed { get; set; } 
-            public new string Liked { get; set; } 
-            public new string Activities { get; set; }  
-            public new string Latestsongs { get; set; } 
-            public new string TopSongs { get; set; } 
+
+            public new string Followers { get; set; }
+            public new string Following { get; set; }
+            public new string Albums { get; set; }
+            public new string Playlists { get; set; }
+            public new string Blocks { get; set; }
+            public new string Favourites { get; set; }
+            public new string RecentlyPlayed { get; set; }
+            public new string Liked { get; set; }
+            public new string Activities { get; set; }
+            public new string Latestsongs { get; set; }
+            public new string TopSongs { get; set; }
             public new string Store { get; set; }
             public new string Stations { get; set; }
             public new string Events { get; set; }
+            public new string EmailPrivacy { get; set; }
 
         }
-         
+
         [Table("GenresTb")]
         public class GenresTb : GenresObject.DataGenres
         {
@@ -88,7 +90,7 @@ namespace DeepSound.SQLite
             public new string TagsArray { get; set; }
             public new string TagsFiltered { get; set; }
             public new string SongArray { get; set; }
-            public new string Comments { get; set; } 
+            public new string Comments { get; set; }
         }
 
         [Table("LatestDownloadsTb")]
@@ -101,30 +103,14 @@ namespace DeepSound.SQLite
             public new string TagsArray { get; set; }
             public new string TagsFiltered { get; set; }
             public new string SongArray { get; set; }
-            public new string Comments { get; set; } 
-        }
-
-
-        [Table("NotInterestedTb")]
-        public class NotInterestedTb : SoundDataObject
-        {
-            [PrimaryKey, AutoIncrement]
-            public int AutoIdNotInterested { get; set; }
-
-
-            public new string Publisher { get; set; }
-            public new string TagsArray { get; set; }
-            public new string TagsFiltered { get; set; }
-            public new string SongArray { get; set; }
             public new string Comments { get; set; }
         }
-
 
 
         [Table("LastChatTb")]
         public class LastChatTb : DataConversation
         {
-            [PrimaryKey, AutoIncrement] 
+            [PrimaryKey, AutoIncrement]
             public int AutoIdLastChat { get; set; }
 
             public string Id { get; set; }
@@ -137,7 +123,7 @@ namespace DeepSound.SQLite
         {
             [PrimaryKey, AutoIncrement]
             public int AutoIdMessage { get; set; }
-             
+
             public new string ApiPosition { get; set; }
             public new string ApiType { get; set; }
         }

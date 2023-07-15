@@ -1,5 +1,5 @@
-﻿using System;
-using Android.Graphics;
+﻿using Android.Graphics;
+using System;
 
 namespace DeepSound.Helpers.Spannable
 {
@@ -8,7 +8,7 @@ namespace DeepSound.Helpers.Spannable
         public string TextString { get; set; }
         public Action Action { get; set; }
         public Color TextColor { get; set; }
-        public bool HasAction => Action != null!;
+        public bool HasAction => Action != null;
         public bool UpdateTextColor { get; set; }
         public bool IsBold { get; set; }
         public bool IsUnderLine { get; set; }

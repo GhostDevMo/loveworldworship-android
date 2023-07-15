@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Content.Res;
+﻿using Android.Content.Res;
 using Android.Graphics;
 using Android.OS;
 using Android.Text;
@@ -24,13 +19,16 @@ using DeepSound.Helpers.Utils;
 using DeepSound.SQLite;
 using DeepSoundClient.Classes.Albums;
 using DeepSoundClient.Classes.Common;
-using DeepSoundClient.Classes.Event;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.Playlist;
-using DeepSoundClient.Classes.Product;
 using DeepSoundClient.Classes.User;
-using DeepSoundClient.Requests; 
+using DeepSoundClient.Requests;
 using Google.Android.Material.Tabs;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DeepSound.Activities.Search
 {
@@ -43,16 +41,13 @@ namespace DeepSound.Activities.Search
         public SearchSongsFragment SongsTab;
         private SearchAlbumsFragment AlbumsTab;
         private SearchPlaylistFragment PlaylistTab;
-        private SearchArtistsFragment ArtistsTab;
-        private SearchEventsFragment EventsTab;
-        private SearchProductsFragment ProductsTab;
         private TabLayout TabLayout;
         private ViewPager2 ViewPager;
         private HomeActivity GlobalContext;
         private AutoCompleteTextView SearchBox;
         private TextView FilterButton, IconClose;
         private string SearchText = "";
-        public string OffsetSongs = "0", OffsetAlbums = "0", OffsetPlaylist = "0", OffsetArtists = "0", OffsetEvents = "0", OffsetProducts = "0";
+        public string OffsetSongs = "0", OffsetAlbums = "0", OffsetPlaylist = "0", OffsetEvents = "0", OffsetProducts = "0";
         private MainTabAdapter Adapter;
 
         private LastSearchAdapter LastSearchAdapter;
@@ -81,7 +76,7 @@ namespace DeepSound.Activities.Search
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -96,7 +91,7 @@ namespace DeepSound.Activities.Search
                 InitComponent(view);
                 InitToolbar(view);
                 SetRecyclerViewAdapters();
-                 
+
                 GetAppData();
                 AdsGoogle.Ad_Interstitial(Activity);
             }
@@ -136,7 +131,7 @@ namespace DeepSound.Activities.Search
 
                 TabLayout = view.FindViewById<TabLayout>(Resource.Id.Searchtabs);
                 ViewPager = view.FindViewById<ViewPager2>(Resource.Id.Searchviewpager);
-                 
+
                 //Set Tab 
                 SetUpViewPager(ViewPager);
                 new TabLayoutMediator(TabLayout, ViewPager, this).Attach();
@@ -177,23 +172,23 @@ namespace DeepSound.Activities.Search
                 SearchBox.SetOnEditorActionListener(this);
                 SearchBox.AfterTextChanged += SearchBoxOnAfterTextChanged;
                 SearchBox.FocusChange += SearchBoxOnFocusChange;
-                 
+
                 //Change text colors
                 SearchBox.SetHintTextColor(Color.ParseColor(AppSettings.MainColor));
-                SearchBox.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.Black); 
-            }
+                SearchBox.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
+            } 
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void SetRecyclerViewAdapters()
         {
             try
             {
                 LastSearchAdapter = new LastSearchAdapter(Activity) { KeywordsList = new ObservableCollection<TrendSearchDataObject>() };
-                LastSearchAdapter.ItemClick += LastSearchAdapterItemClick; 
+                LastSearchAdapter.ItemClick += LastSearchAdapterItemClick;
             }
             catch (Exception e)
             {
@@ -212,22 +207,16 @@ namespace DeepSound.Activities.Search
                 SongsTab = new SearchSongsFragment();
                 AlbumsTab = new SearchAlbumsFragment();
                 PlaylistTab = new SearchPlaylistFragment();
-                ArtistsTab = new SearchArtistsFragment();
-                EventsTab = new SearchEventsFragment();
-                ProductsTab = new SearchProductsFragment();
 
                 Adapter = new MainTabAdapter(this);
                 Adapter.AddFragment(SongsTab, GetText(Resource.String.Lbl_Songs));
                 Adapter.AddFragment(AlbumsTab, GetText(Resource.String.Lbl_Albums));
                 Adapter.AddFragment(PlaylistTab, GetText(Resource.String.Lbl_Playlist));
-                Adapter.AddFragment(ArtistsTab, GetText(Resource.String.Lbl_Artists));
-                Adapter.AddFragment(EventsTab, GetText(Resource.String.Lbl_Event));
-                Adapter.AddFragment(ProductsTab, GetText(Resource.String.Lbl_Products));
 
                 viewPager.CurrentItem = Adapter.ItemCount;
                 viewPager.OffscreenPageLimit = Adapter.ItemCount;
 
-                viewPager.Orientation = ViewPager2.OrientationHorizontal; 
+                viewPager.Orientation = ViewPager2.OrientationHorizontal;
                 viewPager.Adapter = Adapter;
                 viewPager.Adapter.NotifyDataSetChanged();
 
@@ -287,7 +276,7 @@ namespace DeepSound.Activities.Search
         private void SearchBoxOnFocusChange(object sender, View.FocusChangeEventArgs e)
         {
             try
-            { 
+            {
                 if (e.HasFocus)
                 {
                     SearchLinearLayout.SetBackgroundResource(Resource.Drawable.new_editbox_active);
@@ -340,19 +329,12 @@ namespace DeepSound.Activities.Search
                         PlaylistTab.MAdapter.NotifyDataSetChanged();
                     }
 
-                    if (ArtistsTab.MAdapter != null)
-                    {
-                        ArtistsTab.MAdapter.UsersList.Clear();
-                        ArtistsTab.MAdapter.NotifyDataSetChanged();
-                    }
-
                     OffsetSongs = "0";
                     OffsetAlbums = "0";
                     OffsetPlaylist = "0";
-                    OffsetArtists = "0";
 
                     if (Methods.CheckConnectivity())
-                    { 
+                    {
                         ToggleProgressLoaderVisibility(true);
                         ToggleEmptyStateVisibility(false);
 
@@ -374,7 +356,7 @@ namespace DeepSound.Activities.Search
                         ToggleProgressLoaderVisibility(false);
                         ToggleEmptyStateVisibility(true);
                     }
-                } 
+                }
             }
             catch (Exception exception)
             {
@@ -414,7 +396,7 @@ namespace DeepSound.Activities.Search
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void HideKeyboard()
         {
             try
@@ -438,9 +420,9 @@ namespace DeepSound.Activities.Search
 
                     SearchBox.ClearFocus();
                     v.ClearFocus();
-                     
+
                     HideKeyboard();
-                     
+
                     LastSearchViewStub.Visibility = ViewStates.Gone;
 
                     TabLayout.Visibility = ViewStates.Visible;
@@ -464,16 +446,9 @@ namespace DeepSound.Activities.Search
                         PlaylistTab.MAdapter.NotifyDataSetChanged();
                     }
 
-                    if (ArtistsTab?.MAdapter != null)
-                    {
-                        ArtistsTab.MAdapter.UsersList.Clear();
-                        ArtistsTab.MAdapter.NotifyDataSetChanged();
-                    }
-
                     OffsetSongs = "0";
                     OffsetAlbums = "0";
                     OffsetPlaylist = "0";
-                    OffsetArtists = "0";
 
                     if (Methods.CheckConnectivity())
                     {
@@ -510,13 +485,12 @@ namespace DeepSound.Activities.Search
 
             return false;
         }
-         
+
         private void ToggleProgressLoaderVisibility(bool isVisible)
         {
             try
             {
                 if (SongsTab.ProgressBarLoader != null) SongsTab.ProgressBarLoader.Visibility = isVisible ? ViewStates.Visible : ViewStates.Gone;
-                if (ArtistsTab.ProgressBarLoader != null) ArtistsTab.ProgressBarLoader.Visibility = isVisible ? ViewStates.Visible : ViewStates.Gone;
                 if (PlaylistTab.ProgressBarLoader != null) PlaylistTab.ProgressBarLoader.Visibility = isVisible ? ViewStates.Visible : ViewStates.Gone;
                 if (AlbumsTab.ProgressBarLoader != null) AlbumsTab.ProgressBarLoader.Visibility = isVisible ? ViewStates.Visible : ViewStates.Gone;
             }
@@ -531,7 +505,6 @@ namespace DeepSound.Activities.Search
             try
             {
                 if (SongsTab.EmptyStateLayout != null) SongsTab.EmptyStateLayout.Visibility = isVisible ? ViewStates.Visible : ViewStates.Gone;
-                if (ArtistsTab.EmptyStateLayout != null) ArtistsTab.EmptyStateLayout.Visibility = isVisible ? ViewStates.Visible : ViewStates.Gone;
                 if (PlaylistTab.EmptyStateLayout != null) PlaylistTab.EmptyStateLayout.Visibility = isVisible ? ViewStates.Visible : ViewStates.Gone;
                 if (AlbumsTab.EmptyStateLayout != null) AlbumsTab.EmptyStateLayout.Visibility = isVisible ? ViewStates.Visible : ViewStates.Gone;
             }
@@ -565,16 +538,9 @@ namespace DeepSound.Activities.Search
                     PlaylistTab.MAdapter.NotifyDataSetChanged();
                 }
 
-                if (ArtistsTab?.MAdapter != null)
-                {
-                    ArtistsTab.MAdapter.UsersList.Clear();
-                    ArtistsTab.MAdapter.NotifyDataSetChanged();
-                }
-
                 OffsetSongs = "0";
                 OffsetAlbums = "0";
                 OffsetPlaylist = "0";
-                OffsetArtists = "0";
 
                 if (string.IsNullOrEmpty(SearchText) || string.IsNullOrWhiteSpace(SearchText))
                 {
@@ -584,7 +550,7 @@ namespace DeepSound.Activities.Search
                 //ViewPager.SetCurrentItem(0, true);
 
                 if (Methods.CheckConnectivity())
-                { 
+                {
                     ToggleProgressLoaderVisibility(true);
                     ToggleEmptyStateVisibility(false);
                     StartApiService();
@@ -634,15 +600,6 @@ namespace DeepSound.Activities.Search
                         PlaylistTab.MAdapter.PlaylistList.Clear();
                         PlaylistTab.MAdapter.NotifyDataSetChanged();
 
-                        ArtistsTab.MAdapter.UsersList.Clear();
-                        ArtistsTab.MAdapter.NotifyDataSetChanged();
-
-                        EventsTab.MAdapter.EventsList.Clear();
-                        EventsTab.MAdapter.NotifyDataSetChanged();
-
-                        ProductsTab.MAdapter.ProductsList.Clear();
-                        ProductsTab.MAdapter.NotifyDataSetChanged();
-
                         ToggleProgressLoaderVisibility(true);
                         ToggleEmptyStateVisibility(false);
 
@@ -689,18 +646,12 @@ namespace DeepSound.Activities.Search
             SongsTab.MainScrollEvent.IsLoading = true;
             AlbumsTab.MainScrollEvent.IsLoading = true;
             PlaylistTab.MainScrollEvent.IsLoading = true;
-            ArtistsTab.MainScrollEvent.IsLoading = true;
-            EventsTab.MainScrollEvent.IsLoading = true;
-            ProductsTab.MainScrollEvent.IsLoading = true;
 
             int countSongsList = SongsTab.MAdapter.SoundsList.Count;
             int countAlbumsList = AlbumsTab.MAdapter.AlbumsList.Count;
             int countPlaylistList = PlaylistTab.MAdapter.PlaylistList.Count;
-            int countBlogList = ArtistsTab.MAdapter.UsersList.Count;
-            int countEventsList = EventsTab.MAdapter.EventsList.Count;
-            int countProductsList = ProductsTab.MAdapter.ProductsList.Count;
-             
-            var (apiStatus, respond) = await RequestsAsync.Common.SearchAsync(SearchText, UserDetails.FilterGenres, UserDetails.FilterPrice, "10", OffsetSongs,OffsetAlbums, OffsetArtists, OffsetPlaylist, OffsetEvents, OffsetProducts);
+
+            var (apiStatus, respond) = await RequestsAsync.Common.SearchAsync(SearchText, UserDetails.FilterGenres, UserDetails.FilterPrice, "10", OffsetSongs, OffsetAlbums,OffsetPlaylist);
             if (apiStatus == 200)
             {
                 if (respond is SearchObject result)
@@ -789,80 +740,7 @@ namespace DeepSound.Activities.Search
                             Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_NoMorePlaylist), ToastLength.Short)?.Show();
                     }
 
-                    var respondBlogList = result.Data?.Artist?.Count;
-                    if (respondBlogList > 0)
-                    {
-                        //result.Data?.Artist.RemoveAll(a => a.Artist == 0);
 
-                        if (countBlogList > 0)
-                        {
-                            foreach (var item in from item in result.Data?.Artist let check = ArtistsTab.MAdapter.UsersList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
-                            {
-                                ArtistsTab.MAdapter.UsersList.Add(item);
-                            }
-
-                            Activity.RunOnUiThread(() => { ArtistsTab.MAdapter.NotifyItemRangeInserted(countBlogList, ArtistsTab.MAdapter.UsersList.Count - countBlogList); });
-                        }
-                        else
-                        {
-                            ArtistsTab.MAdapter.UsersList = new ObservableCollection<UserDataObject>(result.Data?.Artist);
-                            Activity.RunOnUiThread(() => { ArtistsTab.MAdapter.NotifyDataSetChanged(); });
-                        }
-                    }
-                    else
-                    {
-                        if (ArtistsTab.MAdapter.UsersList.Count > 10 && !ArtistsTab.MRecycler.CanScrollVertically(1))
-                            Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_NoMoreArtists), ToastLength.Short)?.Show();
-                    }
-                     
-                    var respondEventsList = result.Data?.Events?.Count;
-                    if (respondEventsList > 0)
-                    { 
-                        if (countEventsList> 0)
-                        {
-                            foreach (var item in from item in result.Data?.Events let check = EventsTab.MAdapter.EventsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
-                            {
-                                EventsTab.MAdapter.EventsList.Add(item);
-                            }
-
-                            Activity.RunOnUiThread(() => { EventsTab.MAdapter.NotifyItemRangeInserted(countEventsList, EventsTab.MAdapter.EventsList.Count - countEventsList); });
-                        }
-                        else
-                        {
-                            EventsTab.MAdapter.EventsList = new ObservableCollection<EventDataObject>(result.Data?.Events);
-                            Activity.RunOnUiThread(() => { EventsTab.MAdapter.NotifyDataSetChanged(); });
-                        }
-                    }
-                    else
-                    {
-                        if (EventsTab.MAdapter.EventsList.Count > 10 && !EventsTab.MRecycler.CanScrollVertically(1))
-                            Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_NoMoreEvents), ToastLength.Short)?.Show();
-                    }
-                     
-                    var respondProductsList = result.Data?.Products?.Count;
-                    if (respondProductsList > 0)
-                    { 
-                        if (countProductsList > 0)
-                        {
-                            foreach (var item in from item in result.Data?.Products let check = ProductsTab.MAdapter.ProductsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
-                            {
-                                ProductsTab.MAdapter.ProductsList.Add(item);
-                            }
-
-                            Activity.RunOnUiThread(() => { ProductsTab.MAdapter.NotifyItemRangeInserted(countProductsList, ProductsTab.MAdapter.ProductsList.Count - countProductsList); });
-                        }
-                        else
-                        {
-                            ProductsTab.MAdapter.ProductsList = new ObservableCollection<ProductDataObject>(result.Data?.Products);
-                            Activity.RunOnUiThread(() => { ProductsTab.MAdapter.NotifyDataSetChanged(); });
-                        }
-                    }
-                    else
-                    {
-                        if (ProductsTab.MAdapter.ProductsList.Count > 10 && !ProductsTab.MRecycler.CanScrollVertically(1))
-                            Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_NoMoreProducts), ToastLength.Short)?.Show();
-                    }
-                     
                 }
             }
             else Methods.DisplayReportResult(Activity, respond);
@@ -870,9 +748,6 @@ namespace DeepSound.Activities.Search
             SongsTab.MainScrollEvent.IsLoading = false;
             AlbumsTab.MainScrollEvent.IsLoading = false;
             PlaylistTab.MainScrollEvent.IsLoading = false;
-            ArtistsTab.MainScrollEvent.IsLoading = false;
-            EventsTab.MainScrollEvent.IsLoading = false;
-            ProductsTab.MainScrollEvent.IsLoading = false;
 
             Activity.RunOnUiThread(ShowEmptyPage);
         }
@@ -947,68 +822,6 @@ namespace DeepSound.Activities.Search
                     PlaylistTab.EmptyStateLayout.Visibility = ViewStates.Visible;
                 }
 
-                if (ArtistsTab.MAdapter.UsersList.Count > 0)
-                {
-                    ArtistsTab.EmptyStateLayout.Visibility = ViewStates.Gone;
-                }
-                else
-                {
-                    if (ArtistsTab.Inflated == null)
-                        ArtistsTab.Inflated = ArtistsTab.EmptyStateLayout.Inflate();
-
-                    EmptyStateInflater x = new EmptyStateInflater();
-                    x.InflateLayout(ArtistsTab.Inflated, EmptyStateInflater.Type.NoSearchResult);
-                    if (x.EmptyStateButton.HasOnClickListeners)
-                    {
-                        x.EmptyStateButton.Click -= EmptyStateButtonOnClick;
-                        x.EmptyStateButton.Click -= TryAgainButton_Click;
-                    }
-
-                    x.EmptyStateButton.Click += TryAgainButton_Click;
-                    ArtistsTab.EmptyStateLayout.Visibility = ViewStates.Visible;
-                }
-
-                if (EventsTab.MAdapter.EventsList.Count > 0)
-                {
-                    EventsTab.EmptyStateLayout.Visibility = ViewStates.Gone;
-                }
-                else
-                {
-                    if (EventsTab.Inflated == null)
-                        EventsTab.Inflated = EventsTab.EmptyStateLayout.Inflate();
-
-                    EmptyStateInflater x = new EmptyStateInflater();
-                    x.InflateLayout(EventsTab.Inflated, EmptyStateInflater.Type.NoSearchResult);
-                    if (x.EmptyStateButton.HasOnClickListeners)
-                    {
-                        x.EmptyStateButton.Click -= EmptyStateButtonOnClick;
-                        x.EmptyStateButton.Click -= TryAgainButton_Click;
-                    }
-
-                    x.EmptyStateButton.Click += TryAgainButton_Click;
-                    EventsTab.EmptyStateLayout.Visibility = ViewStates.Visible;
-                }
-
-                if (ProductsTab.MAdapter.ProductsList.Count > 0)
-                {
-                    ProductsTab.EmptyStateLayout.Visibility = ViewStates.Gone;
-                }
-                else
-                {
-                    if (ProductsTab.Inflated == null)
-                        ProductsTab.Inflated = ProductsTab.EmptyStateLayout.Inflate();
-
-                    EmptyStateInflater x = new EmptyStateInflater();
-                    x.InflateLayout(ProductsTab.Inflated, EmptyStateInflater.Type.NoSearchResult);
-                    if (x.EmptyStateButton.HasOnClickListeners)
-                    {
-                        x.EmptyStateButton.Click -= EmptyStateButtonOnClick;
-                        x.EmptyStateButton.Click -= TryAgainButton_Click;
-                    }
-
-                    x.EmptyStateButton.Click += TryAgainButton_Click;
-                    ProductsTab.EmptyStateLayout.Visibility = ViewStates.Visible;
-                }
 
             }
             catch (Exception e)
@@ -1045,14 +858,7 @@ namespace DeepSound.Activities.Search
 
                 ListUtils.GenresList = sqlEntity.Get_GenresList();
                 if (ListUtils.GenresList?.Count == 0)
-                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> {ApiRequest.GetGenres_Api});
-
-                if (AppSettings.ShowPrice)
-                {
-                    ListUtils.PriceList = sqlEntity.Get_PriceList();
-                    if (ListUtils.PriceList?.Count == 0)
-                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> {ApiRequest.GetPrices_Api});
-                }
+                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { ApiRequest.GetGenres_Api });
 
                 if (UserDetails.IsLogin)
                 {
@@ -1064,7 +870,7 @@ namespace DeepSound.Activities.Search
 
                     TabLayout.Visibility = ViewStates.Visible;
                     ViewPager.Visibility = ViewStates.Visible;
-                } 
+                }
             }
             catch (Exception e)
             {
@@ -1103,7 +909,7 @@ namespace DeepSound.Activities.Search
                                 recyclerInflater.InflateLayout<UserDataObject>(Activity, LastSearchInflated, LastSearchAdapter, TemplateRecyclerInflater.TypeLayoutManager.LinearLayoutManagerVertical, 0, true, Context.GetText(Resource.String.Lbl_TrendingNow), false);
                                 if (!recyclerInflater.MainLinear.HasOnClickListeners)
                                 {
-                                    recyclerInflater.MainLinear.Click += null!;
+                                    recyclerInflater.MainLinear.Click += null;
                                 }
 
                                 LastSearchViewStub.Visibility = ViewStates.Visible;

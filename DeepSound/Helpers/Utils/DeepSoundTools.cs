@@ -1,16 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using MaterialDialogsCore;
-using Android.App;
+﻿using Android.App;
 using DeepSound.Helpers.Model;
 using DeepSoundClient;
 using DeepSoundClient.Classes.Global;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace DeepSound.Helpers.Utils
 {
     public static class DeepSoundTools
-    { 
+    {
         public static string GetNameFinal(UserDataObject dataUser)
         {
             try
@@ -32,7 +31,7 @@ namespace DeepSound.Helpers.Utils
                 return "";
             }
         }
-         
+
         public static string GetAboutFinal(UserDataObject dataUser)
         {
             try
@@ -51,7 +50,7 @@ namespace DeepSound.Helpers.Utils
                 return Application.Context.Resources?.GetString(Resource.String.Lbl_HasNotAnyInfo);
             }
         }
-          
+
         public static string GetGender(string type)
         {
             try
@@ -105,7 +104,7 @@ namespace DeepSound.Helpers.Utils
                     if (!sound.AudioLocation.StartsWith("http"))
                     {
                         sound.AudioLocation = GetTheFinalLink(sound.AudioLocation);
-                    } 
+                    }
                 }
 
                 return new List<SoundDataObject>(result);
@@ -135,18 +134,18 @@ namespace DeepSound.Helpers.Utils
 
                 if (!media.Contains(InitializeDeepSound.WebsiteUrl))
                     path = InitializeDeepSound.WebsiteUrl + "/" + media;
-                 
+
                 var config = ListUtils.SettingsSiteList;
                 if (!string.IsNullOrEmpty(config?.S3Upload) && config?.S3Upload == "on")
                 {
-                    return "https://" + config.S3BucketName + ".s3.amazonaws.com"  + "/" + media;
+                    return "https://" + config.S3BucketName + ".s3.amazonaws.com" + "/" + media;
                 }
-                  
+
                 if (!string.IsNullOrEmpty(config?.FtpUpload) && config?.FtpUpload == "on")
                 {
                     return config.FtpEndpoint + "/" + media;
                 }
-                 
+
                 if (!string.IsNullOrEmpty(config?.Spaces) && config?.Spaces == "on")
                 {
 
@@ -157,7 +156,7 @@ namespace DeepSound.Helpers.Utils
 
                     return "https://" + config?.SpaceName + "." + config?.SpaceRegion + ".digitaloceanspaces.com/" + media;
                 }
-                
+
                 return path;
             }
             catch (Exception e)
@@ -166,7 +165,7 @@ namespace DeepSound.Helpers.Utils
                 return media;
             }
         }
-         
+
         public static bool CheckAllowedFileUpload()
         {
             try
@@ -201,7 +200,53 @@ namespace DeepSound.Helpers.Utils
                 return true;
             }
         }
-         
+
+        public static bool CheckAllowedDownloadFile()
+        {
+            try
+            {
+                if (!AppSettings.AllowOfflineDownload)
+                    return false;
+
+                var dataSettings = ListUtils.SettingsSiteList;
+                if (dataSettings?.WhoCanDownload == "admin") //just admin 
+                {
+                    var dataUser = ListUtils.MyUserInfoList?.FirstOrDefault()?.Admin;
+                    if (dataUser == 0) // Not Admin
+                    {
+                        return false;
+                    }
+                }
+                else if (dataSettings?.WhoCanDownload == "artist") //just artist user  
+                {
+                    var dataUser = ListUtils.MyUserInfoList?.FirstOrDefault()?.Artist;
+                    if (dataUser == 0) // Not Artist 
+                    {
+                        return false;
+                    }
+                }
+                else if (dataSettings?.WhoCanDownload == "pro") //just pro user  
+                {
+                    var dataUser = ListUtils.MyUserInfoList?.FirstOrDefault()?.IsPro;
+                    if (dataUser == 0) // Not Pro 
+                    {
+                        return false;
+                    }
+                }
+                else  //"all"
+                {
+                    return true;
+                }
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+                return true;
+            }
+        }
+
         public static bool GetStatusAds()
         {
             try
@@ -211,13 +256,13 @@ namespace DeepSound.Helpers.Utils
                     case ShowAds.AllUsers:
                         return true;
                     case ShowAds.UnProfessional:
-                    {
-                        var isPro = ListUtils.MyUserInfoList?.FirstOrDefault()?.IsPro ?? 0;
-                        if (isPro == 0)
-                            return true;
-                        else
-                            return false;
-                    }
+                        {
+                            var isPro = ListUtils.MyUserInfoList?.FirstOrDefault()?.IsPro ?? 0;
+                            if (isPro == 0)
+                                return true;
+                            else
+                                return false;
+                        }
                     default:
                         return false;
                 }
@@ -233,12 +278,12 @@ namespace DeepSound.Helpers.Utils
         {
             try
             {
-                var wallet = ListUtils.MyUserInfoList.FirstOrDefault()?.WalletFormat.Replace(",","") ?? "0";
+                var wallet = ListUtils.MyUserInfoList.FirstOrDefault()?.WalletFormat.Replace(",", "") ?? "0";
                 if (!string.IsNullOrEmpty(wallet) && wallet != "0")
                 {
-                    bool isParable = double.TryParse(wallet, out var number); 
+                    bool isParable = double.TryParse(wallet, out var number);
                     if (isParable)
-                    { 
+                    {
                         if (number >= price)
                         {
                             return true;
@@ -400,7 +445,7 @@ namespace DeepSound.Helpers.Utils
             }
         }
 
-         public static Dictionary<string, string> GetCountryList(Activity activity)
+        public static Dictionary<string, string> GetCountryList(Activity activity)
         {
             try
             {
@@ -655,30 +700,4 @@ namespace DeepSound.Helpers.Utils
         }
 
     }
-
-    #region MaterialDialog
-
-    public class MyMaterialDialog : Java.Lang.Object, MaterialDialog.ISingleButtonCallback
-    {
-        public void OnClick(MaterialDialog p0, DialogAction p1)
-        {
-            try
-            {
-                if (p1 == DialogAction.Positive)
-                {
-                }
-                else if (p1 == DialogAction.Negative)
-                {
-                    p0.Dismiss();
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-    }
-
-    #endregion
-
 }

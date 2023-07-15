@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Gms.Maps;
 using Android.Views;
@@ -8,11 +6,13 @@ using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.RecyclerView.Widget;
 using DeepSound.Helpers.Utils;
+using System;
+using System.Collections.Generic;
 using Xamarin.Facebook.Ads;
 
 namespace DeepSound.Helpers.Ads
 {
-    public static class AdsFacebook 
+    public static class AdsFacebook
     {
         private static int CountInterstitial;
         private static int CountRewarded;
@@ -42,18 +42,18 @@ namespace DeepSound.Helpers.Ads
                     if (recyclerView != null)
                         Methods.SetMargin(recyclerView, 0, 0, 0, 0);
                 }
-                return null!;
+                return null;
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
         private class BannerAdListener : Java.Lang.Object, IAdListener
         {
-            private RecyclerView MRecycler;
+            private readonly RecyclerView MRecycler;
             public BannerAdListener(RecyclerView recyclerView)
             {
                 MRecycler = recyclerView;
@@ -133,12 +133,12 @@ namespace DeepSound.Helpers.Ads
                         break;
                 }
 
-                return null!;
+                return null;
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -254,12 +254,12 @@ namespace DeepSound.Helpers.Ads
                         break;
                 }
 
-                return null!;
+                return null;
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 

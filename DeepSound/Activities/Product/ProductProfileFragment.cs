@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Content;
+﻿using Android.Content;
 using Android.Graphics;
 using Android.OS;
 using Android.Text;
@@ -26,20 +21,25 @@ using DeepSound.Helpers.MediaPlayerController;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
-using DeepSound.Library.Anjo.Share.Abstractions;
 using DeepSound.Library.Anjo.Share;
+using DeepSound.Library.Anjo.Share.Abstractions;
 using DeepSound.Library.Anjo.SuperTextLibrary;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.Product;
 using DeepSoundClient.Requests;
 using Google.Android.Material.AppBar;
-using MaterialDialogsCore;
+using Google.Android.Material.Dialog;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Exception = System.Exception;
 
 namespace DeepSound.Activities.Product
 {
-    public class ProductProfileFragment : Fragment, MaterialDialog.IListCallback
+    public class ProductProfileFragment : Fragment, IDialogListCallBack
     {
         #region Variables Basic
 
@@ -53,14 +53,14 @@ namespace DeepSound.Activities.Product
         private ViewPager ImagePager;
         private TextView TxtTitle, TxtCategory, TxtCountReviews, TxtPrice;
         private RatingBar RatingBar;
-         
+
         private LinearLayout ButtonLayout;
         private EditText TxtCount;
         private AppCompatButton BtnAddToCart;
-         
+
         private LinearLayout RelatedToSongLayout;
         private TextView TxtNameSong;
-         
+
         private LinearLayout TopLayoutDescription;
         private TextView IconDescription, BtToggleDescription;
         private LinearLayout ExpandDescriptionLayout;
@@ -111,7 +111,7 @@ namespace DeepSound.Activities.Product
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -124,11 +124,11 @@ namespace DeepSound.Activities.Product
                 ProductId = Arguments?.GetString("ProductId") ?? "";
                 ProductObject = JsonConvert.DeserializeObject<ProductDataObject>(Arguments?.GetString("ItemData") ?? "");
 
-                InitComponent(view); 
+                InitComponent(view);
                 SetRecyclerViewAdapters();
-                 
+
                 AdsGoogle.Ad_Interstitial(Activity);
-                StartApiService(); 
+                StartApiService();
             }
             catch (Exception e)
             {
@@ -154,7 +154,7 @@ namespace DeepSound.Activities.Product
         {
             try
             {
-                base.OnResume(); 
+                base.OnResume();
             }
             catch (Exception e)
             {
@@ -166,7 +166,7 @@ namespace DeepSound.Activities.Product
         {
             try
             {
-                base.OnPause(); 
+                base.OnPause();
             }
             catch (Exception e)
             {
@@ -177,7 +177,7 @@ namespace DeepSound.Activities.Product
         public override void OnDestroy()
         {
             try
-            { 
+            {
                 base.OnDestroy();
             }
             catch (Exception e)
@@ -248,16 +248,16 @@ namespace DeepSound.Activities.Product
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, IconBack, AppSettings.FlowDirectionRightToLeft ? IonIconsFonts.ArrowForward : IonIconsFonts.ArrowBack);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, IconMore, IonIconsFonts.More);
 
-                FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons , BtToggleDescription , IonIconsFonts.ArrowDropdown);
-                FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons , BtToggleReviews, IonIconsFonts.ArrowDropdown);
-                FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons , BtToggleTags, IonIconsFonts.ArrowDropdown);  
-                FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons , BtToggleProfile, IonIconsFonts.ArrowDropdown); //IonIconsFonts.ArrowDropup
+                FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, BtToggleDescription, IonIconsFonts.ArrowDropdown);
+                FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, BtToggleReviews, IonIconsFonts.ArrowDropdown);
+                FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, BtToggleTags, IonIconsFonts.ArrowDropdown);
+                FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, BtToggleProfile, IonIconsFonts.ArrowDropdown); //IonIconsFonts.ArrowDropup
 
-                FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons , IconDescription, IonIconsFonts.InformationCircleOutline); 
-                FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons , IconReviews, IonIconsFonts.Quote);
+                FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, IconDescription, IonIconsFonts.InformationCircleOutline);
+                FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, IconReviews, IonIconsFonts.Quote);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeLight, IconTags, FontAwesomeIcon.Tags);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, IconProfile, IonIconsFonts.Person);
-                
+
                 ExpandDescriptionLayout.Visibility = ViewStates.Gone;
                 ExpandReviewsLayout.Visibility = ViewStates.Gone;
                 ExpandProfileLayout.Visibility = ViewStates.Gone;
@@ -274,9 +274,9 @@ namespace DeepSound.Activities.Product
                 TopLayoutReviews.Click += BtToggleReviewsOnClick;
                 TopLayoutTags.Click += BtToggleTagsOnClick;
                 TopLayoutProfile.Click += BtToggleProfileOnClick;
-                 
+
                 ProfileLayout.Click += ProfileLayoutOnClick;
-                ButtonFollow.Click += ButtonFollowOnClick; 
+                ButtonFollow.Click += ButtonFollowOnClick;
             }
             catch (Exception e)
             {
@@ -288,7 +288,7 @@ namespace DeepSound.Activities.Product
         {
             try
             {
-                MAdapter = new ProductReviewsAdapter(Activity) { ReviewsList = new ObservableCollection<ProductReviewsDataObject>()};
+                MAdapter = new ProductReviewsAdapter(Activity) { ReviewsList = new ObservableCollection<ProductReviewsDataObject>() };
                 MAdapter.ItemClick += MAdapterItemClick;
                 LayoutManager = new LinearLayoutManager(Activity);
                 MRecycler.SetLayoutManager(LayoutManager);
@@ -308,9 +308,9 @@ namespace DeepSound.Activities.Product
         }
 
         #endregion
-         
+
         #region Event
-         
+
         private void TxtCountOnTextChanged(object sender, TextChangedEventArgs e)
         {
             try
@@ -319,7 +319,7 @@ namespace DeepSound.Activities.Product
                 {
                     if (Methods.CheckConnectivity())
                         PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Product.ChangeQtyProductAsync(ProductObject.Id?.ToString(), TxtCount.Text) });
-                } 
+                }
             }
             catch (Exception exception)
             {
@@ -336,21 +336,21 @@ namespace DeepSound.Activities.Product
                     Toast.MakeText(Activity, Activity.GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
                     return;
                 }
-               
+
                 switch (BtnAddToCart?.Tag?.ToString())
                 {
                     case "false":
                         BtnAddToCart.Text = GetText(Resource.String.Lbl_RemoveFromCart);
                         BtnAddToCart.Tag = "true";
                         ProductObject.AddedToCart = 1;
-                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Product.AddToCartAsync(ProductObject.Id?.ToString() , "Add") });
+                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Product.AddToCartAsync(ProductObject.Id?.ToString(), "Add") });
                         break;
                     default:
                         BtnAddToCart.Text = GetText(Resource.String.Lbl_AddToCart);
                         BtnAddToCart.Tag = "false";
                         ProductObject.AddedToCart = 0;
 
-                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Product.AddToCartAsync(ProductObject.Id?.ToString() , "Remove") });
+                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Product.AddToCartAsync(ProductObject.Id?.ToString(), "Remove") });
                         break;
                 }
             }
@@ -365,7 +365,7 @@ namespace DeepSound.Activities.Product
             try
             {
                 var arrayAdapter = new List<string>();
-                var dialogList = new MaterialDialog.Builder(Activity).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(Activity);
 
                 if (ProductObject.UserId == UserDetails.UserId && UserDetails.IsLogin)
                 {
@@ -376,11 +376,11 @@ namespace DeepSound.Activities.Product
                 arrayAdapter.Add(GetText(Resource.String.Lbl_Share));
                 arrayAdapter.Add(GetText(Resource.String.Lbl_Copy));
 
-                dialogList.Title(GetText(Resource.String.Lbl_Products));
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetTitle(GetText(Resource.String.Lbl_Products));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -410,7 +410,7 @@ namespace DeepSound.Activities.Product
                     return;
 
                 Constant.PlayPos = 0;
-                GlobalContext?.SoundController?.StartPlaySound(item?.SongClass, new ObservableCollection<SoundDataObject>(){ item?.SongClass });
+                GlobalContext?.SoundController?.StartPlaySound(item?.SongClass, new ObservableCollection<SoundDataObject>() { item?.SongClass });
             }
             catch (Exception exception)
             {
@@ -426,7 +426,7 @@ namespace DeepSound.Activities.Product
                 if (e.Position > -1)
                 {
                     var item = MAdapter.GetItem(e.Position);
-                    if (item?.UserData?.Id != null) 
+                    if (item?.UserData?.Id != null)
                         GlobalContext.OpenProfile(item.UserData.Id, item.UserData);
                 }
             }
@@ -449,7 +449,7 @@ namespace DeepSound.Activities.Product
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         //Follow User
         private void ButtonFollowOnClick(object sender, EventArgs e)
         {
@@ -546,7 +546,7 @@ namespace DeepSound.Activities.Product
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
 
         #region Animate
@@ -564,7 +564,7 @@ namespace DeepSound.Activities.Product
                     lyt.LayoutParameters.Height = 0;
                     lyt.Visibility = ViewStates.Visible;
 
-                    ActionAnimation animation = new ActionAnimation(lyt, targtetHeight , "Expand");
+                    ActionAnimation animation = new ActionAnimation(lyt, targtetHeight, "Expand");
                     lyt.StartAnimation(animation);
                 }
                 else
@@ -602,13 +602,13 @@ namespace DeepSound.Activities.Product
                 return false;
             }
         }
-         
+
         private class ActionAnimation : Animation
         {
             private readonly View View;
             private readonly int TargtetHeight;
             private readonly string Type;
-            public ActionAnimation(View v, int targtetHeight , string type)
+            public ActionAnimation(View v, int targtetHeight, string type)
             {
                 View = v;
                 TargtetHeight = targtetHeight;
@@ -635,12 +635,12 @@ namespace DeepSound.Activities.Product
                             View.LayoutParameters.Height = TargtetHeight - (int)(TargtetHeight * interpolatedTime);
                             View.RequestLayout();
                         }
-                    } 
+                    }
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    base.ApplyTransformation(interpolatedTime, t); 
+                    base.ApplyTransformation(interpolatedTime, t);
                 }
             }
 
@@ -649,7 +649,7 @@ namespace DeepSound.Activities.Product
                 return true;
             }
         }
-         
+
         #endregion
 
         #region Load Data Product 
@@ -661,30 +661,30 @@ namespace DeepSound.Activities.Product
             if (!Methods.CheckConnectivity())
                 Toast.MakeText(Activity, Activity.GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
             else
-                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { LoadProductById , ProductReviewsById });
+                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { LoadProductById, ProductReviewsById });
         }
 
         private async Task LoadProductById()
         {
             if (Methods.CheckConnectivity())
-            { 
+            {
                 var (apiStatus, respond) = await RequestsAsync.Product.GetProductByIdAsync(ProductId);
                 if (apiStatus == 200)
                 {
                     if (respond is GetProductDataObject result)
                     {
                         ProductObject = result.Data;
-                        Activity?.RunOnUiThread(SetDataProduct);  
+                        Activity?.RunOnUiThread(SetDataProduct);
                     }
                 }
-                else Methods.DisplayReportResult(Activity, respond); 
+                else Methods.DisplayReportResult(Activity, respond);
             }
             else
             {
                 Toast.MakeText(Context, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
             }
         }
-          
+
         private async Task ProductReviewsById()
         {
             if (Methods.CheckConnectivity())
@@ -716,7 +716,7 @@ namespace DeepSound.Activities.Product
                         else
                         {
                             if (MAdapter.ReviewsList.Count > 10 && !MRecycler.CanScrollVertically(1))
-                                Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_NoMoreNotificationsFound), ToastLength.Short)?.Show(); 
+                                Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_NoMoreNotificationsFound), ToastLength.Short)?.Show();
                         }
                     }
 
@@ -739,16 +739,16 @@ namespace DeepSound.Activities.Product
                         {
                             Methods.DisplayReportResultTrack(e);
                         }
-                    }); 
+                    });
                 }
-                else Methods.DisplayReportResult(Activity, respond); 
+                else Methods.DisplayReportResult(Activity, respond);
             }
             else
             {
                 Toast.MakeText(Context, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
             }
         }
-          
+
         private void SetDataProduct()
         {
             try
@@ -811,7 +811,7 @@ namespace DeepSound.Activities.Product
 
                     var tagsAutoLink = new TextSanitizer(TxtTags, Activity);
                     tagsAutoLink.Load(Methods.FunString.DecodeString(ProductObject.Tags).Replace(",", " #"));
-                     
+
                     if (ProductObject.RelatedSong?.SongClass != null)
                     {
                         TxtNameSong.Text = Methods.FunString.DecodeString(ProductObject.RelatedSong?.SongClass.Title);
@@ -864,7 +864,7 @@ namespace DeepSound.Activities.Product
 
         #region MaterialDialog
 
-        public async void OnSelection(MaterialDialog dialog, View itemView, int position, string text)
+        public async void OnSelection(IDialogInterface dialog, int position, string text)
         {
             try
             {
@@ -879,10 +879,10 @@ namespace DeepSound.Activities.Product
 
                     if (Methods.CheckConnectivity())
                     {
-                        var dialogBuilder = new MaterialDialog.Builder(Activity).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                        dialogBuilder.Title(GetText(Resource.String.Lbl_DeleteProduct));
-                        dialogBuilder.Content(GetText(Resource.String.Lbl_AreYouSureDeleteProduct));
-                        dialogBuilder.PositiveText(GetText(Resource.String.Lbl_YesButKeepSongs)).OnPositive((materialDialog, action) =>
+                        var dialogBuilder = new MaterialAlertDialogBuilder(Activity);
+                        dialogBuilder.SetTitle(GetText(Resource.String.Lbl_DeleteProduct));
+                        dialogBuilder.SetMessage(GetText(Resource.String.Lbl_AreYouSureDeleteProduct));
+                        dialogBuilder.SetPositiveButton(GetText(Resource.String.Lbl_YesButKeepSongs), (materialDialog, action) =>
                         {
                             try
                             {
@@ -909,9 +909,9 @@ namespace DeepSound.Activities.Product
                                 Methods.DisplayReportResultTrack(exception);
                             }
                         });
-                        dialogBuilder.NegativeText(GetText(Resource.String.Lbl_YesDeleteEverything)).OnNegative(new MyMaterialDialog());
-                        dialogBuilder.AlwaysCallSingleChoiceCallback();
-                        dialogBuilder.Build().Show();
+                        dialogBuilder.SetNegativeButton(GetText(Resource.String.Lbl_YesDeleteEverything), new MaterialDialogUtils());
+
+                        dialogBuilder.Show();
                     }
                     else
                     {

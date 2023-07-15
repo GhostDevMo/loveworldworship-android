@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Content;
+﻿using Android.Content;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.SwipeRefreshLayout.Widget;
-using AndroidX.Transitions;
 using DeepSound.Activities.Albums;
 using DeepSound.Activities.Albums.Adapters;
 using DeepSound.Activities.Artists.Adapters;
@@ -28,10 +22,15 @@ using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.User;
 using DeepSoundClient.Requests;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DeepSound.Activities.Tabbes.HomePages
 {
-    public class LatestHomeFragment : Fragment 
+    public class LatestHomeFragment : Fragment
     {
         #region Variables Basic
 
@@ -39,10 +38,10 @@ namespace DeepSound.Activities.Tabbes.HomePages
         private GenresAdapter GenresAdapter;
         public HSoundAdapter NewReleasesSoundAdapter, RecentlyPlayedSoundAdapter, PopularSoundAdapter, TopSongsSoundAdapter;
         public AlbumsAdapter AlbumsAdapter;
-       
+
         private HomeActivity GlobalContext;
         private SwipeRefreshLayout SwipeRefreshLayout;
-        private ViewStub EmptyStateLayout, GenresViewStub, NewReleasesViewStub, RecentlyPlayedViewStub, PopularViewStub,  ArtistsViewStub, TopSongsViewStub, TopAlbumsViewStub;
+        private ViewStub EmptyStateLayout, GenresViewStub, NewReleasesViewStub, RecentlyPlayedViewStub, PopularViewStub, ArtistsViewStub, TopSongsViewStub, TopAlbumsViewStub;
         private View Inflated, GenresInflated, NewReleasesInflated, RecentlyPlayedInflated, PopularInflated, ArtistsInflated, TopSongsInflated, TopAlbumsInflated;
 
         private ObservableCollection<SoundDataObject> RecommendedList;
@@ -73,7 +72,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -108,7 +107,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
         }
 
         #endregion
-         
+
         #region Functions
 
         private void InitComponent(View view)
@@ -116,13 +115,14 @@ namespace DeepSound.Activities.Tabbes.HomePages
             try
             {
                 EmptyStateLayout = view.FindViewById<ViewStub>(Resource.Id.viewStub);
-                
+
                 GenresViewStub = (ViewStub)view.FindViewById(Resource.Id.viewStubGenres);
                 NewReleasesViewStub = (ViewStub)view.FindViewById(Resource.Id.viewStubNewReleases);
                 RecentlyPlayedViewStub = (ViewStub)view.FindViewById(Resource.Id.viewStubRecentlyPlayed);
                 PopularViewStub = (ViewStub)view.FindViewById(Resource.Id.viewStubPopular);
                 ArtistsViewStub = (ViewStub)view.FindViewById(Resource.Id.viewStubArtists);
                 TopSongsViewStub = (ViewStub)view.FindViewById(Resource.Id.viewStubTopSongs);
+                TopAlbumsViewStub = (ViewStub)view.FindViewById(Resource.Id.viewStubTopAlbums);
 
                 SwipeRefreshLayout = (SwipeRefreshLayout)view.FindViewById(Resource.Id.swipeRefreshLayout);
                 SwipeRefreshLayout.SetColorSchemeResources(Android.Resource.Color.HoloBlueLight, Android.Resource.Color.HoloGreenLight, Android.Resource.Color.HoloOrangeLight, Android.Resource.Color.HoloRedLight);
@@ -130,7 +130,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 SwipeRefreshLayout.Enabled = true;
                 SwipeRefreshLayout.SetProgressBackgroundColorSchemeColor(DeepSoundTools.IsTabDark() ? Color.ParseColor("#424242") : Color.ParseColor("#f7f7f7"));
                 SwipeRefreshLayout.Refresh += SwipeRefreshLayoutOnRefresh;
-                
+
                 MainAlert = (RelativeLayout)view.FindViewById(Resource.Id.mainAlert);
                 MainAlert.Visibility = !UserDetails.IsLogin ? ViewStates.Visible : ViewStates.Gone;
                 MainAlert.Click += MainAlertOnClick;
@@ -145,15 +145,15 @@ namespace DeepSound.Activities.Tabbes.HomePages
         {
             try
             {
-                RecommendedList = new ObservableCollection<SoundDataObject>(); 
-                
+                RecommendedList = new ObservableCollection<SoundDataObject>();
+
                 //Browse RecyclerView >> LinearLayoutManager.Horizontal
                 GenresAdapter = new GenresAdapter(Activity) { GenresList = new ObservableCollection<GenresObject.DataGenres>() };
                 GenresAdapter.GenresList = ListUtils.GenresList;
                 GenresAdapter.ItemClick += GenresAdapterOnItemClick;
 
                 //New Releases RecyclerView >> LinearLayoutManager.Horizontal 
-                NewReleasesSoundAdapter = new HSoundAdapter(Activity) { SoundsList = new ObservableCollection<SoundDataObject>() }; 
+                NewReleasesSoundAdapter = new HSoundAdapter(Activity) { SoundsList = new ObservableCollection<SoundDataObject>() };
                 NewReleasesSoundAdapter.ItemClick += NewReleasesSoundAdapterOnItemClick;
 
                 // Recently Played RecyclerView >> LinearLayoutManager.Horizontal
@@ -172,6 +172,9 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 TopSongsSoundAdapter = new HSoundAdapter(Activity) { SoundsList = new ObservableCollection<SoundDataObject>() };
                 TopSongsSoundAdapter.ItemClick += TopSongsSoundAdapterOnItemClick;
 
+                // Top Albums RecyclerView >> LinearLayoutManager.Horizontal
+                AlbumsAdapter = new AlbumsAdapter(Activity);
+                AlbumsAdapter.ItemClick += AlbumsAdapterItemClick;
             }
             catch (Exception e)
             {
@@ -182,7 +185,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
         #endregion
 
         #region Events
-        
+
         private void MainAlertOnClick(object sender, EventArgs e)
         {
             try
@@ -207,7 +210,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                         return;
                     Constant.PlayPos = e.Position;
                     GlobalContext?.SoundController?.StartPlaySound(item, NewReleasesSoundAdapter.SoundsList);
-                } 
+                }
             }
             catch (Exception exception)
             {
@@ -225,7 +228,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                     var item = PopularSoundAdapter.GetItem(e.Position);
                     if (item == null)
                         return;
-                    Constant.PlayPos = e.Position; 
+                    Constant.PlayPos = e.Position;
                     GlobalContext?.SoundController?.StartPlaySound(item, PopularSoundAdapter.SoundsList);
                 }
             }
@@ -244,7 +247,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 {
                     var item = RecentlyPlayedSoundAdapter.GetItem(e.Position);
                     if (item != null)
-                    { 
+                    {
                         Constant.PlayPos = e.Position;
                         GlobalContext?.SoundController?.StartPlaySound(item, RecentlyPlayedSoundAdapter.SoundsList);
                     }
@@ -273,7 +276,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                         Arguments = bundle
                     };
                     GlobalContext.FragmentBottomNavigator.DisplayFragment(SongsByGenresFragment);
-                } 
+                }
             }
             catch (Exception exception)
             {
@@ -285,7 +288,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
         private void ArtistsAdapterOnItemClick(object sender, ArtistsAdapterClickEventArgs e)
         {
             try
-            { 
+            {
                 var item = ArtistsAdapter.GetItem(e.Position);
                 if (item?.Id != null) GlobalContext.OpenProfile(item.Id, item);
             }
@@ -294,7 +297,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void BrowseMoreOnClick(object sender, EventArgs e)
         {
             try
@@ -360,12 +363,51 @@ namespace DeepSound.Activities.Tabbes.HomePages
             }
         }
 
+
+        private void TopAlbumsMoreOnClick(object sender, EventArgs e)
+        {
+            try
+            {
+                //TopAlbums >> index 4 
+                GlobalContext.HomeFragment.ViewPager.SetCurrentItem(4, false);
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
         private void TopSongsMoreOnClick(object sender, EventArgs e)
         {
             try
             {
                 //TopSongs >> index 1
                 GlobalContext.HomeFragment.ViewPager.SetCurrentItem(1, false);
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
+        //Open profile Albums
+        private void AlbumsAdapterItemClick(object sender, AlbumsAdapterClickEventArgs e)
+        {
+            try
+            {
+                var item = AlbumsAdapter.GetItem(e.Position);
+                if (item != null)
+                {
+                    Bundle bundle = new Bundle();
+                    bundle.PutString("ItemData", JsonConvert.SerializeObject(item));
+                    bundle.PutString("AlbumsId", item.Id.ToString());
+                    AlbumsFragment = new AlbumsFragment
+                    {
+                        Arguments = bundle
+                    };
+
+                    GlobalContext.FragmentBottomNavigator.DisplayFragment(AlbumsFragment);
+                }
             }
             catch (Exception exception)
             {
@@ -419,27 +461,30 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 TopSongsSoundAdapter.SoundsList.Clear();
                 TopSongsSoundAdapter.NotifyDataSetChanged();
 
+                AlbumsAdapter.AlbumsList.Clear();
+                AlbumsAdapter.NotifyDataSetChanged();
+
                 RecommendedList.Clear();
 
                 EmptyStateLayout.Visibility = ViewStates.Gone;
-                 
-                StartApiService();                
+
+                StartApiService();
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
 
         #region Load Discover Api
 
         private void StartApiService()
-        { 
+        {
             if (Methods.CheckConnectivity())
             {
-                PollyController.RunRetryPolicyFunction(new List<Func<Task>> {LoadDiscover, LoadBrowse, ApiRequest.GetGenres_Api, () => LoadArtists()});
+                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { LoadDiscover, LoadBrowse, ApiRequest.GetGenres_Api, LoadArtists });
             }
             else
             {
@@ -454,7 +499,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                         x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                         if (!x.EmptyStateButton.HasOnClickListeners)
                         {
-                            x.EmptyStateButton.Click += null!;
+                            x.EmptyStateButton.Click += null;
                             x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                         }
 
@@ -482,7 +527,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                             result.Randoms.Recommended = DeepSoundTools.ListFilter(result.Randoms?.Recommended);
                             RecommendedList = new ObservableCollection<SoundDataObject>();
                             foreach (var item in result.Randoms?.Recommended)
-                            { 
+                            {
                                 RecommendedList.Add(item);
                             }
                         }
@@ -499,25 +544,25 @@ namespace DeepSound.Activities.Tabbes.HomePages
                         }
 
                         if (result.RecentlyPlayed?.RecentlyPlayedClass?.Data?.Count > 0)
-                        { 
+                        {
                             if (RecentlyPlayedSoundAdapter.SoundsList.Count > 0)
                             {
                                 var newItemList = result.RecentlyPlayed?.RecentlyPlayedClass?.Data.Where(c => !RecentlyPlayedSoundAdapter.SoundsList.Select(fc => fc.Id).Contains(c.Id)).ToList();
                                 if (newItemList.Count > 0)
                                 {
                                     ListUtils.AddRange(RecentlyPlayedSoundAdapter.SoundsList, newItemList);
-                                } 
+                                }
                             }
                             else
-                            {                            
-                                RecentlyPlayedSoundAdapter.SoundsList = new ObservableCollection<SoundDataObject>(result.RecentlyPlayed?.RecentlyPlayedClass?.Data); 
+                            {
+                                RecentlyPlayedSoundAdapter.SoundsList = new ObservableCollection<SoundDataObject>(result.RecentlyPlayed?.RecentlyPlayedClass?.Data);
                             }
 
                             var soundDataObjects = RecentlyPlayedSoundAdapter.SoundsList?.Reverse();
                             Console.WriteLine(soundDataObjects);
 
                             var list = RecentlyPlayedSoundAdapter.SoundsList.OrderBy(o => o.Views);
-                            RecentlyPlayedSoundAdapter.SoundsList = new ObservableCollection<SoundDataObject>(DeepSoundTools.ListFilter(list.ToList())); 
+                            RecentlyPlayedSoundAdapter.SoundsList = new ObservableCollection<SoundDataObject>(DeepSoundTools.ListFilter(list.ToList()));
                         }
 
                         if (result.MostPopularWeek != null && result.MostPopularWeek?.MostPopularWeekClass?.Data?.Count > 0)
@@ -536,15 +581,15 @@ namespace DeepSound.Activities.Tabbes.HomePages
             }
         }
 
-        private async Task LoadArtists(string offsetArtists = "0")
+        private async Task LoadArtists()
         {
             int countList = ArtistsAdapter.ArtistsList.Count;
-            var (apiStatus, respond) = await RequestsAsync.User.GetArtistsAsync("20", offsetArtists);
+            var (apiStatus, respond) = await RequestsAsync.User.GetArtistsAsync();
             if (apiStatus == 200)
             {
                 if (respond is GetUserObject result)
                 {
-                    var respondList = result.Data?.UserList.Count;
+                    var respondList = result.Data?.UserList?.Count;
                     if (respondList > 0)
                     {
                         if (countList > 0)
@@ -561,7 +606,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                         }
                         else
                         {
-                            ArtistsAdapter.ArtistsList = new ObservableCollection<UserDataObject>(result.Data?.UserList);
+                            ArtistsAdapter.ArtistsList = new ObservableCollection<UserDataObject>(result.Data.UserList);
 
                             Activity?.RunOnUiThread(() =>
                             {
@@ -571,10 +616,10 @@ namespace DeepSound.Activities.Tabbes.HomePages
                                 recyclerInflater.InflateLayout<UserDataObject>(Activity, ArtistsInflated, ArtistsAdapter, TemplateRecyclerInflater.TypeLayoutManager.LinearLayoutManagerHorizontal, 0, true, Context.GetText(Resource.String.Lbl_Artists));
                                 if (!recyclerInflater.MainLinear.HasOnClickListeners)
                                 {
-                                    recyclerInflater.MainLinear.Click += null!;
+                                    recyclerInflater.MainLinear.Click += null;
                                     recyclerInflater.MainLinear.Click += ArtistsMoreOnClick;
                                 }
-                            }); 
+                            });
                         }
                     }
                     else
@@ -593,6 +638,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
             if (Methods.CheckConnectivity())
             {
                 int countSongsList = TopSongsSoundAdapter.SoundsList.Count;
+                int countAlbumsList = AlbumsAdapter.AlbumsList.Count;
                 var (apiStatus, respond) = await RequestsAsync.Common.GetTrendingAsync();
                 if (apiStatus == 200)
                 {
@@ -621,6 +667,16 @@ namespace DeepSound.Activities.Tabbes.HomePages
                                 Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_NoMoreSongs), ToastLength.Short)?.Show();
                         }
 
+                        var respondList = result.TopAlbums?.Count;
+                        if (respondList > 0)
+                        {
+                            AlbumsAdapter.AlbumsList = new ObservableCollection<DataAlbumsObject>(result.TopAlbums.Take(12));
+                        }
+                        else
+                        {
+                            if (AlbumsAdapter.AlbumsList.Count > 10)
+                                Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_NoMoreAlbums), ToastLength.Short)?.Show();
+                        }
                     }
                 }
                 else Methods.DisplayReportResult(Activity, respond);
@@ -634,20 +690,20 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
                 Toast.MakeText(Context, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
             }
         }
-         
+
         private void ShowEmptyPage()
         {
             try
             {
                 SwipeRefreshLayout.Refreshing = false;
-                
+
                 if (NewReleasesSoundAdapter.SoundsList?.Count > 0)
                 {
                     NewReleasesInflated ??= NewReleasesViewStub.Inflate();
@@ -656,7 +712,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                     recyclerInflater.InflateLayout<SoundDataObject>(Activity, NewReleasesInflated, NewReleasesSoundAdapter, TemplateRecyclerInflater.TypeLayoutManager.LinearLayoutManagerHorizontal, 0, true, Context.GetText(Resource.String.Lbl_LatestSongs_Title));
                     if (!recyclerInflater.MainLinear.HasOnClickListeners)
                     {
-                        recyclerInflater.MainLinear.Click += null!;
+                        recyclerInflater.MainLinear.Click += null;
                         recyclerInflater.MainLinear.Click += NewReleasesMoreOnClick;
                     }
                 }
@@ -669,7 +725,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                     recyclerInflater.InflateLayout<SoundDataObject>(Activity, RecentlyPlayedInflated, RecentlyPlayedSoundAdapter, TemplateRecyclerInflater.TypeLayoutManager.LinearLayoutManagerHorizontal, 0, true, Context.GetText(Resource.String.Lbl_RecentlyPlayed));
                     if (!recyclerInflater.MainLinear.HasOnClickListeners)
                     {
-                        recyclerInflater.MainLinear.Click += null!;
+                        recyclerInflater.MainLinear.Click += null;
                         recyclerInflater.MainLinear.Click += RecentlyPlayedMoreOnClick;
                     }
                 }
@@ -682,7 +738,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                     recyclerInflater.InflateLayout<SoundDataObject>(Activity, PopularInflated, PopularSoundAdapter, TemplateRecyclerInflater.TypeLayoutManager.LinearLayoutManagerHorizontal, 0, true, Context.GetText(Resource.String.Lbl_Popular_Title));
                     if (!recyclerInflater.MainLinear.HasOnClickListeners)
                     {
-                        recyclerInflater.MainLinear.Click += null!;
+                        recyclerInflater.MainLinear.Click += null;
                         recyclerInflater.MainLinear.Click += PopularMoreOnClick;
                     }
                 }
@@ -698,7 +754,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                     recyclerInflater.InflateLayout<GenresObject.DataGenres>(Activity, GenresInflated, GenresAdapter, TemplateRecyclerInflater.TypeLayoutManager.LinearLayoutManagerHorizontal, 0, true, Context.GetText(Resource.String.Lbl_Genres), false);
                     if (!recyclerInflater.MainLinear.HasOnClickListeners)
                     {
-                        recyclerInflater.MainLinear.Click += null!;
+                        recyclerInflater.MainLinear.Click += null;
                         recyclerInflater.MainLinear.Click += BrowseMoreOnClick;
                     }
                 }
@@ -711,11 +767,25 @@ namespace DeepSound.Activities.Tabbes.HomePages
                     recyclerInflater.InflateLayout<SoundDataObject>(Activity, TopSongsInflated, TopSongsSoundAdapter, TemplateRecyclerInflater.TypeLayoutManager.LinearLayoutManagerHorizontal, 0, true, Context.GetText(Resource.String.Lbl_TopSongs_Title));
                     if (!recyclerInflater.MainLinear.HasOnClickListeners)
                     {
-                        recyclerInflater.MainLinear.Click += null!;
+                        recyclerInflater.MainLinear.Click += null;
                         recyclerInflater.MainLinear.Click += TopSongsMoreOnClick;
                     }
                 }
-                 
+
+                if (AlbumsAdapter.AlbumsList?.Count > 0)
+                {
+                    if (TopAlbumsInflated == null)
+                        TopAlbumsInflated = TopAlbumsViewStub.Inflate();
+
+                    TemplateRecyclerInflater recyclerInflater = new TemplateRecyclerInflater();
+                    recyclerInflater.InflateLayout<DataAlbumsObject>(Activity, TopAlbumsInflated, AlbumsAdapter, TemplateRecyclerInflater.TypeLayoutManager.LinearLayoutManagerHorizontal, 0, true, Context.GetText(Resource.String.Lbl_TopAlbums_Title));
+                    if (!recyclerInflater.MainLinear.HasOnClickListeners)
+                    {
+                        recyclerInflater.MainLinear.Click += null;
+                        recyclerInflater.MainLinear.Click += TopAlbumsMoreOnClick;
+                    }
+                }
+
                 if (RecommendedList?.Count == 0 && NewReleasesSoundAdapter?.SoundsList?.Count == 0 && RecentlyPlayedSoundAdapter?.SoundsList?.Count == 0 &&
                     PopularSoundAdapter?.SoundsList?.Count == 0 && GenresAdapter?.GenresList?.Count == 0 && ArtistsAdapter.ArtistsList?.Count == 0 &&
                     TopSongsSoundAdapter.SoundsList?.Count == 0 && AlbumsAdapter.AlbumsList?.Count == 0)
@@ -726,7 +796,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSound);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }
@@ -752,7 +822,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
     }
 }

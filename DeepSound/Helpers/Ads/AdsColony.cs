@@ -1,5 +1,4 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Content.Res;
 using Android.Util;
 using Android.Views;
@@ -8,6 +7,7 @@ using AndroidX.RecyclerView.Widget;
 using Com.Adcolony.Sdk;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
+using System;
 
 namespace DeepSound.Helpers.Ads
 {
@@ -15,7 +15,7 @@ namespace DeepSound.Helpers.Ads
     {
         private static int CountInterstitial = 1;
         private static int CountRewarded = 1;
-         
+
         #region Banner
 
         public static void InitBannerAd(Activity context, LinearLayout adContainer, AdColonyAdSize adSize, RecyclerView mRecycler)
@@ -241,7 +241,7 @@ namespace DeepSound.Helpers.Ads
                 }
             }
         }
-         
+
         #endregion
 
         //============================================

@@ -1,18 +1,18 @@
 ﻿namespace DeepSound.Library.Anjo.Share.Abstractions
 {
-	public enum ShareAppControlType
+    public enum ShareAppControlType
     {
-		Link = 0,
+        Link = 0,
 
-		TextInEmail,
+        TextInEmail,
 
-		TextInSMS,
+        TextInSMS,
 
-		TextInMMS,
+        TextInMMS,
 
-		FileInEmail,
+        FileInEmail,
 
-		FileInMessage,
+        FileInMessage,
 
-	}
+    }
 }

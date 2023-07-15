@@ -1,6 +1,6 @@
-using System;
 using Android.Graphics;
 using DeepSound.Library.Anjo.Share.Abstractions;
+using System;
 
 namespace DeepSound.Library.Anjo.Share
 {

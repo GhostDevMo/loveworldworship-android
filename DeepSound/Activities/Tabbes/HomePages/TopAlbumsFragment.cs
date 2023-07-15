@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -17,6 +12,7 @@ using DeepSound.Activities.Albums.Adapters;
 using DeepSound.Activities.Songs;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
+using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Albums;
@@ -24,6 +20,11 @@ using DeepSoundClient.Classes.Common;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Requests;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Xamarin.Facebook.Ads;
 
 namespace DeepSound.Activities.Tabbes.HomePages
@@ -37,13 +38,14 @@ namespace DeepSound.Activities.Tabbes.HomePages
         private SwipeRefreshLayout SwipeRefreshLayout;
         private RecyclerView MRecycler;
         private LinearLayoutManager LayoutManager;
+        private RecyclerViewOnScrollListener MainScrollEvent;
         private ViewStub EmptyStateLayout;
         private View Inflated;
         private AdView BannerAd;
 
         private bool MIsVisibleToUser;
         private PopupFilterList PopupFilterList;
-         
+
         #endregion
 
         #region General
@@ -66,7 +68,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -187,6 +189,12 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 var preLoader = new RecyclerViewPreloader<UserDataObject>(Activity, MAdapter, sizeProvider, 10);
                 MRecycler.AddOnScrollListener(preLoader);
                 MRecycler.SetAdapter(MAdapter);
+
+                RecyclerViewOnScrollListener xamarinRecyclerViewOnScrollListener = new RecyclerViewOnScrollListener(LayoutManager);
+                MainScrollEvent = xamarinRecyclerViewOnScrollListener;
+                MainScrollEvent.LoadMoreEvent += MainScrollEventOnLoadMoreEvent;
+                MRecycler.AddOnScrollListener(xamarinRecyclerViewOnScrollListener);
+                MainScrollEvent.IsLoading = false;
             }
             catch (Exception e)
             {
@@ -197,7 +205,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
         #endregion
 
         #region Event
-        
+
         //Open profile Albums
         private void MAdapterItemClick(object sender, HAlbumsAdapterClickEventArgs e)
         {
@@ -237,7 +245,35 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 MAdapter.AlbumsList.Clear();
                 MAdapter.NotifyDataSetChanged();
 
-                Task.Factory.StartNew(StartApiService);
+                MainScrollEvent.IsLoading = false;
+                Task.Factory.StartNew(() => StartApiService());
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
+        //Scroll
+        private void MainScrollEventOnLoadMoreEvent(object sender, EventArgs e)
+        {
+            try
+            {
+                //Code get last id where LoadMore >> 
+                var lastItem = MAdapter.AlbumsList.LastOrDefault();
+                if (lastItem != null && !MainScrollEvent.IsLoading)
+                {
+                    string totalId = lastItem.AlbumId;
+                    var all = MAdapter.AlbumsList;
+                    if (all.Count > 1)
+                    {
+                        //Get all id 
+                        totalId = all.Aggregate(totalId, (s, item) => item.Id + ",");
+                        totalId = totalId.Remove(totalId.Length - 1, 1);
+                    }
+
+                    StartApiService(totalId, lastItem.Views.ToString());
+                }
             }
             catch (Exception exception)
             {
@@ -252,19 +288,19 @@ namespace DeepSound.Activities.Tabbes.HomePages
         private void PopulateData()
         {
             try
-            { 
+            {
                 if (GlobalContext?.HomeFragment?.LatestHomeTab?.AlbumsAdapter?.AlbumsList?.Count > 0)
                 {
                     MAdapter.AlbumsList = GlobalContext?.HomeFragment?.LatestHomeTab?.AlbumsAdapter?.AlbumsList;
                     MAdapter.NotifyDataSetChanged();
-                    ShowEmptyPage(); 
+                    ShowEmptyPage();
                 }
                 else
                 {
                     ShowEmptyPage();
                 }
 
-                Task.Factory.StartNew(StartApiService);
+                Task.Factory.StartNew(() => StartApiService());
             }
             catch (Exception e)
             {
@@ -272,20 +308,25 @@ namespace DeepSound.Activities.Tabbes.HomePages
             }
         }
 
-        private void StartApiService()
+        private void StartApiService(string offset = "0", string views = "")
         {
             if (!Methods.CheckConnectivity())
                 Toast.MakeText(Context, Context.GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
             else
-                PollyController.RunRetryPolicyFunction(new List<Func<Task>> {LoadDataAsync});
+                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => LoadDataAsync(offset, views) });
         }
 
-        private async Task LoadDataAsync()
+        private async Task LoadDataAsync(string offset = "0", string views = "")
         {
+            if (MainScrollEvent.IsLoading)
+                return;
+
             if (Methods.CheckConnectivity())
             {
+                MainScrollEvent.IsLoading = true;
+
                 int countList = MAdapter.AlbumsList.Count;
-                var (apiStatus, respond) = await RequestsAsync.Common.GetTrendingAsync();
+                var (apiStatus, respond) = await RequestsAsync.Common.GetTrendingAsync("12", offset, views);
                 if (apiStatus == 200)
                 {
                     if (respond is GetTrendingObject result)
@@ -299,10 +340,12 @@ namespace DeepSound.Activities.Tabbes.HomePages
                                 {
                                     MAdapter.AlbumsList.Add(item);
                                 }
+                                Activity?.RunOnUiThread(() => { MAdapter.NotifyItemRangeInserted(countList, MAdapter.AlbumsList.Count - countList); });
                             }
                             else
                             {
                                 MAdapter.AlbumsList = new ObservableCollection<DataAlbumsObject>(result.TopAlbums);
+                                Activity?.RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); });
                             }
                         }
                         else
@@ -314,6 +357,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 }
                 else
                 {
+                    MainScrollEvent.IsLoading = false;
                     Methods.DisplayReportResult(Activity, respond);
                 }
 
@@ -326,11 +370,12 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
                 Toast.MakeText(Context, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
+                MainScrollEvent.IsLoading = false;
             }
         }
 
@@ -338,6 +383,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
         {
             try
             {
+                MainScrollEvent.IsLoading = false;
                 SwipeRefreshLayout.Refreshing = false;
 
                 if (MAdapter.AlbumsList.Count > 0)
@@ -359,13 +405,14 @@ namespace DeepSound.Activities.Tabbes.HomePages
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoAlbums);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
-                } 
+                }
             }
             catch (Exception e)
             {
+                MainScrollEvent.IsLoading = false;
                 SwipeRefreshLayout.Refreshing = false;
                 Methods.DisplayReportResultTrack(e);
             }
@@ -376,7 +423,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
         {
             try
             {
-                Task.Factory.StartNew(StartApiService);
+                Task.Factory.StartNew(() => StartApiService());
             }
             catch (Exception exception)
             {

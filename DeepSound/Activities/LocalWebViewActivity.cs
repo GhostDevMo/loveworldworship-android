@@ -1,5 +1,4 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Gms.Ads;
@@ -13,19 +12,20 @@ using AndroidX.SwipeRefreshLayout.Widget;
 using DeepSound.Activities.Base;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Utils;
+using System;
 using Object = Java.Lang.Object;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme",ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class LocalWebViewActivity : BaseActivity
     {
         #region Variables Basic
 
         private static SwipeRefreshLayout SwipeRefreshLayout;
         private static WebView HybridView;
-        private string Url = "" , TypeUrl = "";
+        private string Url = "", TypeUrl = "";
         private AdView MAdView;
 
         #endregion
@@ -55,7 +55,7 @@ namespace DeepSound.Activities
                 {
                     TypeUrl = type;
                 }
-                  
+
                 //Get Value And Set Toolbar
                 InitComponent();
                 InitToolbar();
@@ -103,7 +103,7 @@ namespace DeepSound.Activities
         public override void OnTrimMemory(TrimMemory level)
         {
             try
-            { 
+            {
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
                 base.OnTrimMemory(level);
             }
@@ -125,11 +125,11 @@ namespace DeepSound.Activities
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         protected override void OnDestroy()
         {
             try
-            { 
+            {
                 MAdView?.Destroy();
                 base.OnDestroy();
             }
@@ -233,7 +233,7 @@ namespace DeepSound.Activities
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void AddOrRemoveEvent(bool addEvent)
         {
             try
@@ -296,14 +296,13 @@ namespace DeepSound.Activities
                     base.OnPageStarted(view, url, favicon);
                     SwipeRefreshLayout.Refreshing = true;
                     SwipeRefreshLayout.Enabled = true;
-                SwipeRefreshLayout.SetProgressBackgroundColorSchemeColor(DeepSoundTools.IsTabDark() ? Color.ParseColor("#424242") : Color.ParseColor("#f7f7f7"));
 
                     view.Settings.JavaScriptEnabled = true;
                 }
                 catch (Exception e)
                 {
                     Methods.DisplayReportResultTrack(e);
-                } 
+                }
             }
 
             public override void OnPageFinished(WebView view, string url)
@@ -313,13 +312,12 @@ namespace DeepSound.Activities
                     base.OnPageFinished(view, url);
                     SwipeRefreshLayout.Refreshing = false;
                     SwipeRefreshLayout.Enabled = false;
-                SwipeRefreshLayout.SetProgressBackgroundColorSchemeColor(DeepSoundTools.IsTabDark() ? Color.ParseColor("#424242") : Color.ParseColor("#f7f7f7"));
-                     
+
                     const string js = "javascript:" +
                                       "$('header').hide();" +
                                       "$('#main-header').hide();";
-                
-                    if (Build.VERSION.SdkInt >= (BuildVersionCodes) 19)
+
+                    if (Build.VERSION.SdkInt >= (BuildVersionCodes)19)
                     {
                         view.EvaluateJavascript(js, this);
                     }
@@ -341,7 +339,7 @@ namespace DeepSound.Activities
                     base.OnReceivedError(view, request, error);
                     SwipeRefreshLayout.Refreshing = false;
                     SwipeRefreshLayout.Enabled = false;
-                SwipeRefreshLayout.SetProgressBackgroundColorSchemeColor(DeepSoundTools.IsTabDark() ? Color.ParseColor("#424242") : Color.ParseColor("#f7f7f7"));
+
                     const string js = "javascript:" +
                                       "$('header').hide();" +
                                       "$('#main-header').hide();";
@@ -373,6 +371,6 @@ namespace DeepSound.Activities
                     Methods.DisplayReportResultTrack(e);
                 }
             }
-        } 
+        }
     }
 }

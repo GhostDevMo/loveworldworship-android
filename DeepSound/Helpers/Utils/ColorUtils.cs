@@ -1,7 +1,7 @@
-﻿using System;
-using System.Globalization;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.Graphics.Drawables;
+using System;
+using System.Globalization;
 
 namespace DeepSound.Helpers.Utils
 {

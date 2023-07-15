@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using MaterialDialogsCore;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
@@ -22,13 +17,18 @@ using DeepSound.Helpers.Utils;
 using DeepSound.SQLite;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Requests;
+using Google.Android.Material.Dialog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Exception = System.Exception;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser.Security
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class TwoFactorAuthActivity : BaseActivity, MaterialDialog.IListCallback, MaterialDialog.ISingleButtonCallback
+    public class TwoFactorAuthActivity : BaseActivity, IDialogListCallBack
     {
         #region Variables Basic
 
@@ -155,7 +155,7 @@ namespace DeepSound.Activities.SettingsUser.Security
                 Methods.SetColorEditText(TxtTwoFactorCode, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
 
                 Methods.SetFocusable(TxtTwoFactor);
- 
+
                 var twoFactorUSer = ListUtils.MyUserInfoList?.FirstOrDefault()?.TwoFactor;
                 if (twoFactorUSer == 0)
                 {
@@ -287,21 +287,21 @@ namespace DeepSound.Activities.SettingsUser.Security
         {
             try
             {
-                if (e.Event?.Action != MotionEventActions.Down) return;
+                if (e.Event?.Action != MotionEventActions.Up) return;
 
                 TypeDialog = "Confirmation";
 
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
                 var arrayAdapter = new List<string>
                 {
                     GetString(Resource.String.Lbl_Enable), GetString(Resource.String.Lbl_Disable)
                 };
 
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(this);
-                dialogList.AutoDismiss(true).AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -358,7 +358,7 @@ namespace DeepSound.Activities.SettingsUser.Security
                                 break;
                             }
                         case "off":
-                            PollyController.RunRetryPolicyFunction(new List<Func<Task>> {() => RequestsAsync.User.UpdateTwoFactorAsync(UserDetails.UserId.ToString(), "disable") });
+                            PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.UpdateTwoFactorAsync(UserDetails.UserId.ToString(), "disable") });
                             var local = ListUtils.MyUserInfoList?.FirstOrDefault();
                             if (local != null)
                             {
@@ -388,7 +388,7 @@ namespace DeepSound.Activities.SettingsUser.Security
 
         #region MaterialDialog
 
-        public void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+        public void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
             {
@@ -410,25 +410,6 @@ namespace DeepSound.Activities.SettingsUser.Security
                 Methods.DisplayReportResultTrack(e);
             }
         }
-
-        public void OnClick(MaterialDialog p0, DialogAction p1)
-        {
-            try
-            {
-                if (p1 == DialogAction.Positive)
-                {
-                }
-                else if (p1 == DialogAction.Negative)
-                {
-                    p0.Dismiss();
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
 
         #endregion
 

@@ -1,25 +1,25 @@
-﻿using System;
-using Android.Content;
+﻿using Android.Content;
 using Android.OS;
 using Android.Views;
 using AndroidX.AppCompat.Widget;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Utils;
 using Google.Android.Material.BottomSheet;
+using System;
 using Exception = System.Exception;
 
 namespace DeepSound.Activities.SettingsUser
 {
-    public class LogoutBottomSheet : BottomSheetDialogFragment 
+    public class LogoutBottomSheet : BottomSheetDialogFragment
     {
         #region Variables Basic
-          
+
         private AppCompatButton BtnCancel, BtnYes;
-       
+
         #endregion
 
         #region General
-         
+
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
             try
@@ -33,7 +33,7 @@ namespace DeepSound.Activities.SettingsUser
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -42,7 +42,7 @@ namespace DeepSound.Activities.SettingsUser
             try
             {
                 base.OnViewCreated(view, savedInstanceState);
-                InitComponent(view); 
+                InitComponent(view);
             }
             catch (Exception exception)
             {
@@ -62,7 +62,7 @@ namespace DeepSound.Activities.SettingsUser
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #endregion
 
         #region Functions
@@ -70,10 +70,10 @@ namespace DeepSound.Activities.SettingsUser
         private void InitComponent(View view)
         {
             try
-            { 
+            {
                 BtnCancel = view.FindViewById<AppCompatButton>(Resource.Id.btnCancel);
                 BtnYes = view.FindViewById<AppCompatButton>(Resource.Id.btnYes);
-                 
+
                 BtnCancel.Click += BtnCancelOnClick;
                 BtnYes.Click += BtnYesOnClick;
             }
@@ -86,7 +86,7 @@ namespace DeepSound.Activities.SettingsUser
         #endregion
 
         #region Event
-         
+
         private void BtnYesOnClick(object sender, EventArgs e)
         {
             try
@@ -96,7 +96,7 @@ namespace DeepSound.Activities.SettingsUser
             }
             catch (Exception exception)
             {
-                Methods.DisplayReportResultTrack(exception); 
+                Methods.DisplayReportResultTrack(exception);
             }
         }
 

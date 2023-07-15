@@ -1,5 +1,5 @@
-﻿using System;
-using Java.Util;
+﻿using Java.Util;
+using System;
 
 namespace DeepSound.Helpers.Utils
 {
@@ -66,7 +66,7 @@ namespace DeepSound.Helpers.Utils
                 {
                     return finalTimerString;
                 }
-                 
+
                 // Convert total duration into time
                 int hours = Convert.ToInt32(milliseconds / (1000 * 60 * 60));
                 int minutes = Convert.ToInt32(milliseconds % (1000 * 60 * 60) / (1000 * 60));
@@ -89,7 +89,7 @@ namespace DeepSound.Helpers.Utils
             {
                 Methods.DisplayReportResultTrack(e);
                 return "";
-            } 
+            }
         }
 
         /// <summary>
@@ -101,9 +101,9 @@ namespace DeepSound.Helpers.Utils
         public static int GetProgressSeekBar(long currentDuration, long totalDuration)
         {
             try
-            { 
+            {
                 // calculating percentage
-                double progress = (double)currentDuration / totalDuration * MaxProgress ;
+                double progress = (double)currentDuration / totalDuration * MaxProgress;
                 if (progress >= 0)
                 {
                     // return percentage
@@ -127,7 +127,7 @@ namespace DeepSound.Helpers.Utils
         public static int ProgressToTimer(long progress, long totalDuration)
         {
             try
-            { 
+            {
                 totalDuration /= 1000;
                 int currentDuration = (int)((double)progress / MaxProgress * totalDuration);
 
@@ -138,13 +138,13 @@ namespace DeepSound.Helpers.Utils
             {
                 Methods.DisplayReportResultTrack(e);
                 return 0;
-            } 
+            }
         }
-          
+
         public static long GetSeekFromPercentage(long percentage, long totalDuration)
         {
             try
-            { 
+            {
                 long totalSeconds = (int)(totalDuration / 1000);
 
                 // calculating percentage
@@ -157,7 +157,7 @@ namespace DeepSound.Helpers.Utils
             {
                 Methods.DisplayReportResultTrack(e);
                 return 0;
-            } 
+            }
         }
 
         public static int CalculateTime(string duration)
@@ -197,7 +197,7 @@ namespace DeepSound.Helpers.Utils
         public static int GetProgressPercentage(long currentDuration, long totalDuration)
         {
             try
-            {  
+            {
                 long currentSeconds = (int)(currentDuration / 1000);
                 long totalSeconds = (int)(totalDuration / 1000);
 
@@ -205,13 +205,13 @@ namespace DeepSound.Helpers.Utils
                 double percentage = (double)currentSeconds / totalSeconds * 100;
 
                 // return percentage
-                return Convert.ToInt32(percentage);  
+                return Convert.ToInt32(percentage);
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
                 return 0;
-            } 
-        } 
+            }
+        }
     }
 }

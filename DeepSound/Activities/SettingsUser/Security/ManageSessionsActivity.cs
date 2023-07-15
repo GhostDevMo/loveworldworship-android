@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using MaterialDialogsCore;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Gms.Ads;
@@ -22,12 +16,18 @@ using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Common;
 using DeepSoundClient.Requests;
+using Google.Android.Material.Dialog;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser.Security
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class ManageSessionsActivity : BaseActivity, MaterialDialog.ISingleButtonCallback
+    public class ManageSessionsActivity : BaseActivity
     {
         #region Variables Basic
 
@@ -38,7 +38,6 @@ namespace DeepSound.Activities.SettingsUser.Security
         private ViewStub EmptyStateLayout;
         private View Inflated;
         private AdView MAdView;
-        private FetchSessionsObject.SessionsDataObject ItemSessionsDataObject;
 
         #endregion
 
@@ -279,19 +278,35 @@ namespace DeepSound.Activities.SettingsUser.Security
                     Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
                     return;
                 }
-               
-                ItemSessionsDataObject = MAdapter.GetItem(e.Position);
+
+                var ItemSessionsDataObject = MAdapter.GetItem(e.Position);
                 if (ItemSessionsDataObject != null)
                 {
-                    var dialog = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                    var dialog = new MaterialAlertDialogBuilder(this);
 
-                    dialog.Title(Resource.String.Lbl_Warning);
-                    dialog.Content(GetText(Resource.String.Lbl_AreYouSureLogoutFromThisDevice));
-                    dialog.PositiveText(GetText(Resource.String.Lbl_Ok)).OnPositive(this);
-                    dialog.NegativeText(GetText(Resource.String.Lbl_Cancel)).OnNegative(this);
-                    dialog.AutoDismiss(true);
-                    dialog.AlwaysCallSingleChoiceCallback();
-                    dialog.Build().Show();
+                    dialog.SetTitle(Resource.String.Lbl_Warning);
+                    dialog.SetMessage(GetText(Resource.String.Lbl_AreYouSureLogoutFromThisDevice));
+                    dialog.SetPositiveButton(GetText(Resource.String.Lbl_Ok), (o, args) =>
+                    {
+                        try
+                        {
+                            var index = MAdapter.SessionsList.IndexOf(MAdapter.SessionsList.FirstOrDefault(a => a.Id == ItemSessionsDataObject.Id));
+                            if (index == -1) return;
+                            MAdapter.SessionsList.Remove(ItemSessionsDataObject);
+                            MAdapter.NotifyItemRemoved(index);
+
+                            if (Methods.CheckConnectivity())
+                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Common.DeleteSessionsAsync(ItemSessionsDataObject.Id.ToString()) });
+                            else
+                                Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
+                        }
+                        catch (Exception exception)
+                        {
+                            Methods.DisplayReportResultTrack(exception);
+                        }
+                    });
+                    dialog.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+                    dialog.Show();
                 }
             }
             catch (Exception exception)
@@ -317,7 +332,7 @@ namespace DeepSound.Activities.SettingsUser.Security
             if (Methods.CheckConnectivity())
             {
                 int countList = MAdapter.SessionsList.Count;
-                 var (apiStatus, respond) = await RequestsAsync.Common.GetSessionsAsync();
+                var (apiStatus, respond) = await RequestsAsync.Common.GetSessionsAsync();
                 if (apiStatus != 200 || respond is not FetchSessionsObject result || result.Data == null)
                 {
                     Methods.DisplayReportResult(this, respond);
@@ -353,7 +368,7 @@ namespace DeepSound.Activities.SettingsUser.Security
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -382,7 +397,7 @@ namespace DeepSound.Activities.SettingsUser.Security
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSessions);
                     if (!x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }
@@ -404,38 +419,6 @@ namespace DeepSound.Activities.SettingsUser.Security
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-            }
-        }
-
-        #endregion
-
-        #region MaterialDialog
-
-        public void OnClick(MaterialDialog p0, DialogAction p1)
-        {
-            try
-            {
-                if (p1 == DialogAction.Positive)
-                {
-                    if (ItemSessionsDataObject == null) return;
-                    var index = MAdapter.SessionsList.IndexOf(MAdapter.SessionsList.FirstOrDefault(a => a.Id == ItemSessionsDataObject.Id));
-                    if (index == -1) return;
-                    MAdapter.SessionsList.Remove(ItemSessionsDataObject);
-                    MAdapter.NotifyItemRemoved(index);
-
-                    if (Methods.CheckConnectivity())
-                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Common.DeleteSessionsAsync(ItemSessionsDataObject.Id.ToString()) });
-                    else
-                        Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
-                }
-                else if (p1 == DialogAction.Negative)
-                {
-                    p0.Dismiss();
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
             }
         }
 

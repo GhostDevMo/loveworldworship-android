@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Timers;
-using MaterialDialogsCore;
+﻿using Android;
 using Android.Animation;
 using Android.App;
 using Android.Content;
@@ -13,28 +8,30 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.Content;
-using Bumptech.Glide;
-using Bumptech.Glide.Load.Engine;
-using Bumptech.Glide.Load.Resource.Bitmap;
-using Bumptech.Glide.Request;
 using Com.Sothree.Slidinguppanel;
 using DeepSound.Activities.Comments;
 using DeepSound.Activities.Songs;
 using DeepSound.Activities.Songs.Adapters;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.CacheLoaders;
+using DeepSound.Helpers.Controller;
+using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSound.SQLite;
 using DeepSoundClient.Classes.Global;
+using Google.Android.Material.Dialog;
 using Google.Android.Material.FloatingActionButton;
 using Refractored.Controls;
-using Environment = Android.OS.Environment;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Timers;
 using Exception = System.Exception;
 using Object = Java.Lang.Object;
 
 namespace DeepSound.Helpers.MediaPlayerController
 {
-    public class SoundController : Object, SeekBar.IOnSeekBarChangeListener, Animator.IAnimatorListener 
+    public class SoundController : Object, SeekBar.IOnSeekBarChangeListener, Animator.IAnimatorListener
     {
         #region Variables Basic
 
@@ -49,8 +46,8 @@ namespace DeepSound.Helpers.MediaPlayerController
         private ImageView BtnIconAddTo, BtnIconShare, IconInfo;
         private FrameLayout LinearAddTo, LinearShare, LinearComments, LinearFavorite, LinearLike;
         private RelativeLayout LinearDownload;
-        private ImageView ImageCover;
-        public ImageView BackIcon, BtnPlayImage;
+        private ImageView ImageCover, ImageToolbar;
+        public ImageView BackIcon, CloseIcon, BtnPlayImage, BtnNextImage;
         private ImageButton BtnSkipPrev, BtnNext, BtnBackward, BtnForward, BtnShuffle, BtnRepeat;
         private CircleImageView ArtistImageView;
         private Timer Timer;
@@ -59,8 +56,7 @@ namespace DeepSound.Helpers.MediaPlayerController
         public readonly SocialIoClickListeners ClickListeners;
         private SoundDownloadAsyncController SoundDownload;
         private RowSoundAdapter Adapter;
-        private RequestBuilder FullGlideRequestBuilder;
-        private RequestOptions GlideRequestOptions;
+        private LinearLayout ToolbarCloseLayout, ToolbarOpenLayout;
 
         #endregion
 
@@ -108,10 +104,25 @@ namespace DeepSound.Helpers.MediaPlayerController
 
                 TvSongCurrentDuration = ActivityContext.FindViewById<TextView>(Resource.Id.tv_song_current_duration);
                 TvSongTotalDuration = ActivityContext.FindViewById<TextView>(Resource.Id.tv_song_total_duration);
-                TxtArtistName = ActivityContext.FindViewById<TextView>(Resource.Id.artist_name);
                 TxtArtistAbout = ActivityContext.FindViewById<TextView>(Resource.Id.artist_about);
-                ArtistImageView = ActivityContext.FindViewById<CircleImageView>(Resource.Id.image);
-                ImageCover = ActivityContext.FindViewById<ImageView>(Resource.Id.image_Cover);
+
+                if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                {
+                    TxtArtistName = ActivityContext.FindViewById<TextView>(Resource.Id.artist_name);
+                    ArtistImageView = ActivityContext.FindViewById<CircleImageView>(Resource.Id.image);
+                    ImageCover = ActivityContext.FindViewById<ImageView>(Resource.Id.image_Cover);
+                }
+                else if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
+                {
+                    ToolbarCloseLayout = ActivityContext.FindViewById<LinearLayout>(Resource.Id.ToolbarCloseLayout);
+                    ToolbarOpenLayout = ActivityContext.FindViewById<LinearLayout>(Resource.Id.ToolbarOpenLayout);
+                    ImageToolbar = ActivityContext.FindViewById<ImageView>(Resource.Id.image_Toolbar);
+                    ImageCover = ActivityContext.FindViewById<ImageView>(Resource.Id.image_Sound);
+                    BtnNextImage = ActivityContext.FindViewById<ImageView>(Resource.Id.next_button);
+
+                    CloseIcon = ActivityContext.FindViewById<ImageView>(Resource.Id.close_button);
+                }
+
                 BtnPlayImage = ActivityContext.FindViewById<ImageView>(Resource.Id.play_button);
                 BackIcon = ActivityContext.FindViewById<ImageView>(Resource.Id.BackIcon);
 
@@ -134,11 +145,6 @@ namespace DeepSound.Helpers.MediaPlayerController
                 TvTitleSound = ActivityContext.FindViewById<TextView>(Resource.Id.titleSound);
                 TvDescriptionSound = ActivityContext.FindViewById<TextView>(Resource.Id.descriptionSound);
                 TxtPlaybackSpeed = ActivityContext.FindViewById<TextView>(Resource.Id.bt_playbackSpeed);
-
-
-
-                GlideRequestOptions = new RequestOptions().Error(Resource.Drawable.ImagePlacholder).Placeholder(Resource.Drawable.ImagePlacholder).SetDiskCacheStrategy(DiskCacheStrategy.All).SetPriority(Priority.High);
-                FullGlideRequestBuilder = Glide.With(ActivityContext).AsBitmap().Apply(GlideRequestOptions).Transition(new BitmapTransitionOptions().CrossFade(100));
 
                 BtnIconDownload.Tag = "Download";
                 BtnSkipPrev.Tag = "no";
@@ -179,6 +185,12 @@ namespace DeepSound.Helpers.MediaPlayerController
                     LinearFavorite.Click += LinearFavoriteOnClick;
                     LinearLike.Click += LinearLikeOnClick;
                     TxtPlaybackSpeed.Click += TxtPlaybackSpeedOnClick;
+
+                    if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
+                    {
+                        BtnNextImage.Click += BtnNextOnClick;
+                        CloseIcon.Click += BackIconOnClick;
+                    }
                 }
             }
             catch (Exception e)
@@ -204,6 +216,9 @@ namespace DeepSound.Helpers.MediaPlayerController
                 if (item != null) item.IsPlay = false;
 
                 Adapter?.NotifyItemChanged(Constant.PlayPos);
+
+                Constant.ArrayPlayingQueue = new ObservableCollection<SoundDataObject>();
+                Constant.ArrayListPlay = new ObservableCollection<SoundDataObject>();
 
                 if (Constant.Player == null)
                     return;
@@ -276,13 +291,6 @@ namespace DeepSound.Helpers.MediaPlayerController
             }
         }
 
-        private FloatingActionButton PlayAllButton;
-
-        public void SetPlayAllButton(FloatingActionButton playAllButton)
-        {
-            PlayAllButton = playAllButton;
-        }
-
         public void StopFragmentSound()
         {
             try
@@ -292,14 +300,8 @@ namespace DeepSound.Helpers.MediaPlayerController
                     Intent intent = new Intent(ActivityContext, typeof(PlayerService));
                     intent.SetAction(PlayerService.ActionStop);
                     ContextCompat.StartForegroundService(GlobalContext, intent);
-                     
-                    GlobalContext.SlidingUpPanel.SetPanelState(SlidingUpPanelLayout.PanelState.Hidden);
-                }
 
-                if (PlayAllButton != null)
-                {
-                    PlayAllButton.SetImageResource(Resource.Drawable.icon_play_action_small_vector);
-                    PlayAllButton.Tag = "play";
+                    GlobalContext.SlidingUpPanel.SetPanelState(SlidingUpPanelLayout.PanelState.Hidden);
                 }
             }
             catch (Exception exception)
@@ -310,7 +312,7 @@ namespace DeepSound.Helpers.MediaPlayerController
 
         //Shuffle Sound
         private void BtnShuffleOnClick(object sender, EventArgs e)
-        { 
+        {
             ToggleShuffleButton();
         }
 
@@ -553,80 +555,89 @@ namespace DeepSound.Helpers.MediaPlayerController
             {
                 if (Constant.ArrayListPlay.Count > 0)
                 {
-                    //var isPro = ListUtils.MyUserInfoList?.FirstOrDefault()?.IsPro ?? 0;
-                    //if (isPro == 0)
-                    //{
-                    //    PopupDialogController dialog = new PopupDialogController(ActivityContext, null, "GoPro");
-                    //    dialog.ShowNormalDialog(ActivityContext.GetText(Resource.String.Lbl_Go_Pro), ActivityContext.GetText(Resource.String.Lbl_Message_UpgradeAccount), ActivityContext.GetText(Resource.String.Lbl_upgrade_now), ActivityContext.GetText(Resource.String.Lbl_Cancel));
-                    //    return;
-                    //}
-
-                    Methods.Path.Chack_MyFolder();
-
-                    var item = Constant.ArrayListPlay[Constant.PlayPos];
-
-                    if (item != null)
+                    if ((int)Build.VERSION.SdkInt < 23)
                     {
-                        if (!Directory.Exists(Methods.Path.FolderDcimSound))
-                            Directory.CreateDirectory(Methods.Path.FolderDcimSound);
-
-                        string filePath;
-                        string title;
-
-                        if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
+                        SetDownload();
+                    }
+                    else
+                    {
+                        if (PermissionsController.CheckPermissionStorage())
                         {
-                            /*
-                             * this changes is due to scoped storage introduce in Android 10
-                             * https://developer.android.com/preview/privacy/storage
-                             */
-
-                            var file = Application.Context.GetExternalFilesDir(Environment.DirectoryMusic);
-                            title = item.Title;
-                            filePath = Methods.MultiMedia.CheckFileIfExits(file + "/" + title);
+                            SetDownload();
                         }
                         else
                         {
-                            title = item.AudioLocation.Split("/Sound/").Last().Replace("%20", " ");
-                            filePath = Methods.MultiMedia.CheckFileIfExits(Methods.Path.FolderDcimSound + title);
-                        }
-
-
-                        if (filePath != "File Dont Exists")
-                        {
-                            var dialog = new MaterialDialog.Builder(ActivityContext).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                            dialog.Title(Resource.String.Lbl_DeleteSong);
-                            dialog.Content(ActivityContext.GetText(Resource.String.Lbl_Do_You_want_to_remove_Song));
-                            dialog.PositiveText(ActivityContext.GetText(Resource.String.Lbl_Yes)).OnPositive((o, args) =>
+                            GlobalContext.RequestPermissions(new[]
                             {
-                                try
-                                {
-                                    SoundDownload = new SoundDownloadAsyncController(item.AudioLocation, title, ActivityContext);
-                                    SoundDownload?.RemoveDiskSoundFile(title, item.Id);
+                                Manifest.Permission.ReadExternalStorage,
+                                Manifest.Permission.WriteExternalStorage,
+                                Manifest.Permission.ManageExternalStorage,
+                                Manifest.Permission.AccessMediaLocation,
+                            }, 1005);
+                        }
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
 
-                                    BtnIconDownload.Tag = "Download";
-                                    BtnIconDownload.SetImageResource(Resource.Drawable.icon_player_download);
+        public void SetDownload()
+        {
+            try
+            {
+                Methods.Path.Chack_MyFolder();
+
+                var item = Constant.ArrayListPlay[Constant.PlayPos];
+                if (item != null)
+                {
+                    if (item.IsOwner != null && !item.IsOwner.Value && item.Price != 0 && item.IsPurchased != null && !item.IsPurchased.Value)
+                    {
+                        GlobalContext?.OpenDialogPurchaseSound(item);
+                        return;
+                    }
+
+                    var filePath = SoundDownloadAsyncController.GetDownloadedDiskVideoUri(item.Title);
+                    if (!string.IsNullOrEmpty(filePath))
+                    {
+                        var dialog = new MaterialAlertDialogBuilder(ActivityContext);
+                        dialog.SetTitle(Resource.String.Lbl_DeleteSong);
+                        dialog.SetMessage(ActivityContext.GetText(Resource.String.Lbl_Do_You_want_to_remove_Song));
+                        dialog.SetPositiveButton(ActivityContext.GetText(Resource.String.Lbl_Yes), (o, args) =>
+                        {
+                            try
+                            {
+                                SoundDownload = new SoundDownloadAsyncController(item.AudioLocation, item.Title, ActivityContext);
+                                SoundDownload?.RemoveDiskSoundFile(item.Title, item.Id);
+
+                                BtnIconDownload.Tag = "Download";
+                                BtnIconDownload.SetImageResource(Resource.Drawable.icon_player_download);
+                                if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
                                     BtnIconDownload.SetColorFilter(Color.White);
-                                }
-                                catch (Exception exception)
-                                {
-                                    Methods.DisplayReportResultTrack(exception);
-                                }
-                            });
-                            dialog.NegativeText(ActivityContext.GetText(Resource.String.Lbl_No)).OnNegative(new MyMaterialDialog());
-                            dialog.AlwaysCallSingleChoiceCallback();
-                            dialog.Build().Show();
-                        }
-                        else
-                        {
-                            SoundDownload = new SoundDownloadAsyncController(item.AudioLocation, item.Title, ActivityContext);
-
-                            if (!SoundDownload.CheckDownloadLinkIfExits())
-                            {
-                                SoundDownload.StartDownloadManager(item.Title, item, "Main");
-
-                                ProgressBarDownload.Visibility = ViewStates.Visible;
-                                BtnIconDownload.Visibility = ViewStates.Invisible;
+                                else if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
+                                    BtnIconDownload.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                             }
+                            catch (Exception exception)
+                            {
+                                Methods.DisplayReportResultTrack(exception);
+                            }
+                        });
+                        dialog.SetNegativeButton(ActivityContext.GetText(Resource.String.Lbl_No), new MaterialDialogUtils());
+
+                        dialog.Show();
+                    }
+                    else
+                    {
+                        SoundDownload = new SoundDownloadAsyncController(item.AudioLocation, item.Title, ActivityContext);
+
+                        if (!SoundDownload.CheckDownloadLinkIfExits())
+                        {
+                            SoundDownload.StartDownloadManager(item.Title, item, "Main");
+
+                            ProgressBarDownload.Visibility = ViewStates.Visible;
+                            BtnIconDownload.Visibility = ViewStates.Invisible;
                         }
                     }
                 }
@@ -657,12 +668,12 @@ namespace DeepSound.Helpers.MediaPlayerController
         private void ShowMoreOptions(object sender, EventArgs e)
         {
             try
-            { 
+            {
                 var item = Constant.ArrayListPlay[Constant.PlayPos];
                 if (item != null)
                 {
                     ClickListeners.OnMoreClick(new MoreClickEventArgs { SongsClass = item });
-                } 
+                }
             }
             catch (Exception exception)
             {
@@ -670,8 +681,7 @@ namespace DeepSound.Helpers.MediaPlayerController
             }
         }
 
-        
-        //speed playback (1x, 1.5x, 2x) 
+        //Speed playback (1x, 1.5x, 2x) 
         private void TxtPlaybackSpeedOnClick(object sender, EventArgs e)
         {
             try
@@ -724,12 +734,15 @@ namespace DeepSound.Helpers.MediaPlayerController
                 SeekSongProgressbar.Max = MusicUtils.MaxProgress;
                 SeekSongProgressbar.SetOnSeekBarChangeListener(this);
 
-                TopSeekSongProgressbar.Max = MusicUtils.MaxProgress;
+                if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                    TopSeekSongProgressbar.Max = MusicUtils.MaxProgress;
 
                 if (Build.VERSION.SdkInt >= BuildVersionCodes.N)
                 {
                     SeekSongProgressbar.SetProgress(0, true);
-                    TopSeekSongProgressbar.SetProgress(0, true);
+
+                    if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                        TopSeekSongProgressbar.SetProgress(0, true);
                 }
                 else
                 {
@@ -737,7 +750,9 @@ namespace DeepSound.Helpers.MediaPlayerController
                     {
                         // For API < 24 
                         SeekSongProgressbar.Progress = 0;
-                        TopSeekSongProgressbar.Progress = 0;
+
+                        if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                            TopSeekSongProgressbar.Progress = 0;
                     }
                     catch (Exception exception)
                     {
@@ -807,7 +822,7 @@ namespace DeepSound.Helpers.MediaPlayerController
 
         #region Fun Player
 
-        public void StartPlaySound(SoundDataObject soundObject, ObservableCollection<SoundDataObject> listSound, RowSoundAdapter adapter = null , bool isSuffle = false)
+        public void StartPlaySound(SoundDataObject soundObject, ObservableCollection<SoundDataObject> listSound, RowSoundAdapter adapter = null, bool isSuffle = false)
         {
             try
             {
@@ -819,6 +834,11 @@ namespace DeepSound.Helpers.MediaPlayerController
                     Constant.IsPlayed = false;
                     Constant.IsOnline = true;
                     Constant.ArrayListPlay = new ObservableCollection<SoundDataObject>(listSound);
+
+                    if (Constant.ArrayPlayingQueue.Count > 0)
+                    {
+                        ListUtils.AddRange(Constant.ArrayListPlay, Constant.ArrayPlayingQueue);
+                    }
                 }
 
                 if (soundObject != null)
@@ -826,21 +846,26 @@ namespace DeepSound.Helpers.MediaPlayerController
                     LoadSoundData(soundObject, false);
 
                     ReleaseSound();
-                     
+
                     if (isSuffle)
-                        ToggleShuffleButton();
-                    else
                     {
                         Constant.IsSuffle = false;
-                        ToggleButtonColor(BtnShuffle);  // clear
+                        ToggleShuffleButton();
                     }
-                     
+                    else
+                    {
+                        if (Constant.IsSuffle)
+                            ToggleShuffleButton();  // clear 
+                    }
+
                     //Play Song  
                     if (GlobalContext?.SlidingUpPanel != null && GlobalContext?.SlidingUpPanel != null)
                     {
                         StartOrPausePlayer();
 
-                        BackIcon.SetImageResource(Resource.Drawable.ic_action_arrow_down_sign);
+                        if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                            BackIcon.SetImageResource(Resource.Drawable.ic_action_arrow_down_sign);
+
                         BackIcon.Tag = "Open";
 
                         if (GlobalContext?.SlidingUpPanel.GetPanelState() != SlidingUpPanelLayout.PanelState.Collapsed)
@@ -864,10 +889,10 @@ namespace DeepSound.Helpers.MediaPlayerController
                     {
                         Constant.Player.Stop();
                         Constant.Player.Release();
-                        Constant.Player = null!;
+                        Constant.Player = null;
                     }
                 }
-                 
+
             }
             catch (Exception e)
             {
@@ -880,46 +905,23 @@ namespace DeepSound.Helpers.MediaPlayerController
             try
             {
                 if (Constant.ArrayListPlay.Count > 0)
-                { 
+                {
                     if (Constant.ArrayListPlay.Count == 1)
                         Constant.PlayPos = 0;
 
                     var item = Constant.ArrayListPlay[Constant.PlayPos];
+                    if (item == null) return;
+                     
                     Intent intent = new Intent(ActivityContext, typeof(PlayerService));
                     if (Constant.IsPlayed)
                     {
                         if (Constant.Player.PlayWhenReady)
                         {
-                            if (item != null) item.IsPlay = false;
+                            item.IsPlay = false;
                             intent.SetAction(PlayerService.ActionPause);
-                            ContextCompat.StartForegroundService(GlobalContext, intent); 
+                            ContextCompat.StartForegroundService(GlobalContext, intent);
                         }
                         else
-                        {
-                            if (item != null && !string.IsNullOrEmpty(item.AudioLocation) && item.AudioLocation.Contains("http"))
-                            {
-                                if (!Constant.IsOnline || Methods.CheckConnectivity())
-                                {
-                                    item.IsPlay = true;
-                                    intent.SetAction(PlayerService.ActionPlay);
-                                    ContextCompat.StartForegroundService(GlobalContext, intent);
-                                }
-                                else
-                                {
-                                    Toast.MakeText(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
-                                }
-                            }
-                            else if (item != null && !string.IsNullOrEmpty(item.AudioLocation) && (item.AudioLocation.Contains("file://") || item.AudioLocation.Contains("content://") || item.AudioLocation.Contains("storage") || item.AudioLocation.Contains("/data/user/0/")))
-                            {
-                                item.IsPlay = true;
-                                intent.SetAction(PlayerService.ActionPlay);
-                                ContextCompat.StartForegroundService(GlobalContext, intent);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (item != null && !string.IsNullOrEmpty(item.AudioLocation) && item.AudioLocation.Contains("http"))
                         {
                             if (!Constant.IsOnline || Methods.CheckConnectivity())
                             {
@@ -932,11 +934,18 @@ namespace DeepSound.Helpers.MediaPlayerController
                                 Toast.MakeText(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
                             }
                         }
-                        else if (item != null && !string.IsNullOrEmpty(item.AudioLocation) && (item.AudioLocation.Contains("file://") || item.AudioLocation.Contains("content://") || item.AudioLocation.Contains("storage") || item.AudioLocation.Contains("/data/user/0/")))
+                    }
+                    else
+                    {
+                        if (!Constant.IsOnline || Methods.CheckConnectivity())
                         {
                             item.IsPlay = true;
                             intent.SetAction(PlayerService.ActionPlay);
                             ContextCompat.StartForegroundService(GlobalContext, intent);
+                        }
+                        else
+                        {
+                            Toast.MakeText(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
                         }
                     }
 
@@ -982,15 +991,23 @@ namespace DeepSound.Helpers.MediaPlayerController
                             }
                         }
 
-                        FullGlideRequestBuilder.Load(soundObject.Thumbnail).Into(ImageCover);
-                        GlideImageLoader.LoadImage(ActivityContext, soundObject.Thumbnail, ArtistImageView, ImageStyle.CircleCrop, ImagePlaceholders.Drawable);
+                        if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                        {
+                            GlideImageLoader.LoadImage(ActivityContext, soundObject.Thumbnail, ImageCover, ImageStyle.CenterCrop, ImagePlaceholders.Drawable);
+                            GlideImageLoader.LoadImage(ActivityContext, soundObject.Thumbnail, ArtistImageView, ImageStyle.CircleCrop, ImagePlaceholders.Drawable);
 
-                        TxtArtistName.Text = Methods.FunString.DecodeString(soundObject.Publisher.Name);
+                            TxtArtistName.Text = Methods.FunString.DecodeString(soundObject.Publisher.Name);
+                            TxtArtistAbout.Text = Methods.FunString.SubStringCutOf(Methods.FunString.DecodeString(soundObject.Title), 30);
+                        }
+                        else if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
+                        {
+                            GlideImageLoader.LoadImage(ActivityContext, soundObject.Thumbnail, ImageCover, ImageStyle.CenterCrop, ImagePlaceholders.Drawable);
+                            GlideImageLoader.LoadImage(ActivityContext, soundObject.Thumbnail, ImageToolbar, ImageStyle.CenterCrop, ImagePlaceholders.Drawable);
 
-                        var d = soundObject.Title.Replace("<br>", "");
-                        TxtArtistAbout.Text = Methods.FunString.SubStringCutOf(Methods.FunString.DecodeString(d), 30);
+                            TxtArtistAbout.Text = Methods.FunString.SubStringCutOf(Methods.FunString.DecodeString(soundObject.Title), 22);
+                        }
 
-                        TvTitleSound.Text = Methods.FunString.DecodeString(d);
+                        TvTitleSound.Text = Methods.FunString.DecodeString(soundObject.Title);
 
                         if (!AppSettings.ShowTitleAlbumOnly)
                         {
@@ -1015,72 +1032,57 @@ namespace DeepSound.Helpers.MediaPlayerController
                         //Add CreateCacheMediaSource if have or no 
                         //var fileSplit = soundObject.Id.Split('/').Last();
 
-                        if (soundObject.IsOwner != null && (soundObject.AllowDownloads == 0 && !soundObject.IsOwner.Value))
+                        if (!DeepSoundTools.CheckAllowedDownloadFile())
                         {
                             LinearDownload.Visibility = ViewStates.Gone;
                         }
                         else
-                            LinearDownload.Visibility = ViewStates.Visible;
-
-                        //var canDownload = AppSettings.AllowOfflineDownload && UserDetails.IsPro == "1" && !PlayerService.GetPlayerService()!.ShouldShowMusicPurchaseDialog();
-                        //LinearDownload.Enabled = canDownload;
-                        //BtnIconDownload.Alpha = canDownload ? 1f : 0.3f;
+                        {
+                            var canDownload = Constant.ShouldShowMusicPurchaseDialog();
+                            if (soundObject.AllowDownloads == 0 && canDownload)
+                            {
+                                LinearDownload.Visibility = ViewStates.Gone;
+                            }
+                            else
+                                LinearDownload.Visibility = ViewStates.Visible;
+                        }
 
                         TxtPlaybackSpeed.Text = "1x";
-                        TxtPlaybackSpeed.SetTextColor(Color.ParseColor("#999999"));
+                        if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                            TxtPlaybackSpeed.SetTextColor(Color.ParseColor("#999999"));
+                        else
+                            TxtPlaybackSpeed.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
 
                         var sqlEntity = new SqLiteDatabase();
                         SoundDataObject dataSound = sqlEntity.Get_LatestDownloadsSound(soundObject.Id);
                         if (dataSound != null)
                         {
-                            if (!string.IsNullOrEmpty(dataSound.AudioLocation) && (dataSound.AudioLocation.Contains("file://") || dataSound.AudioLocation.Contains("content://") || dataSound.AudioLocation.Contains("storage") || dataSound.AudioLocation.Contains("/data/user/0/")))
+                            var filePath = SoundDownloadAsyncController.GetDownloadedDiskVideoUri(dataSound.Title);
+
+                            if (!string.IsNullOrEmpty(filePath) && (filePath.Contains("file://") || filePath.Contains("content://") || filePath.Contains("storage") || filePath.Contains("/data/user/0/")))
                             {
-                                if (!Directory.Exists(Methods.Path.FolderDcimSound))
-                                    Directory.CreateDirectory(Methods.Path.FolderDcimSound);
-
-                                var filePath = "";
-
-                                if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
-                                {
-                                    /*
-                                     * this changes is due to scoped storage introduce in Android 10
-                                     * https://developer.android.com/preview/privacy/storage
-                                     */
-
-                                    var file = Application.Context.GetExternalFilesDir(Environment.DirectoryMusic);
-                                    filePath = Methods.MultiMedia.CheckFileIfExits(file + "/" + dataSound.Title);
-                                }
-                                else
-                                {
-                                    var title = dataSound.AudioLocation.Split("/Sound/").Last().Replace("%20", " ");
-                                    filePath = Methods.MultiMedia.CheckFileIfExits(Methods.Path.FolderDcimSound + title);
-                                }
-
-                                if (filePath != "File Dont Exists")
-                                {
-                                    BtnIconDownload.Tag = "Downloaded";
-                                    BtnIconDownload.SetImageResource(Resource.Drawable.ic_check_circle);
-                                    BtnIconDownload.SetColorFilter(Color.Red);
-                                }
-                                else
-                                {
-                                    BtnIconDownload.Tag = "Download";
-                                    BtnIconDownload.SetImageResource(Resource.Drawable.icon_player_download);
-                                    BtnIconDownload.SetColorFilter(Color.White);
-                                }
+                                BtnIconDownload.Tag = "Downloaded";
+                                BtnIconDownload.SetImageResource(Resource.Drawable.ic_check_circle);
+                                BtnIconDownload.SetColorFilter(Color.Red);
                             }
                             else
                             {
                                 BtnIconDownload.Tag = "Download";
                                 BtnIconDownload.SetImageResource(Resource.Drawable.icon_player_download);
-                                BtnIconDownload.SetColorFilter(Color.White);
+                                if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                                    BtnIconDownload.SetColorFilter(Color.White);
+                                else if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
+                                    BtnIconDownload.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                             }
                         }
                         else
                         {
                             BtnIconDownload.Tag = "Download";
                             BtnIconDownload.SetImageResource(Resource.Drawable.icon_player_download);
-                            BtnIconDownload.SetColorFilter(Color.White);
+                            if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                                BtnIconDownload.SetColorFilter(Color.White);
+                            else if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
+                                BtnIconDownload.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                         }
 
                         ProgressBarDownload.Visibility = ViewStates.Invisible;
@@ -1108,8 +1110,16 @@ namespace DeepSound.Helpers.MediaPlayerController
                     if (Constant.Player != null && Constant.Player.PlayWhenReady)
                     {
                         // Changing button image to pause button
-                        BtPlay.SetImageResource(Resource.Drawable.icon_player_pause);
-                        BtnPlayImage.SetImageResource(Resource.Drawable.icon_player_pause);
+                        if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                        {
+                            BtPlay.SetImageResource(Resource.Drawable.icon_player_pause);
+                            BtnPlayImage.SetImageResource(Resource.Drawable.icon_player_pause);
+                        }
+                        else if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
+                        {
+                            BtPlay.SetImageResource(Resource.Drawable.icon_player2_pause);
+                            BtnPlayImage.SetImageResource(Resource.Drawable.icon_player2_pause);
+                        }
 
                         if (Timer != null)
                         {
@@ -1120,8 +1130,16 @@ namespace DeepSound.Helpers.MediaPlayerController
                     else
                     {
                         // Changing button image to play button
-                        BtPlay.SetImageResource(Resource.Drawable.icon_player_play);
-                        BtnPlayImage.SetImageResource(Resource.Drawable.icon_player_play);
+                        if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                        {
+                            BtPlay.SetImageResource(Resource.Drawable.icon_player_play);
+                            BtnPlayImage.SetImageResource(Resource.Drawable.icon_player_play);
+                        }
+                        else if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
+                        {
+                            BtPlay.SetImageResource(Resource.Drawable.icon_player2_play);
+                            BtnPlayImage.SetImageResource(Resource.Drawable.icon_player2_play);
+                        }
 
                         if (Timer != null)
                         {
@@ -1169,7 +1187,9 @@ namespace DeepSound.Helpers.MediaPlayerController
                         if (Build.VERSION.SdkInt >= BuildVersionCodes.N)
                         {
                             SeekSongProgressbar.SetProgress(progress, true);
-                            TopSeekSongProgressbar.SetProgress(progress, true);
+
+                            if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                                TopSeekSongProgressbar.SetProgress(progress, true);
                         }
                         else
                         {
@@ -1177,7 +1197,9 @@ namespace DeepSound.Helpers.MediaPlayerController
                             {
                                 // For API < 24 
                                 SeekSongProgressbar.Progress = progress;
-                                TopSeekSongProgressbar.Progress = progress;
+
+                                if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                                    TopSeekSongProgressbar.Progress = progress;
                             }
                             catch (Exception exception)
                             {
@@ -1231,6 +1253,7 @@ namespace DeepSound.Helpers.MediaPlayerController
         {
             try
             {
+                if (AppSettings.PlayerTheme != PlayerTheme.Theme1) return;
                 if (Constant.Player != null && !Constant.Player.PlayWhenReady) return;
                 ArtistImageView?.Animate()?.SetDuration(100)?.Rotation(ArtistImageView.Rotation + 2f)?.SetListener(this);
             }
@@ -1279,7 +1302,11 @@ namespace DeepSound.Helpers.MediaPlayerController
                     if (selected == "selected")
                     {
                         // selected
-                        bt.SetColorFilter(Color.ParseColor("#999999"));
+                        if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                            bt.SetColorFilter(Color.ParseColor("#999999"));
+                        else if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
+                            bt.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
+
                         bt.Tag = "no";
                     }
                     else
@@ -1304,20 +1331,36 @@ namespace DeepSound.Helpers.MediaPlayerController
                 {
                     if (show)
                     {
-                        IconInfo.Visibility = ViewStates.Gone;
-                        BtnPlayImage.Visibility = ViewStates.Visible;
-                        TopSeekSongProgressbar.Visibility = ViewStates.Visible;
+                        if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                        {
+                            IconInfo.Visibility = ViewStates.Gone;
+                            BtnPlayImage.Visibility = ViewStates.Visible;
+                            TopSeekSongProgressbar.Visibility = ViewStates.Visible;
 
-                        TxtArtistAbout.Text = Methods.FunString.SubStringCutOf(Methods.FunString.DecodeString(soundObject.Title), 30);
+                            TxtArtistAbout.Text = Methods.FunString.SubStringCutOf(Methods.FunString.DecodeString(soundObject.Title), 30);
+                        }
+                        else if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
+                        {
+                            ToolbarCloseLayout.Visibility = ViewStates.Visible;
+                            ToolbarOpenLayout.Visibility = ViewStates.Gone;
+                        }
                     }
                     else
                     {
-                        IconInfo.Visibility = ViewStates.Visible;
-                        BtnPlayImage.Visibility = ViewStates.Gone;
-                        TopSeekSongProgressbar.Visibility = ViewStates.Invisible;
+                        if (AppSettings.PlayerTheme == PlayerTheme.Theme1)
+                        {
+                            IconInfo.Visibility = ViewStates.Visible;
+                            BtnPlayImage.Visibility = ViewStates.Gone;
+                            TopSeekSongProgressbar.Visibility = ViewStates.Invisible;
 
-                        TxtArtistAbout.Text = soundObject.TimeFormatted;
-                    } 
+                            TxtArtistAbout.Text = soundObject.TimeFormatted;
+                        }
+                        else if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
+                        {
+                            ToolbarCloseLayout.Visibility = ViewStates.Gone;
+                            ToolbarOpenLayout.Visibility = ViewStates.Visible;
+                        }
+                    }
                 }
             }
             catch (Exception e)
@@ -1325,6 +1368,6 @@ namespace DeepSound.Helpers.MediaPlayerController
                 Methods.DisplayReportResultTrack(e);
             }
         }
- 
+
     }
 }

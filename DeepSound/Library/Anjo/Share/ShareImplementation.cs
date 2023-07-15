@@ -1,11 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using AndroidX.Browser.CustomTabs;
 using DeepSound.Library.Anjo.Share.Abstractions;
 using Plugin.CurrentActivity;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DeepSound.Library.Anjo.Share
 {
@@ -129,33 +129,33 @@ namespace DeepSound.Library.Anjo.Share
             }
         }
 
-		/// <summary>
-		/// Checks if the url can be opened
-		/// </summary>
-		/// <param name="url">Url to check</param>
-		/// <returns>True if it can</returns>
-		public bool CanOpenUrl(string url)
-		{
-			try
-			{
-				var context = CrossCurrentActivity.Current.Activity ?? Application.Context;
-				var intent = new Intent(Intent.ActionView);
-				intent.SetData(Android.Net.Uri.Parse(url));
+        /// <summary>
+        /// Checks if the url can be opened
+        /// </summary>
+        /// <param name="url">Url to check</param>
+        /// <returns>True if it can</returns>
+        public bool CanOpenUrl(string url)
+        {
+            try
+            {
+                var context = CrossCurrentActivity.Current.Activity ?? Application.Context;
+                var intent = new Intent(Intent.ActionView);
+                intent.SetData(Android.Net.Uri.Parse(url));
 
-				intent.SetFlags(ActivityFlags.ClearTop);
-				intent.SetFlags(ActivityFlags.NewTask);
-				return intent.ResolveActivity(context.PackageManager) != null!;
-			}
-			catch (Exception ex)
-			{
+                intent.SetFlags(ActivityFlags.ClearTop);
+                intent.SetFlags(ActivityFlags.NewTask);
+                return intent.ResolveActivity(context.PackageManager) != null;
+            }
+            catch (Exception ex)
+            {
                 Console.WriteLine(ex);
-				return false;
-			}
-		}
+                return false;
+            }
+        }
 
-		/// <summary>
-		/// Gets if cliboard is supported
-		/// </summary>
-		public bool SupportsClipboard => true;
+        /// <summary>
+        /// Gets if cliboard is supported
+        /// </summary>
+        public bool SupportsClipboard => true;
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
@@ -14,11 +12,13 @@ using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
+using System;
+using System.Linq;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser.Support
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme",ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
     public class DeleteAccountActivity : BaseActivity
     {
         #region Variables Basic
@@ -106,7 +106,7 @@ namespace DeepSound.Activities.SettingsUser.Support
         }
 
         #endregion
-          
+
         #region Menu
 
         public override bool OnOptionsItemSelected(IMenuItem item)
@@ -132,7 +132,7 @@ namespace DeepSound.Activities.SettingsUser.Support
                 PasswordEditText = FindViewById<EditText>(Resource.Id.passwordEdit);
                 DeleteCheckBox = FindViewById<CheckBox>(Resource.Id.DeleteCheckBox);
                 DeleteButton = FindViewById<AppCompatButton>(Resource.Id.DeleteButton);
-               
+
                 Methods.SetColorEditText(PasswordEditText, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
 
                 DeleteCheckBox.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
@@ -140,7 +140,7 @@ namespace DeepSound.Activities.SettingsUser.Support
 
                 DeleteCheckBox.Text = GetText(Resource.String.Lbl_IWantToDelete1) + " " + UserDetails.Username + " " +
                                       GetText(Resource.String.Lbl_IWantToDelete2) + " " + AppSettings.ApplicationName +
-                                      " " + GetText(Resource.String.Lbl_IWantToDelete3); 
+                                      " " + GetText(Resource.String.Lbl_IWantToDelete3);
             }
             catch (Exception e)
             {
@@ -228,7 +228,7 @@ namespace DeepSound.Activities.SettingsUser.Support
                 }
                 else
                 {
-                    Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_Warning),GetText(Resource.String.Lbl_Error_Terms), GetText(Resource.String.Lbl_Ok));
+                    Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_Warning), GetText(Resource.String.Lbl_Error_Terms), GetText(Resource.String.Lbl_Ok));
                 }
             }
             catch (Exception exception)

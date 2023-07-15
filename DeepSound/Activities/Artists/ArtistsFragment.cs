@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Gms.Ads;
+﻿using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -22,6 +17,11 @@ using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.User;
 using DeepSoundClient.Requests;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Artists
@@ -62,7 +62,7 @@ namespace DeepSound.Activities.Artists
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -71,12 +71,12 @@ namespace DeepSound.Activities.Artists
             try
             {
                 base.OnViewCreated(view, savedInstanceState);
-                 
+
                 InitComponent(view);
                 InitToolbar(view);
                 SetRecyclerViewAdapters();
 
-                StartApiService(); 
+                StartApiService();
             }
             catch (Exception e)
             {
@@ -153,7 +153,7 @@ namespace DeepSound.Activities.Artists
                 SwipeRefreshLayout.Enabled = true;
                 SwipeRefreshLayout.SetProgressBackgroundColorSchemeColor(DeepSoundTools.IsTabDark() ? Color.ParseColor("#424242") : Color.ParseColor("#f7f7f7"));
                 SwipeRefreshLayout.Refresh += SwipeRefreshLayoutOnRefresh;
-                 
+
                 MAdView = view.FindViewById<AdView>(Resource.Id.adView);
                 AdsGoogle.InitAdView(MAdView, MRecycler);
             }
@@ -180,7 +180,7 @@ namespace DeepSound.Activities.Artists
         {
             try
             {
-                MAdapter = new ContactsAdapter(Activity){ UsersList = new ObservableCollection<UserDataObject>()};
+                MAdapter = new ContactsAdapter(Activity) { UsersList = new ObservableCollection<UserDataObject>() };
                 MAdapter.ItemClick += MAdapterItemClick;
                 LayoutManager = new LinearLayoutManager(Activity);
                 MRecycler.SetLayoutManager(LayoutManager);
@@ -205,7 +205,7 @@ namespace DeepSound.Activities.Artists
         }
 
         #endregion
-         
+
         #region Event
 
         //Scroll
@@ -216,7 +216,7 @@ namespace DeepSound.Activities.Artists
                 //Code get last id where LoadMore >>
                 var item = MAdapter.UsersList.LastOrDefault();
                 if (item != null && !string.IsNullOrEmpty(item.Id.ToString()) && !MainScrollEvent.IsLoading)
-                    StartApiService(item.Id.ToString()); 
+                    StartApiService(item.Id.ToString());
             }
             catch (Exception exception)
             {
@@ -237,7 +237,7 @@ namespace DeepSound.Activities.Artists
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         //Refresh
         private void SwipeRefreshLayoutOnRefresh(object sender, EventArgs e)
         {
@@ -248,7 +248,7 @@ namespace DeepSound.Activities.Artists
 
                 MRecycler.Visibility = ViewStates.Visible;
                 EmptyStateLayout.Visibility = ViewStates.Gone;
-              
+
                 MainScrollEvent.IsLoading = false;
 
                 StartApiService();
@@ -267,7 +267,7 @@ namespace DeepSound.Activities.Artists
             if (!Methods.CheckConnectivity())
                 Toast.MakeText(Activity, Activity.GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
             else
-                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => LoadArtists (offset) });
+                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => LoadArtists(offset) });
         }
 
         private async Task LoadArtists(string offset = "0")
@@ -280,7 +280,7 @@ namespace DeepSound.Activities.Artists
                 MainScrollEvent.IsLoading = true;
 
                 int countList = MAdapter.UsersList.Count;
-                 var (apiStatus, respond) = await RequestsAsync.User.GetArtistsAsync("15", offset);
+                var (apiStatus, respond) = await RequestsAsync.User.GetArtistsAsync("15", offset);
                 if (apiStatus == 200)
                 {
                     if (respond is GetUserObject result)
@@ -300,7 +300,7 @@ namespace DeepSound.Activities.Artists
                             else
                             {
                                 MAdapter.UsersList = new ObservableCollection<UserDataObject>(result.Data?.UserList);
-                                Activity?.RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); }); 
+                                Activity?.RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); });
                             }
                         }
                         else
@@ -315,8 +315,8 @@ namespace DeepSound.Activities.Artists
                     MainScrollEvent.IsLoading = false;
                     Methods.DisplayReportResult(Activity, respond);
                 }
-                 
-                Activity?.RunOnUiThread(ShowEmptyPage); 
+
+                Activity?.RunOnUiThread(ShowEmptyPage);
             }
             else
             {
@@ -325,7 +325,7 @@ namespace DeepSound.Activities.Artists
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -356,7 +356,7 @@ namespace DeepSound.Activities.Artists
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoArtists);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }
@@ -385,6 +385,6 @@ namespace DeepSound.Activities.Artists
         }
 
         #endregion
-           
+
     }
 }

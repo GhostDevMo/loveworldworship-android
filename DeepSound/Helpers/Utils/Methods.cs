@@ -1,16 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.IO.Compression;
-using System.Linq;
-using System.Net;
-using System.Net.Mail;
-using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using MaterialDialogsCore;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
@@ -23,38 +11,50 @@ using Android.Provider;
 using Android.Runtime;
 using Android.Util;
 using Android.Views;
-using Android.Webkit;
 using Android.Widget;
 using AndroidHUD;
 using AndroidX.Core.Content;
 using AndroidX.Lifecycle;
 using AndroidX.RecyclerView.Widget;
+using DeepSound.Helpers.Controller;
+using DeepSoundClient;
+using DeepSoundClient.Classes.Global;
+using Google.Android.Material.Dialog;
 using HtmlAgilityPack;
 using Java.IO;
 using Java.Lang;
 using Java.Security;
-using DeepSound.Helpers.Controller;
-using DeepSoundClient.Classes.Global;
 using Java.Text;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.IO.Compression;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Mail;
+using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Calendar = Android.Icu.Util.Calendar;
 using ClipboardManager = Android.Content.ClipboardManager;
 using Console = System.Console;
 using Environment = System.Environment;
 using Exception = System.Exception;
-using File = Java.IO.File; 
+using File = Java.IO.File;
+using IOException = System.IO.IOException;
 using Process = Android.OS.Process;
 using Random = System.Random;
 using Stream = System.IO.Stream;
-using Uri = Android.Net.Uri;
-using MimeTypeMap = DeepSoundClient.MimeTypeMap;
-using IOException = System.IO.IOException;
 using TransportType = Android.Net.TransportType;
+using Uri = Android.Net.Uri;
 
 namespace DeepSound.Helpers.Utils
 {
     public static partial class Methods
     {
-        //########################## IMethods Application Version 4.0 ##########################
+        //########################## IMethods Application Version 5.0 ##########################
     }
 
     public static partial class Methods
@@ -154,12 +154,12 @@ namespace DeepSound.Helpers.Utils
                         return "Wifi";
                     }
                 }
-                return null!;
+                return null;
             }
             catch (Exception exception)
             {
                 DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -415,10 +415,15 @@ namespace DeepSound.Helpers.Utils
                     break;
             }
 
-            System.Diagnostics.Trace.WriteLine("ReportMode >> message: " + errorText);
-            System.Diagnostics.Trace.WriteLine("ReportMode >> member name: " + memberName);
-            System.Diagnostics.Trace.WriteLine("ReportMode >> source file path: " + sourceFilePath);
-            System.Diagnostics.Trace.WriteLine("ReportMode >> source line number: " + sourceLineNumber);
+            if (!errorText.Contains("com.android.okhttp") || !errorText.Contains("while sending the request"))
+            {
+                System.Diagnostics.Trace.WriteLine("\n ========================= ReportMode Start ========================= \n");
+                System.Diagnostics.Trace.WriteLine("ReportMode >> Message: " + errorText);
+                System.Diagnostics.Trace.WriteLine("ReportMode >> Member name: " + memberName);
+                System.Diagnostics.Trace.WriteLine("ReportMode >> Source file path: " + sourceFilePath);
+                System.Diagnostics.Trace.WriteLine("ReportMode >> Source line number: " + sourceLineNumber);
+                System.Diagnostics.Trace.WriteLine("\n ========================= ReportMode End ========================= \n");
+            }
 
             if (AppSettings.SetApisReportMode && !errorText.Contains("com.android.okhttp") && !errorText.Contains("while sending the request"))
                 DialogPopup.InvokeAndShowDialog(activityContext, "ReportMode", errorText, "Close");
@@ -451,10 +456,15 @@ namespace DeepSound.Helpers.Utils
                 //Show a Error 
                 AndHUD.Shared.ShowError(activityContext, errorText, MaskType.Clear, TimeSpan.FromSeconds(1));
 
-                System.Diagnostics.Trace.WriteLine("ReportMode >> message: " + errorText);
-                System.Diagnostics.Trace.WriteLine("ReportMode >> member name: " + memberName);
-                System.Diagnostics.Trace.WriteLine("ReportMode >> source file path: " + sourceFilePath);
-                System.Diagnostics.Trace.WriteLine("ReportMode >> source line number: " + sourceLineNumber);
+                if (!errorText.Contains("com.android.okhttp") || !errorText.Contains("while sending the request"))
+                {
+                    System.Diagnostics.Trace.WriteLine("\n ========================= ReportMode Start ========================= \n");
+                    System.Diagnostics.Trace.WriteLine("ReportMode >> Message: " + errorText);
+                    System.Diagnostics.Trace.WriteLine("ReportMode >> Member name: " + memberName);
+                    System.Diagnostics.Trace.WriteLine("ReportMode >> Source file path: " + sourceFilePath);
+                    System.Diagnostics.Trace.WriteLine("ReportMode >> Source line number: " + sourceLineNumber);
+                    System.Diagnostics.Trace.WriteLine("\n ========================= ReportMode End ========================= \n");
+                }
                 //Crashes.TrackError(new Exception(errorText));
                 //Analytics.TrackEvent(errorText);
             }
@@ -477,10 +487,15 @@ namespace DeepSound.Helpers.Utils
         {
             try
             {
-                System.Diagnostics.Trace.WriteLine("ReportMode >> message: " + exception.Message + " \n  " + exception.StackTrace);
-                System.Diagnostics.Trace.WriteLine("ReportMode >> member name: " + memberName);
-                System.Diagnostics.Trace.WriteLine("ReportMode >> source file path: " + sourceFilePath);
-                System.Diagnostics.Trace.WriteLine("ReportMode >> source line number: " + sourceLineNumber);
+                if (!exception.Message.Contains("com.android.okhttp") || !exception.Message.Contains("while sending the request"))
+                {
+                    System.Diagnostics.Trace.WriteLine("\n ========================= ReportMode Start ========================= \n");
+                    System.Diagnostics.Trace.WriteLine("ReportMode >> Message: " + exception.Message + " \n  " + exception.StackTrace);
+                    System.Diagnostics.Trace.WriteLine("ReportMode >> Member name: " + memberName);
+                    System.Diagnostics.Trace.WriteLine("ReportMode >> Source file path: " + sourceFilePath);
+                    System.Diagnostics.Trace.WriteLine("ReportMode >> Source line number: " + sourceLineNumber);
+                    System.Diagnostics.Trace.WriteLine("\n ========================= ReportMode End ========================= \n");
+                }
 
                 string text = "ReportMode >> message: " + exception.Message + " \n  " + exception.StackTrace;
                 text += "\n \n ReportMode >> member name: " + memberName;
@@ -561,11 +576,11 @@ namespace DeepSound.Helpers.Utils
                     PlayerStatic = InitializeMediaPlayer();
                     Path.Chack_MyFolder();
                     //_audio.3gp
-                    SoundFile = GetTimestamp(DateTime.Now) + "_audio.wav";
+                    SoundFile = GetTimestamp(DateTime.Now) + "_audio.mp3";
                     Console.WriteLine("audio File Name Released : " + SoundFile);
-                    SoundFileFullPath = new File(Path.FolderDcimSound + "/" + id + "/" + SoundFile);
+                    SoundFileFullPath = new File(Path.FolderDcimMyApp + "/Sound/" + id + " /" + SoundFile);
 
-                    var dir = Path.FolderDcimSound + "/" + id;
+                    var dir = Path.FolderDcimMyApp + "/Sound/" + id;
                     if (!Directory.Exists(dir))
                         Directory.CreateDirectory(dir);
                 }
@@ -580,29 +595,28 @@ namespace DeepSound.Helpers.Utils
                 try
                 {
                     var player = new MediaPlayer();
-                    player.SetAudioAttributes(new AudioAttributes.Builder()?.SetUsage(AudioUsageKind.Media)?.SetContentType(AudioContentType.Music)?.Build());
 
-                    //if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
-                    //{
-                    //    player.SetAudioAttributes(new AudioAttributes.Builder()
-                    //        .SetUsage(AudioUsageKind.Media)
-                    //        .SetContentType(AudioContentType.Music)
-                    //        .SetLegacyStreamType(Android.Media.Stream.Music)
-                    //        .Build());
-                    //}
-                    //else
-                    //{
-                    //    #pragma warning disable 618
-                    //    player.SetAudioStreamType(Android.Media.Stream.Music);
-                    //    #pragma warning restore 618
-                    //} 
+                    if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
+                    {
+                        player.SetAudioAttributes(new AudioAttributes.Builder()
+                            ?.SetUsage(AudioUsageKind.Media)
+                            ?.SetContentType(AudioContentType.Music)
+                            ?.SetLegacyStreamType(Android.Media.Stream.Music)
+                            ?.Build());
+                    }
+                    else
+                    {
+#pragma warning disable 618
+                        player.SetAudioStreamType(Android.Media.Stream.Music);
+#pragma warning restore 618
+                    }
 
                     return player;
                 }
                 catch (Exception e)
                 {
                     DisplayReportResultTrack(e);
-                    return null!;
+                    return null;
                 }
             }
 
@@ -650,8 +664,8 @@ namespace DeepSound.Helpers.Utils
 #pragma warning restore CS0618
 
                     Recorder.SetAudioSource(AudioSource.Mic);
-                    Recorder.SetOutputFormat(OutputFormat.ThreeGpp);
-                    Recorder.SetAudioEncoder(AudioEncoder.AmrNb);
+                    Recorder.SetOutputFormat(OutputFormat.Mpeg4);
+                    Recorder.SetAudioEncoder(AudioEncoder.Aac);
                     Recorder.SetOutputFile(SoundFileFullPath.AbsolutePath);
 
                     try
@@ -681,7 +695,7 @@ namespace DeepSound.Helpers.Utils
                         Recorder.Reset();
                         Recorder.Release();
 
-                        Recorder = null!;
+                        Recorder = null;
                     }
 
                     AudioFileFullPathReleased = SoundFileFullPath.AbsolutePath;
@@ -724,7 +738,7 @@ namespace DeepSound.Helpers.Utils
                     return stream;
                 }
 
-                return null!;
+                return null;
             }
 
             public string Delete_Sound_Path(string path)
@@ -779,7 +793,7 @@ namespace DeepSound.Helpers.Utils
                                 {
                                     PlayerStatic?.Stop();
                                     PlayerStatic?.Reset();
-                                    PlayerStatic = null!;
+                                    PlayerStatic = null;
                                 }
                             }
                             catch (Exception exception)
@@ -867,7 +881,7 @@ namespace DeepSound.Helpers.Utils
                         {
                             PlayerStatic.Stop();
                             PlayerStatic.Reset();
-                            PlayerStatic = null!;
+                            PlayerStatic = null;
                         }
                         catch (Exception exception)
                         {
@@ -962,7 +976,7 @@ namespace DeepSound.Helpers.Utils
 
         public static class MultiMedia
         {
-            public static void Save_Images_CostomName(string savedfoldername, string fileUrl, string typeimage, string imageid)
+            public static async void Save_Images_CostomName(string savedfoldername, string fileUrl, string typeimage, string imageid)
             {
                 try
                 {
@@ -975,20 +989,26 @@ namespace DeepSound.Helpers.Utils
                         if (!Directory.Exists(filePath))
                             Directory.CreateDirectory(filePath);
 
-                        using WebClient web = new WebClient();
-                        web.DownloadDataAsync(new System.Uri(fileUrl), mediaFile);
-
-                        web.DownloadDataCompleted += (s, e) =>
+                        HttpClient client;
+                        if (AppSettings.TurnSecurityProtocolType3072On)
                         {
-                            try
-                            {
-                                System.IO.File.WriteAllBytes(mediaFile, e.Result);
-                            }
-                            catch (Exception exception)
-                            {
-                                DisplayReportResultTrack(exception);
-                            }
-                        };
+                            HttpClientHandler clientHandler = new HttpClientHandler();
+                            clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
+                            //clientHandler.SslProtocols = SslProtocols.Tls | SslProtocols.Ssl2 | SslProtocols.Ssl3 | SslProtocols.Tls11 | SslProtocols.Tls12 | SslProtocols.Tls13 | SslProtocols.Default;
+
+                            // Pass the handler to httpClient(from you are calling api)
+                            client = new HttpClient(clientHandler);
+                        }
+                        else
+                        {
+                            client = new HttpClient();
+                        }
+                        var s = await client.GetStreamAsync(new System.Uri(fileUrl));
+                        if (s.CanRead)
+                        {
+                            await using FileStream fs = new FileStream(mediaFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
+                            await s.CopyToAsync(fs);
+                        }
                     }
                 }
                 catch (Exception e)
@@ -1144,7 +1164,7 @@ namespace DeepSound.Helpers.Utils
                         if (System.IO.File.Exists(pathOfFile))
                         {
                             System.IO.File.Copy(pathOfFile, copyFileFullPath);
-                            //var mediaScanIntent = new Intent(Intent?.ActionMediaScannerScanFile);
+                            //var mediaScanIntent = new Intent(Intent.ActionMediaScannerScanFile);
                             //mediaScanIntent?.SetData(Uri.FromFile(new File(copyFileFullPath)));
                             //Application.Context.SendBroadcast(mediaScanIntent);
 
@@ -1166,7 +1186,7 @@ namespace DeepSound.Helpers.Utils
                 }
             }
 
-            public static void DownloadMediaTo_DiskAsync(string savedfoldername, string url)
+            public static async void DownloadMediaTo_DiskAsync(string savedfoldername, string url)
             {
                 try
                 {
@@ -1181,21 +1201,26 @@ namespace DeepSound.Helpers.Utils
 
                         if (!System.IO.File.Exists(mediaFile))
                         {
-                            WebClient webClient = new WebClient();
-
-                            webClient.DownloadDataAsync(new System.Uri(url), mediaFile);
-
-                            webClient.DownloadDataCompleted += (s, e) =>
+                            HttpClient client;
+                            if (AppSettings.TurnSecurityProtocolType3072On)
                             {
-                                try
-                                {
-                                    System.IO.File.WriteAllBytes(mediaFile, e.Result);
-                                }
-                                catch (Exception exception)
-                                {
-                                    DisplayReportResultTrack(exception);
-                                }
-                            };
+                                HttpClientHandler clientHandler = new HttpClientHandler();
+                                clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
+                                //clientHandler.SslProtocols = SslProtocols.Tls | SslProtocols.Ssl2 | SslProtocols.Ssl3 | SslProtocols.Tls11 | SslProtocols.Tls12 | SslProtocols.Tls13 | SslProtocols.Default;
+
+                                // Pass the handler to httpClient(from you are calling api)
+                                client = new HttpClient(clientHandler);
+                            }
+                            else
+                            {
+                                client = new HttpClient();
+                            }
+                            var s = await client.GetStreamAsync(new System.Uri(url));
+                            if (s.CanRead)
+                            {
+                                await using FileStream fs = new FileStream(mediaFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
+                                await s.CopyToAsync(fs);
+                            }
                         }
                     }
                 }
@@ -1205,7 +1230,7 @@ namespace DeepSound.Helpers.Utils
                 }
             }
 
-            public static void DownloadMediaTo_GalleryAsync(string savedfoldername, string url)
+            public static async void DownloadMediaTo_GalleryAsync(string savedfoldername, string url)
             {
                 try
                 {
@@ -1221,56 +1246,35 @@ namespace DeepSound.Helpers.Utils
                         if (System.IO.File.Exists(mediaFile))
                             return;
 
-                        WebClient webClient = new WebClient();
-
-                        webClient.DownloadDataAsync(new System.Uri(url));
-
-                        webClient.DownloadDataCompleted += (s, e) =>
+                        HttpClient client;
+                        if (AppSettings.TurnSecurityProtocolType3072On)
                         {
-                            try
-                            {
-                                switch (e.Cancelled)
-                                {
-                                    case true:
-                                        //Downloading Cancelled
-                                        return;
-                                }
+                            HttpClientHandler clientHandler = new HttpClientHandler();
+                            clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
+                            //clientHandler.SslProtocols = SslProtocols.Tls | SslProtocols.Ssl2 | SslProtocols.Ssl3 | SslProtocols.Tls11 | SslProtocols.Tls12 | SslProtocols.Tls13 | SslProtocols.Default;
 
-                                if (e.Error != null)
-                                {
-                                    Console.WriteLine(e.Error);
-                                    return;
-                                }
+                            // Pass the handler to httpClient(from you are calling api)
+                            client = new HttpClient(clientHandler);
+                        }
+                        else
+                        {
+                            client = new HttpClient();
+                        }
+                        var s = await client.GetStreamAsync(new System.Uri(url));
+                        if (s.CanRead)
+                        {
+                            await using FileStream fs = new FileStream(mediaFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
+                            await s.CopyToAsync(fs);
 
-                                if (!System.IO.File.Exists(mediaFile))
-                                {
-                                    using FileStream fs = new FileStream(mediaFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
-                                    fs.Write(e.Result, 0, e.Result.Length);
+                            //var mediaScanIntent = new Intent(Intent.ActionMediaScannerScanFile);
+                            //mediaScanIntent?.SetData(Uri.FromFile(new File(mediaFile)));
+                            //Application.Context.SendBroadcast(mediaScanIntent);
 
-                                    //var mediaScanIntent = new Intent(Intent?.ActionMediaScannerScanFile);
-                                    //mediaScanIntent?.SetData(Uri.FromFile(new File(mediaFile)));
-                                    //Application.Context.SendBroadcast(mediaScanIntent);
+                            // Tell the media scanner about the new file so that it is
+                            // immediately available to the user.
 
-                                    // Tell the media scanner about the new file so that it is
-                                    // immediately available to the user.
-
-
-                                    MediaScannerConnection.ScanFile(Application.Context, new[] { mediaFile }, null, null);
-                                }
-
-                                //File.WriteAllBytes(mediaFile, e.Result);
-
-                            }
-                            catch (IOException exception)
-                            {
-                                DisplayReportResultTrack(exception);
-                                //Methods.DisplayReportResultTrack(exception);
-                            }
-                            catch (Exception exception)
-                            {
-                                DisplayReportResultTrack(exception);
-                            }
-                        };
+                            MediaScannerConnection.ScanFile(Application.Context, new[] { mediaFile }, null, null);
+                        }
                     }
                 }
                 catch (Exception exception)
@@ -1293,11 +1297,11 @@ namespace DeepSound.Helpers.Utils
                 switch (mediaFile)
                 {
                     case null:
-                        return null!;
+                        return null;
                     default:
                         try
                         {
-                            Bitmap bitmap = null!;
+                            Bitmap bitmap = null;
                             switch ((int)Build.VERSION.SdkInt)
                             {
                                 case >= 29 when mediaFile.Contains("http://") || mediaFile.Contains("https://"):
@@ -1336,7 +1340,7 @@ namespace DeepSound.Helpers.Utils
                         catch (Exception exception)
                         {
                             DisplayReportResultTrack(exception);
-                            return null!;
+                            return null;
                         }
                 }
             }
@@ -1375,7 +1379,7 @@ namespace DeepSound.Helpers.Utils
                 catch (Exception exception)
                 {
                     DisplayReportResultTrack(exception);
-                    return null!;
+                    return null;
                 }
             }
 
@@ -1510,13 +1514,13 @@ namespace DeepSound.Helpers.Utils
                     }
                     else
                     {
-                        return null!;
+                        return null;
                     }
                 }
                 catch (Exception exception)
                 {
                     DisplayReportResultTrack(exception);
-                    return null!;
+                    return null;
                 }
             }
 
@@ -1665,7 +1669,7 @@ namespace DeepSound.Helpers.Utils
                     */
 
                     string[] sizes = { "B", "KB", "MB", "GB", "TB" };
-                    double len = new FileInfo(filepath).Length;
+                    var len = new FileInfo(filepath).Length;
                     int order = 0;
                     while (len >= 1024 && order < sizes.Length - 1)
                     {
@@ -2033,9 +2037,6 @@ namespace DeepSound.Helpers.Utils
                        .Replace("&#3647;", "฿")
                        .Replace("&#8363;", "₫")
                        .Replace("&#8362;", "₪")
-                       .Replace(".mp3", " ")
-                       .Replace(".wav", " ")
-                       .Replace(".mp4", " ")
                        .Replace("</table>", " ");
 
                     var text = builder.ToString();
@@ -2290,12 +2291,12 @@ namespace DeepSound.Helpers.Utils
         public static class Time
         {
             public static string LblJustNow = Application.Context.GetText(Resource.String.Lbl_justNow);
-            public static string LblHours = Application.Context.GetText(Resource.String.Lbl_HoursAgo);
-            public static string LblDays = Application.Context.GetText(Resource.String.Lbl_DaysAgo);
-            public static string LblMonth = Application.Context.GetText(Resource.String.Lbl_MonthAgo);
-            public static string LblMinutes = Application.Context.GetText(Resource.String.Lbl_MinutesAgo);
-            public static string LblSeconds = Application.Context.GetText(Resource.String.Lbl_SecondsAgo);
-            public static string LblYear = Application.Context.GetText(Resource.String.Lbl_YearAgo);
+            public static string LblHours = Application.Context.GetText(Resource.String.Lbl_Hours);
+            public static string LblDays = Application.Context.GetText(Resource.String.Lbl_Days);
+            public static string LblMonth = Application.Context.GetText(Resource.String.Lbl_Month);
+            public static string LblMinutes = Application.Context.GetText(Resource.String.Lbl_Minutes);
+            public static string LblSeconds = Application.Context.GetText(Resource.String.Lbl_Seconds);
+            public static string LblYear = Application.Context.GetText(Resource.String.Lbl_Year);
             public static string LblCutHours = Application.Context.GetText(Resource.String.Lbl_CutHours);
             public static string LblCutDays = Application.Context.GetText(Resource.String.Lbl_CutDays);
             public static string LblCutMonth = Application.Context.GetText(Resource.String.Lbl_CutMonth);
@@ -2391,12 +2392,13 @@ namespace DeepSound.Helpers.Utils
 
                     if (timeSpan <= TimeSpan.FromSeconds(60))
                     {
-                        //result = $"{timeSpan.Seconds} " + Lbl_SecondsAgo;
+                        //result = $"{timeSpan.Seconds} " + Lbl_seconds;
                         result = LblJustNow;
                     }
                     else if (timeSpan <= TimeSpan.FromMinutes(60))
                     {
-                        result = timeSpan.Minutes > 1 ? $"{timeSpan.Minutes} " + LblMinutes : LblAboutMinute;
+                        //result = timeSpan.Minutes > 1 ? $"{timeSpan.Minutes} " + LblMinutes : LblAboutMinute;
+                        result = $"{timeSpan.Minutes} " + LblMinutes;
                     }
                     else if (timeSpan <= TimeSpan.FromHours(24))
                     {
@@ -2409,11 +2411,13 @@ namespace DeepSound.Helpers.Utils
                     }
                     else if (timeSpan <= TimeSpan.FromDays(365))
                     {
-                        result = timeSpan.Days > 30 ? $"{timeSpan.Days / 30} " + LblMonth : LblAboutMonth;
+                        //result = timeSpan.Days > 30 ? $"{timeSpan.Days / 30} " + LblMonth : LblAboutMonth;
+                        result = $"{timeSpan.Days / 30} " + LblMonth;
                     }
                     else
                     {
-                        result = timeSpan.Days > 365 ? $"{timeSpan.Days / 365} " + LblYear : LblAboutYear;
+                        //result = timeSpan.Days > 365 ? $"{timeSpan.Days / 365} " + LblYear : LblAboutYear;
+                        result = $"{timeSpan.Days / 365} " + LblYear;
                     }
 
                     return withReplace ? ReplaceTime(result) : result;
@@ -2482,16 +2486,18 @@ namespace DeepSound.Helpers.Utils
 
                     if (timeSpan <= TimeSpan.FromSeconds(60))
                     {
-                        //result = $"{timeSpan.Seconds} " + Lbl_SecondsAgo;
+                        //result = $"{timeSpan.Seconds} " + Lbl_seconds;
                         result = LblJustNow;
                     }
                     else if (timeSpan <= TimeSpan.FromMinutes(60))
                     {
-                        result = timeSpan.Minutes > 1 ? $"{timeSpan.Minutes} " + LblMinutes : LblAboutMinute;
+                        //result = timeSpan.Minutes > 1 ? $"{timeSpan.Minutes} " + LblMinutes : LblAboutMinute;
+                        result = $"{timeSpan.Minutes} " + LblMinutes;
                     }
                     else if (timeSpan <= TimeSpan.FromHours(24))
                     {
-                        result = timeSpan.Hours > 1 ? $"{timeSpan.Hours} " + LblHours : LblAboutHour;
+                        //result = timeSpan.Hours > 1 ? $"{timeSpan.Hours} " + LblHours : LblAboutHour;
+                        result = $"{timeSpan.Hours} " + LblHours;
                     }
                     else if (timeSpan <= TimeSpan.FromDays(30))
                     {
@@ -2499,11 +2505,13 @@ namespace DeepSound.Helpers.Utils
                     }
                     else if (timeSpan <= TimeSpan.FromDays(365))
                     {
-                        result = timeSpan.Days > 30 ? $"{timeSpan.Days / 30} " + LblMonth : LblAboutMonth;
+                        //result = timeSpan.Days > 30 ? $"{timeSpan.Days / 30} " + LblMonth : LblAboutMonth;
+                        result = $"{timeSpan.Days / 30} " + LblMonth;
                     }
                     else
                     {
-                        result = timeSpan.Days > 365 ? $"{timeSpan.Days / 365} " + LblYear : LblAboutYear;
+                        //result = timeSpan.Days > 365 ? $"{timeSpan.Days / 365} " + LblYear : LblAboutYear;
+                        result = $"{timeSpan.Days / 365} " + LblYear;
                     }
 
                     return withReplace ? ReplaceTime(result) : result;
@@ -2767,12 +2775,12 @@ namespace DeepSound.Helpers.Utils
                     {
                         try
                         {
-                            var dialog = new MaterialDialog.Builder(activity).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                            dialog.Title(title).TitleColorRes(Resource.Color.primary);
-                            dialog.Content(message);
-                            dialog.PositiveText(positiveButtonstring).OnPositive(new MyMaterialDialog());
-                            dialog.AlwaysCallSingleChoiceCallback();
-                            dialog.Build().Show();
+                            var dialog = new MaterialAlertDialogBuilder(activity);
+                            dialog.SetTitle(title);
+                            dialog.SetMessage(message);
+                            dialog.SetPositiveButton(positiveButtonstring, new MaterialDialogUtils());
+
+                            dialog.Show();
                         }
                         catch (Exception e)
                         {
@@ -2892,7 +2900,7 @@ namespace DeepSound.Helpers.Utils
                 catch (NoSuchMethodException ex)
                 {
                     DisplayReportResultTrack(ex);
-                    return null!;
+                    return null;
                 }
             }
 
@@ -2907,12 +2915,12 @@ namespace DeepSound.Helpers.Utils
                         Intent launchIntent = context.PackageManager?.GetLaunchIntentForPackage(packageName);
                         if (launchIntent != null)
                         {
-                            launchIntent.AddFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);
+                            launchIntent?.AddFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);
 
-                            launchIntent.PutExtra("App", "Timeline");
-                            launchIntent.PutExtra("type", type); // SendMsgProduct , OpenChat , OpenChatPage
+                            launchIntent?.PutExtra("App", "Timeline");
+                            launchIntent?.PutExtra("type", type); // SendMsgProduct , OpenChat , OpenChatPage
 
-                            launchIntent.AddFlags(ActivityFlags.SingleTop);
+                            launchIntent?.AddFlags(ActivityFlags.SingleTop);
                             context.StartActivity(launchIntent);
                         }
                         else
@@ -2936,31 +2944,6 @@ namespace DeepSound.Helpers.Utils
                     var intent = new Intent(Intent.ActionView, Uri.Parse("http://play.google.com/store/apps/details?id=" + packageName));
                     intent.AddFlags(ActivityFlags.NewTask);
                     context?.StartActivity(intent);
-                }
-            }
-
-            public static void ClearWebViewCache(Activity context)
-            {
-                try
-                {
-                    WebView wv = new WebView(context);
-                    // wv.ClearCache(true);
-
-                    switch (AppSettings.RenderPriorityFastPostLoad)
-                    {
-                        case true:
-                            wv.Settings.SetRenderPriority(WebSettings.RenderPriority.High);
-                            wv.Settings.SetAppCacheEnabled(true);
-                            wv.Settings.EnableSmoothTransition();
-                            wv.Settings.SetLayoutAlgorithm(WebSettings.LayoutAlgorithm.TextAutosizing);
-
-                            wv.SetLayerType(Build.VERSION.SdkInt >= BuildVersionCodes.Kitkat ? LayerType.Hardware : LayerType.Software, null);
-                            break;
-                    }
-                }
-                catch (Exception exception)
-                {
-                    DisplayReportResultTrack(exception);
                 }
             }
 
@@ -3021,7 +3004,7 @@ namespace DeepSound.Helpers.Utils
                 {
                     string mailto = "mailto:" + email + "?cc=" + email + "&subject=" + subject + "&body=" + text;
                     Intent emailIntent = new Intent(Intent.ActionSendto);
-                    emailIntent.SetData(Uri.Parse(mailto));
+                    emailIntent?.SetData(Uri.Parse(mailto));
                     context.StartActivity(Intent.CreateChooser(emailIntent, "Send Email"));
                 }
                 catch (Exception exception)
@@ -3082,8 +3065,8 @@ namespace DeepSound.Helpers.Utils
             {
                 try
                 {
-                    PackageInfo info = applicationContext.PackageManager?.GetPackageInfo(applicationContext.PackageName!, PackageInfoFlags.Signatures);
 #pragma warning disable 618
+                    PackageInfo info = Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu ? applicationContext.PackageManager?.GetPackageInfo(applicationContext.PackageName!, PackageManager.PackageInfoFlags.Of((long)PackageInfoFlags.Signatures)) : applicationContext.PackageManager?.GetPackageInfo(applicationContext.PackageName!, PackageInfoFlags.Signatures);
                     foreach (var signature in info?.Signatures!)
 #pragma warning restore 618
                     {
@@ -3109,30 +3092,6 @@ namespace DeepSound.Helpers.Utils
                 {
                     DisplayReportResultTrack(e);
                     return "";
-                }
-
-                return "";
-            }
-
-            public static string GetValueFromManifest(Context applicationContext, string nameValue)
-            {
-                try
-                {
-                    ApplicationInfo ai = applicationContext.PackageManager?.GetApplicationInfo(applicationContext.PackageName!, PackageInfoFlags.MetaData);
-                    Bundle bundle = ai?.MetaData;
-                    string myApiKey = bundle?.GetString(nameValue);
-                    return myApiKey;
-                }
-                catch (PackageManager.NameNotFoundException e)
-                {
-                    //string error = "Failed to load meta-data, NameNotFound: " + e.Message;
-                    //Console.WriteLine(error);
-                    DisplayReportResultTrack(e.InnerException);
-                }
-                catch (NullPointerException e)
-                {
-                    DisplayReportResultTrack(e.InnerException);
-                    //Console.WriteLine("Failed to load meta-data, NullPointer: " + e.Message);
                 }
 
                 return "";
@@ -3181,7 +3140,9 @@ namespace DeepSound.Helpers.Utils
                                             case > 20:
                                                 {
                                                     //getExternalMediaDirs() added in API 21
+#pragma warning disable CS0618
                                                     var extenal = context.GetExternalMediaDirs();
+#pragma warning restore CS0618
                                                     switch (extenal?.Length)
                                                     {
                                                         case > 1:
@@ -3268,7 +3229,7 @@ namespace DeepSound.Helpers.Utils
                                     catch (Exception e)
                                     {
                                         DisplayReportResultTrack(e);
-                                        return null!;
+                                        return null;
                                     }
                                 }
                                 // Other Providers
@@ -3298,7 +3259,7 @@ namespace DeepSound.Helpers.Utils
                                     catch (Exception e)
                                     {
                                         DisplayReportResultTrack(e);
-                                        return null!;
+                                        return null;
                                     }
                                 }
 
@@ -3332,9 +3293,9 @@ namespace DeepSound.Helpers.Utils
                 catch (Exception e)
                 {
                     DisplayReportResultTrack(e);
-                    return null!;
+                    return null;
                 }
-                return null!;
+                return null;
             }
 
             /// <summary>
@@ -3347,7 +3308,7 @@ namespace DeepSound.Helpers.Utils
             /// <returns>Data</returns>
             private static string GetDataColumn(Context context, Uri uri, string selection, string[] selectionArgs)
             {
-                ICursor cursor = null!;
+                ICursor cursor = null;
                 string column = "_data";
                 string[] projection = { column };
 
@@ -3369,7 +3330,7 @@ namespace DeepSound.Helpers.Utils
                 {
                     cursor?.Close();
                 }
-                return null!;
+                return null;
             }
 
             //public static bool IsGoogleDrive(Uri uri)
@@ -3434,9 +3395,9 @@ namespace DeepSound.Helpers.Utils
 
             private static string CopyDocumentToCache(Context context, Uri uri)
             {
-                ParcelFileDescriptor parcelFd = null!;
-                FileInputStream input = null!;
-                FileOutputStream output = null!;
+                ParcelFileDescriptor parcelFd = null;
+                FileInputStream input = null;
+                FileOutputStream output = null;
                 ContentResolver contentResolver = context.ContentResolver;
                 try
                 {
@@ -3447,7 +3408,21 @@ namespace DeepSound.Helpers.Utils
                     string extension = MimeTypeMap.GetExtension(contentResolver?.GetType(uri));
                     File f = new File(Path.FolderDiskMyApp, timeStamp + "_" + extension);
                     output = new FileOutputStream(f);
-                    input.Channel?.TransferTo(0, input.Channel.Size(), output.Channel);
+
+                    var size = input?.Channel?.Size() ?? 0;
+                    long position = 0;
+                    while (size > 0)
+                    {
+                        // we still have bytes to transfer
+                        long count = input.Channel.TransferTo(position, size, output.Channel);
+                        if (count > 0)
+                        {
+                            position += count; // seeking position to last byte transferred
+                            size -= count; // {count} bytes have been transferred, remaining {size}
+                        }
+                    }
+
+                    //input.Channel?.TransferTo(0, input.Channel.Size(), output.Channel); >> old
                     return f.AbsolutePath;
                 }
                 catch (Exception e)
@@ -3467,7 +3442,7 @@ namespace DeepSound.Helpers.Utils
                         DisplayReportResultTrack(exception);
                     }
                 }
-                return null!;
+                return null;
             }
 
             private static string GetContentName(ContentResolver resolver, Uri uri)
@@ -3486,13 +3461,13 @@ namespace DeepSound.Helpers.Utils
                                 return name;
                             }
                         default:
-                            return null!;
+                            return null;
                     }
                 }
                 catch (Exception e)
                 {
                     DisplayReportResultTrack(e);
-                    return null!;
+                    return null;
                 }
             }
 
@@ -3519,7 +3494,6 @@ namespace DeepSound.Helpers.Utils
             public static readonly string FolderDiskMyApp = PersonalFolder + "/" + AppSettings.ApplicationName + "/";
             public static readonly string FolderDiskImage = FolderDiskMyApp + "/Images/";
             public static readonly string FolderDiskSound = FolderDiskMyApp + "/Sound/";
-
             public static string GetDirectoryDcim()
             {
                 try
@@ -3557,7 +3531,7 @@ namespace DeepSound.Helpers.Utils
                 catch (Exception e)
                 {
                     DisplayReportResultTrack(e);
-                    return null!;
+                    return null;
                 }
             }
 
@@ -3565,6 +3539,9 @@ namespace DeepSound.Helpers.Utils
             {
                 try
                 {
+                    if (!PermissionsController.CheckPermissionStorage())
+                        return;
+
                     if (!Directory.Exists(FolderDcimMyApp))
                         Directory.CreateDirectory(FolderDcimMyApp);
 
@@ -3584,6 +3561,7 @@ namespace DeepSound.Helpers.Utils
 
                     if (!Directory.Exists(FolderDiskSound + "/" + id))
                         Directory.CreateDirectory(FolderDiskSound + "/" + id);
+
                 }
                 catch (Exception e)
                 {
@@ -3595,8 +3573,14 @@ namespace DeepSound.Helpers.Utils
             {
                 try
                 {
+                    if (!PermissionsController.CheckPermissionStorage())
+                        return;
+
                     if (Directory.Exists(FolderDcimImage + "/" + id))
                         Directory.Delete(FolderDcimImage + "/" + id, true);
+
+                    if (Directory.Exists(FolderDcimSound + "/" + id))
+                        Directory.Delete(FolderDcimSound + "/" + id, true);
 
 
                     //================================================
@@ -3607,6 +3591,8 @@ namespace DeepSound.Helpers.Utils
                     if (Directory.Exists(FolderDiskImage + "/" + id))
                         Directory.Delete(FolderDiskImage + "/" + id, true);
 
+                    if (Directory.Exists(FolderDiskSound + "/" + id))
+                        Directory.Delete(FolderDiskSound + "/" + id, true);
                 }
                 catch (Exception e)
                 {
@@ -3626,9 +3612,9 @@ namespace DeepSound.Helpers.Utils
              * that is inserted manually gets saved at the end of the gallery (because date is not populated).
              * @see android.provider.MediaStore.Images.Media#insertImage(ContentResolver, Bitmap, String, String)
              */
-            public static string InsertImage(ContentResolver cr, string path)
+            public static async Task<string> InsertImage(ContentResolver cr, string path)
             {
-                var source = GetImageBitmapFromUrl(path);
+                var source = await GetImageBitmapFromUrl(path);
 
                 string fileName = path.Contains("/") ? path.Split('/').Last() : path.Split('\\').Last();
                 string extension = fileName.Split('.').Last();
@@ -3644,8 +3630,8 @@ namespace DeepSound.Helpers.Utils
                 values.Put(MediaStore.Images.Media.InterfaceConsts.DateAdded, Time.CurrentTimeMillis() / 1000);
                 values.Put(MediaStore.Images.Media.InterfaceConsts.DateTaken, Time.CurrentTimeMillis());
 
-                Uri url = null!;
-                string stringUrl = null!;    /* value to be returned */
+                Uri url = null;
+                string stringUrl = null;    /* value to be returned */
 
                 try
                 {
@@ -3666,7 +3652,7 @@ namespace DeepSound.Helpers.Utils
                     else
                     {
                         cr.Delete(url, null, null);
-                        url = null!;
+                        url = null;
                     }
 
                 }
@@ -3676,7 +3662,7 @@ namespace DeepSound.Helpers.Utils
                     if (url != null)
                     {
                         cr.Delete(url, null, null);
-                        url = null!;
+                        url = null;
                     }
                 }
 
@@ -3689,24 +3675,33 @@ namespace DeepSound.Helpers.Utils
             }
 
 
-            public static Bitmap GetImageBitmapFromUrl(string url)
+            public static async Task<Bitmap> GetImageBitmapFromUrl(string url)
             {
                 try
                 {
-                    if (CheckConnectivity())
+                    if (url.Contains("http"))
                     {
-                        using var webClient = new WebClient();
-                        var imageBytes = webClient.DownloadData(url);
-                        if (imageBytes != null && imageBytes.Length > 0)
-                            return BitmapFactory.DecodeByteArray(imageBytes, 0, imageBytes.Length);
+                        if (Methods.CheckConnectivity())
+                        {
+                            HttpClient client = new HttpClient();
+
+                            var imageBytes = await client.GetByteArrayAsync(new System.Uri(url));
+                            if (imageBytes is { Length: > 0 })
+                                return BitmapFactory.DecodeByteArray(imageBytes, 0, imageBytes.Length);
+                        }
+                    }
+                    else
+                    {
+                        BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+                        return await BitmapFactory.DecodeFileAsync(url, bmOptions);
                     }
 
-                    return null!;
+                    return null;
                 }
                 catch (Exception e)
                 {
                     DisplayReportResultTrack(e);
-                    return null!;
+                    return null;
                 }
             }
         }
@@ -3718,27 +3713,20 @@ namespace DeepSound.Helpers.Utils
             //General Function to request data from a Server
             private static async Task<string> UrlRequest(string url)
             {
-                // Prepare the Request
-                HttpWebRequest request = (HttpWebRequest)WebRequest.Create(url);
+                HttpClient client = new HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(60); //60 second timeout
+                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (compatible; MSIE 9.0; Windows Phone OS 7.5; Trident/5.0; IEMobile/9.0)");
 
-                // Set method to GET to retrieve data
-                request.Method = "GET";
-                request.Timeout = 6000; //60 second timeout
-                request.UserAgent = "Mozilla/5.0 (compatible; MSIE 9.0; Windows Phone OS 7.5; Trident/5.0; IEMobile/9.0)";
-
-                // Get the Response
-                using var response = await request.GetResponseAsync();
-                // Retrieve a handle to the Stream
-                await using Stream stream = response.GetResponseStream();
-                // Begin reading the Stream
-                if (stream != null)
+                var s = await client.GetStreamAsync(new System.Uri(url));
+                if (s.CanRead)
                 {
-                    using StreamReader streamReader = new StreamReader(stream);
+                    using StreamReader streamReader = new StreamReader(s);
                     // Read the Response Stream to the end
                     string responseContent = await streamReader.ReadToEndAsync();
 
                     return responseContent;
                 }
+
                 return "";
             }
 

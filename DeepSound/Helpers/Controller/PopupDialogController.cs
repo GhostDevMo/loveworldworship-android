@@ -1,21 +1,19 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.OS;
-using Android.Text;
 using Android.Text.Format;
-using Android.Views;
 using Android.Widget;
 using DeepSound.Activities.Default;
 using DeepSound.Activities.Upgrade;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Global;
-using MaterialDialogsCore;
+using Google.Android.Material.Dialog;
+using System;
 using Exception = System.Exception;
 
 namespace DeepSound.Helpers.Controller
 {
-    public class PopupDialogController : Java.Lang.Object, MaterialDialog.IListCallback, MaterialDialog.ISingleButtonCallback, MaterialDialog.IInputCallback
+    public class PopupDialogController
     {
         private readonly Activity ActivityContext;
         private SoundDataObject SoundData;
@@ -28,140 +26,53 @@ namespace DeepSound.Helpers.Controller
             TypeDialog = typeDialog;
         }
 
-       
+
         public void ShowNormalDialog(string title, string content = null, string positiveText = null, string negativeText = null)
         {
             try
             {
-                MaterialDialog.Builder dialogList = new MaterialDialog.Builder(ActivityContext).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                MaterialAlertDialogBuilder dialogList = new MaterialAlertDialogBuilder(ActivityContext);
 
                 if (!string.IsNullOrEmpty(title))
-                    dialogList.Title(title);
+                    dialogList.SetTitle(title);
 
                 if (!string.IsNullOrEmpty(content))
-                    dialogList.Content(content);
+                    dialogList.SetMessage(content);
 
                 if (!string.IsNullOrEmpty(negativeText))
                 {
-                    dialogList.NegativeText(negativeText);
-                    dialogList.OnNegative(this);
+                    dialogList.SetNegativeButton(negativeText, new MaterialDialogUtils());
                 }
 
                 if (!string.IsNullOrEmpty(positiveText))
                 {
-                    dialogList.PositiveText(positiveText);
-                    dialogList.OnPositive(this);
+                    dialogList.SetPositiveButton(positiveText, (sender, args) =>
+                    {
+                        try
+                        {
+                            if (TypeDialog == "Login")
+                            {
+                                ActivityContext.StartActivity(new Intent(ActivityContext, typeof(LoginActivity)));
+                            }
+                            else if (TypeDialog == "GoPro")
+                            {
+                                ActivityContext.StartActivity(new Intent(ActivityContext, typeof(GoProActivity)));
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Methods.DisplayReportResultTrack(e);
+                        }
+                    });
                 }
 
-                dialogList.Build().Show();
+                dialogList.Show();
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-
-        public void ShowEditTextDialog(string title, string content = null, string positiveText = null, string negativeText = null)
-        {
-            try
-            {
-                MaterialDialog.Builder dialogList = new MaterialDialog.Builder(ActivityContext).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-
-                if (!string.IsNullOrEmpty(title))
-                    dialogList.Title(title);
-
-                if (!string.IsNullOrEmpty(content))
-                    dialogList.Content(content);
-
-                if (!string.IsNullOrEmpty(negativeText))
-                {
-                    dialogList.NegativeText(negativeText);
-                    dialogList.OnNegative(this);
-                }
-
-                if (!string.IsNullOrEmpty(positiveText))
-                {
-                    dialogList.PositiveText(positiveText);
-                    dialogList.OnPositive(this);
-                }
-
-                dialogList.InputType(InputTypes.ClassText | InputTypes.TextFlagMultiLine);
-                dialogList.Input("", "", this);
-                dialogList.Build().Show();
-            }
-            catch (Exception exception)
-            {
-                Methods.DisplayReportResultTrack(exception);
-            }
-        }
-
-        public void OnSelection(MaterialDialog p0, View p1, int p2, string selectedPlayListName)
-        {
-            try
-            {
-                
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-        public void OnClick(MaterialDialog p0, DialogAction p1)
-        {
-            try
-            {
-                if (TypeDialog == "Login")
-                {
-                    if (p1 == DialogAction.Positive)
-                    {
-                        ActivityContext.StartActivity(new Intent(ActivityContext, typeof(LoginActivity)));
-                    }
-                    else if (p1 == DialogAction.Negative)
-                    {
-                        p0.Dismiss();
-                    }
-                }
-                else if (TypeDialog == "GoPro")
-                {
-                    if (p1 == DialogAction.Positive)
-                    {
-                        ActivityContext.StartActivity(new Intent(ActivityContext, typeof(GoProActivity)));
-                    }
-                    else if (p1 == DialogAction.Negative)
-                    {
-                        p0.Dismiss();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-        public void OnInput(MaterialDialog p0, string p1)
-        {
-            try
-            {
-                if (TypeDialog == "Report")
-                {
-                    if (p1.Length  > 0)
-                    {
-                         
-                    }
-                    else
-                    {
-                        //Toast.MakeText(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_The_name_can_not_be_blank), ToastLength.Short)?.Show();
-                    }
-                }
-            }
-            catch (Exception exception)
-            {
-                Methods.DisplayReportResultTrack(exception);
-            }
-        }
-         
 
         public class TimePickerFragment : AndroidX.Fragment.App.DialogFragment, TimePickerDialog.IOnTimeSetListener
         {
@@ -219,5 +130,6 @@ namespace DeepSound.Helpers.Controller
                 DateSelectedHandler(selectedDate);
             }
         }
+
     }
 }

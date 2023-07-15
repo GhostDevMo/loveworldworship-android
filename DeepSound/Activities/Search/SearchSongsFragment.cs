@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -16,7 +13,10 @@ using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Global;
- 
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+
 namespace DeepSound.Activities.Search
 {
     public class SearchSongsFragment : Fragment
@@ -59,7 +59,7 @@ namespace DeepSound.Activities.Search
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -94,7 +94,7 @@ namespace DeepSound.Activities.Search
                 SwipeRefreshLayout.SetColorSchemeResources(Android.Resource.Color.HoloBlueLight, Android.Resource.Color.HoloGreenLight, Android.Resource.Color.HoloOrangeLight, Android.Resource.Color.HoloRedLight);
                 SwipeRefreshLayout.Refreshing = false;
                 SwipeRefreshLayout.Enabled = false;
-                SwipeRefreshLayout.SetProgressBackgroundColorSchemeColor(DeepSoundTools.IsTabDark() ? Color.ParseColor("#424242") : Color.ParseColor("#f7f7f7")); 
+                SwipeRefreshLayout.SetProgressBackgroundColorSchemeColor(DeepSoundTools.IsTabDark() ? Color.ParseColor("#424242") : Color.ParseColor("#f7f7f7"));
             }
             catch (Exception e)
             {
@@ -131,10 +131,10 @@ namespace DeepSound.Activities.Search
                 //x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSearchResult);
                 //if (!x.EmptyStateButton.HasOnClickListeners)
                 //{
-                //    x.EmptyStateButton.Click += null!;
+                //    x.EmptyStateButton.Click += null;
                 //    x.EmptyStateButton.Click += ContextSearch.TryAgainButton_Click;
                 //}
-               
+
             }
             catch (Exception e)
             {
@@ -143,7 +143,7 @@ namespace DeepSound.Activities.Search
         }
 
         #endregion
-         
+
         #region Event
 
         //Scroll
@@ -157,7 +157,7 @@ namespace DeepSound.Activities.Search
                 {
                     ContextSearch.OffsetSongs = item.Id.ToString();
                     ContextSearch.StartApiService();
-                } 
+                }
             }
             catch (Exception exception)
             {
@@ -170,13 +170,13 @@ namespace DeepSound.Activities.Search
         {
             try
             {
-                   var item = MAdapter.GetItem(e.Position);
+                var item = MAdapter.GetItem(e.Position);
                 if (item != null)
                 {
                     if (item.IsPlay)
                     {
                         item.IsPlay = false;
-                        
+
                         var index = MAdapter.SoundsList.IndexOf(item);
                         MAdapter.NotifyItemChanged(index, "playerAction");
 
@@ -209,8 +209,8 @@ namespace DeepSound.Activities.Search
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-          
+
         #endregion
-          
+
     }
 }

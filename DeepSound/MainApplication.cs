@@ -6,29 +6,28 @@
 // Follow me on facebook >> https://www.facebook.com/Elindoughous
 //=========================================================
 
-using System;
-using System.Net;
-using System.Net.Http;
-using System.Security.Cryptography;
-using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
 using AndroidX.AppCompat.App;
 using AndroidX.Lifecycle;
+using Bumptech.Glide;
 using DeepSound.Activities;
 using DeepSound.Activities.SettingsUser;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
-using DeepSound.Library.OneSignalNotif;
 using DeepSound.SQLite;
 using DeepSoundClient;
 using Firebase;
 using Java.Lang;
 using Newtonsoft.Json;
 using Plugin.CurrentActivity;
+using System;
+using System.Net;
+using System.Net.Http;
+using System.Threading.Tasks;
 using Xamarin.Android.Net;
 using Exception = System.Exception;
 
@@ -54,35 +53,24 @@ namespace DeepSound
                 RegisterActivityLifecycleCallbacks(this);
                 Instance = this;
 
-                switch (AppSettings.TurnSecurityProtocolType3072On)
+                //Bypass Web Errors 
+                //======================================
+                if (AppSettings.TurnSecurityProtocolType3072On)
                 {
-                    //Bypass Web Errors 
-                    //======================================
-                    case true:
-                        {
-                            ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
-                            var client = new HttpClient(new AndroidClientHandler());
-                            ServicePointManager.Expect100Continue = true;
-                            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls13 | SecurityProtocolType.SystemDefault;
-                            Console.WriteLine(client);
-                            break;
-                        }
+                    ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072;
+                    var client = new HttpClient(new AndroidMessageHandler());
+                    ServicePointManager.Expect100Continue = true;
+                    ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13 | SecurityProtocolType.SystemDefault;
+                    Console.WriteLine(client);
                 }
 
-                switch (AppSettings.TurnTrustFailureOnWebException)
-                {
-                    case true:
-                    {
-                        //If you are Getting this error >>> System.Net.WebException: Error: TrustFailure /// then Set it to true
-                        ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
-                        var b = new AesCryptoServiceProvider();
-                        Console.WriteLine(b);
-                        break;
-                    }
-                }
+                //If you are Getting this error >>> System.Net.WebException: Error: TrustFailure /// then Set it to true
+                if (AppSettings.TurnTrustFailureOnWebException)
+                    ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+
                 JsonConvert.DefaultSettings = () => UserDetails.JsonSettings;
 
-                InitializeDeepSound.Initialize(AppSettings.Cert, PackageName, AppSettings.TurnSecurityProtocolType3072On);
+                InitializeDeepSound.Initialize(AppSettings.Cert, PackageName, AppSettings.TurnSecurityProtocolType3072On, AppSettings.SetApisReportMode);
 
                 var sqLiteDatabase = new SqLiteDatabase();
                 sqLiteDatabase.CheckTablesStatus();
@@ -121,10 +109,6 @@ namespace DeepSound
                 if (AppSettings.ShowFbBannerAds || AppSettings.ShowFbInterstitialAds || AppSettings.ShowFbRewardVideoAds)
                     InitializeFacebook.Initialize(this);
                  
-                //OneSignal Notification  
-                //======================================
-                OneSignalNotification.Instance.RegisterNotificationDevice(this);
-
                 ClassMapper.SetMappers();
 
                 //App restarted after crash
@@ -142,7 +126,7 @@ namespace DeepSound
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void AndroidEnvironmentOnUnhandledExceptionRaiser(object sender, RaiseThrowableEventArgs e)
         {
             try
@@ -345,9 +329,10 @@ namespace DeepSound
         public override void OnLowMemory()
         {
             try
-            {
-                GC.Collect(GC.MaxGeneration);
+            { 
                 base.OnLowMemory();
+                Glide.With(this).OnLowMemory();
+                GC.Collect(GC.MaxGeneration);
             }
             catch (Exception exception)
             {
@@ -359,8 +344,9 @@ namespace DeepSound
         {
             try
             {
-                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced); 
                 base.OnTrimMemory(level);
+                Glide.With(this).OnTrimMemory(level);
             }
             catch (Exception exception)
             {

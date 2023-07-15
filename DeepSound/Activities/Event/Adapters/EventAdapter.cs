@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Graphics;
 using Android.Views;
 using Android.Widget;
@@ -14,6 +11,9 @@ using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Event;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 using Object = Java.Lang.Object;
 
@@ -24,7 +24,7 @@ namespace DeepSound.Activities.Event.Adapters
         public event EventHandler<EventAdapterClickEventArgs> ItemClick;
         public event EventHandler<EventAdapterClickEventArgs> ItemLongClick;
 
-        private readonly Activity ActivityContext; 
+        private readonly Activity ActivityContext;
         public ObservableCollection<EventDataObject> EventsList = new ObservableCollection<EventDataObject>();
 
         public EventAdapter(Activity context)
@@ -56,7 +56,7 @@ namespace DeepSound.Activities.Event.Adapters
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -68,11 +68,11 @@ namespace DeepSound.Activities.Event.Adapters
                 switch (viewHolder)
                 {
                     case EventAdapterViewHolder holder:
-                    {
-                        var item = EventsList[position];
-                        if (item != null) Initialize(holder, item);
-                        break;
-                    }
+                        {
+                            var item = EventsList[position];
+                            if (item != null) Initialize(holder, item);
+                            break;
+                        }
                 }
             }
             catch (Exception exception)
@@ -98,7 +98,7 @@ namespace DeepSound.Activities.Event.Adapters
                 {
                     holder.TxtEventLocation.Text = item.RealAddress;
                 }
-                
+
                 holder.TxtEventTime.Text = item.EndDate;
 
                 item.IsOwner = item?.UserId == UserDetails.UserId;
@@ -114,12 +114,12 @@ namespace DeepSound.Activities.Event.Adapters
                         holder.TxtEventType.Text = ActivityContext.GetText(Resource.String.Lbl_Joined);
                         holder.TxtEventType.Background.SetTint(Color.ParseColor("#02BE10"));
                     }
-                    else  
+                    else
                     {
                         holder.TxtEventType.Text = ActivityContext.GetText(Resource.String.Lbl_Event);
                         holder.TxtEventType.Background.SetTint(Color.ParseColor("#F18D05"));
                     }
-                } 
+                }
             }
             catch (Exception e)
             {
@@ -137,7 +137,7 @@ namespace DeepSound.Activities.Event.Adapters
                 switch (holder)
                 {
                     case EventAdapterViewHolder viewHolder:
-                        Glide.With(ActivityContext).Clear(viewHolder.Image);
+                        Glide.With(ActivityContext?.BaseContext).Clear(viewHolder.Image);
                         break;
                 }
                 base.OnViewRecycled(holder);
@@ -157,7 +157,7 @@ namespace DeepSound.Activities.Event.Adapters
         {
             try
             {
-                 return position;
+                return position;
             }
             catch (Exception exception)
             {
@@ -219,7 +219,7 @@ namespace DeepSound.Activities.Event.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString()).Apply(new RequestOptions().CenterCrop());
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString()).Apply(new RequestOptions().CenterCrop());
         }
     }
 
@@ -238,7 +238,7 @@ namespace DeepSound.Activities.Event.Adapters
 
         #endregion  
 
-        public EventAdapterViewHolder(View itemView, Action<EventAdapterClickEventArgs> clickListener,Action<EventAdapterClickEventArgs> longClickListener) : base(itemView)
+        public EventAdapterViewHolder(View itemView, Action<EventAdapterClickEventArgs> clickListener, Action<EventAdapterClickEventArgs> longClickListener) : base(itemView)
         {
             try
             {
@@ -252,8 +252,8 @@ namespace DeepSound.Activities.Event.Adapters
                 PostLinkLinearLayout = itemView.FindViewById<CardView>(Resource.Id.card_view);
 
                 //Event
-                itemView.Click += (sender, e) => clickListener(new EventAdapterClickEventArgs{ View = itemView, Position = BindingAdapterPosition });
-                itemView.LongClick += (sender, e) => longClickListener(new EventAdapterClickEventArgs{ View = itemView, Position = BindingAdapterPosition });
+                itemView.Click += (sender, e) => clickListener(new EventAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });
+                itemView.LongClick += (sender, e) => longClickListener(new EventAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });
             }
             catch (Exception exception)
             {

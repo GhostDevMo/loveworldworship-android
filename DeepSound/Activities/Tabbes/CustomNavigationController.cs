@@ -1,17 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using Android.App;
+﻿using Android.App;
+using Android.Graphics;
 using Android.OS;
+using Android.Util;
 using Android.Views;
 using Android.Widget;
-using Android.Graphics;
-using Android.Util;
 using DeepSound.Helpers.Ads;
+using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
+using System;
+using System.Collections.Generic;
 using Fragment = AndroidX.Fragment.App.Fragment;
-using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
+using FragmentTransaction = AndroidX.Fragment.App.FragmentTransaction;
 
 namespace DeepSound.Activities.Tabbes
 {
@@ -31,7 +32,7 @@ namespace DeepSound.Activities.Tabbes
         public readonly List<Fragment> FragmentListTab2 = new List<Fragment>();
         public readonly List<Fragment> FragmentListTab3 = new List<Fragment>();
         public readonly List<Fragment> FragmentListTab4 = new List<Fragment>();
-         
+
         public CustomNavigationController(Activity activity)
         {
             try
@@ -48,7 +49,7 @@ namespace DeepSound.Activities.Tabbes
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void Initialize()
         {
             try
@@ -56,62 +57,44 @@ namespace DeepSound.Activities.Tabbes
                 MainLayout = MainContext.FindViewById<LinearLayout>(Resource.Id.llMain);
 
                 CustomButton0 = MainContext.FindViewById<LinearLayout>(Resource.Id.llcustom0);
-                CustomButton2 = MainContext.FindViewById<LinearLayout>(Resource.Id.llcustom2);
                 CustomButton3 = MainContext.FindViewById<LinearLayout>(Resource.Id.llcustom3);
                 CustomButton4 = MainContext.FindViewById<LinearLayout>(Resource.Id.llcustom4);
                 CustomButton5 = MainContext.FindViewById<LinearLayout>(Resource.Id.llcustom5);
 
                 CustomImage0 = MainContext.FindViewById<ImageView>(Resource.Id.ivcustom0);
-                CustomImage2 = MainContext.FindViewById<ImageView>(Resource.Id.ivcustom2);
                 CustomImage3 = MainContext.FindViewById<ImageView>(Resource.Id.ivcustom3);
                 CustomImage4 = MainContext.FindViewById<ImageView>(Resource.Id.ivcustom4);
                 CustomImage5 = MainContext.FindViewById<ImageView>(Resource.Id.ivcustom5);
 
                 CustomText0 = MainContext.FindViewById<TextView>(Resource.Id.txtcustom0);
-                CustomText2 = MainContext.FindViewById<TextView>(Resource.Id.txtcustom2);
                 CustomText3 = MainContext.FindViewById<TextView>(Resource.Id.txtcustom3);
                 CustomText4 = MainContext.FindViewById<TextView>(Resource.Id.txtcustom4);
                 CustomText5 = MainContext.FindViewById<TextView>(Resource.Id.txtcustom5);
 
-                if (!UserDetails.IsLogin)
-                {
-                    CustomButton3.Visibility = ViewStates.Gone;
-                    CustomButton4.Visibility = ViewStates.Gone;
-                    CustomButton5.Visibility = ViewStates.Gone;
-                    MainLayout.WeightSum = 2;
-                }
-
-                CustomButton0?.SetOnClickListener(this); 
-                CustomButton2?.SetOnClickListener(this); 
-                CustomButton3?.SetOnClickListener(this); 
-                CustomButton4?.SetOnClickListener(this); 
+                CustomButton0?.SetOnClickListener(this);
+                CustomButton3?.SetOnClickListener(this);
+                CustomButton4?.SetOnClickListener(this);
                 CustomButton5?.SetOnClickListener(this);
-                 
-                //CustomImage0.Background = null!;
+
+                //CustomImage0.Background = null;
                 CustomImage0.SetColorFilter(Color.ParseColor(AppSettings.MainColor));
                 CustomText0.SetTextColor(Color.ParseColor(AppSettings.MainColor));
                 CustomText0.SetTypeface(Typeface.Default, TypefaceStyle.Bold);
                 CustomText0.SetTextSize(ComplexUnitType.Sp, 14);
 
-                //CustomImage2.Background = null!;
-                CustomImage2.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
-                CustomText2.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
-                CustomText2.SetTypeface(Typeface.Default, TypefaceStyle.Normal);
-                CustomText2.SetTextSize(ComplexUnitType.Sp, 13);
-
-                //CustomImage3.Background = null!;
+                //CustomImage3.Background = null;
                 CustomImage3.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
                 CustomText3.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
                 CustomText3.SetTypeface(Typeface.Default, TypefaceStyle.Normal);
                 CustomText3.SetTextSize(ComplexUnitType.Sp, 13);
 
-                //CustomImage4.Background = null!;
+                //CustomImage4.Background = null;
                 CustomImage4.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
                 CustomText4.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
                 CustomText4.SetTypeface(Typeface.Default, TypefaceStyle.Normal);
                 CustomText4.SetTextSize(ComplexUnitType.Sp, 13);
 
-                //CustomImage5.Background = null!;
+                //CustomImage5.Background = null;
                 CustomImage5.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
                 CustomText5.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
                 CustomText5.SetTypeface(Typeface.Default, TypefaceStyle.Normal);
@@ -125,85 +108,117 @@ namespace DeepSound.Activities.Tabbes
 
         public void OnClick(View v)
         {
-            switch (v.Id)
+            try
             {
-                case Resource.Id.llcustom0:
-                    EnableNavigationButton(CustomImage0, CustomText0);
-                    PageNumber = 0;
-                    ShowFragment0();
-                    AdsGoogle.Ad_AppOpenManager(MainContext);
-                    break;
-                case Resource.Id.llcustom2:
-                    EnableNavigationButton(CustomImage2, CustomText2);
-                    PageNumber = 1;
-                    ShowFragment1(); 
-                    AdsGoogle.Ad_RewardedVideo(MainContext);
-                    break;
-                case Resource.Id.llcustom3:
-                    EnableNavigationButton(CustomImage3, CustomText3);
-                    PageNumber = 2;
-                    ShowFragment2();
-                    AdsGoogle.Ad_Interstitial(MainContext);
-                    Context.InAppReview();
-                    break;
-                case Resource.Id.llcustom4:
-                    EnableNavigationButton(CustomImage4, CustomText4);
-                    PageNumber = 3;
-                    ShowFragment3();
-                    AdsGoogle.Ad_RewardedInterstitial(MainContext);
-                    break;
-                case Resource.Id.llcustom5:
-                    EnableNavigationButton(CustomImage5,CustomText5);
-                    PageNumber = 4;
-                    ShowFragment4();
-                    AdsGoogle.Ad_Interstitial(MainContext);
-                    break;
+                switch (v.Id)
+                {
+                    case Resource.Id.llcustom0:
+                        EnableNavigationButton(CustomImage0, CustomText0);
+                        PageNumber = 0;
+                        ShowFragment0();
+                        AdsGoogle.Ad_AppOpenManager(MainContext);
+                        break;
+                    case Resource.Id.llcustom3:
+
+                        if (!UserDetails.IsLogin)
+                        {
+                            PopupDialogController dialog = new PopupDialogController(MainContext, null, "Login");
+                            dialog.ShowNormalDialog(MainContext.GetText(Resource.String.Lbl_Login), MainContext.GetText(Resource.String.Lbl_Message_Sorry_signin), MainContext.GetText(Resource.String.Lbl_Yes), MainContext.GetText(Resource.String.Lbl_No));
+                            return;
+                        }
+
+                        EnableNavigationButton(CustomImage3, CustomText3);
+                        PageNumber = 2;
+                        ShowFragment2();
+                        AdsGoogle.Ad_Interstitial(MainContext);
+                        Context.InAppReview();
+                        break;
+                    case Resource.Id.llcustom4:
+
+                        if (!UserDetails.IsLogin)
+                        {
+                            PopupDialogController dialog = new PopupDialogController(MainContext, null, "Login");
+                            dialog.ShowNormalDialog(MainContext.GetText(Resource.String.Lbl_Login), MainContext.GetText(Resource.String.Lbl_Message_Sorry_signin), MainContext.GetText(Resource.String.Lbl_Yes), MainContext.GetText(Resource.String.Lbl_No));
+                            return;
+                        }
+
+                        EnableNavigationButton(CustomImage4, CustomText4);
+                        PageNumber = 3;
+                        ShowFragment3();
+                        AdsGoogle.Ad_RewardedInterstitial(MainContext);
+                        break;
+                    case Resource.Id.llcustom5:
+
+                        if (!UserDetails.IsLogin)
+                        {
+                            PopupDialogController dialog = new PopupDialogController(MainContext, null, "Login");
+                            dialog.ShowNormalDialog(MainContext.GetText(Resource.String.Lbl_Login), MainContext.GetText(Resource.String.Lbl_Message_Sorry_signin), MainContext.GetText(Resource.String.Lbl_Yes), MainContext.GetText(Resource.String.Lbl_No));
+                            return;
+                        }
+
+                        EnableNavigationButton(CustomImage5, CustomText5);
+                        PageNumber = 4;
+                        ShowFragment4();
+                        AdsGoogle.Ad_Interstitial(MainContext);
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
             }
         }
 
-        public void EnableNavigationButton(ImageView image , TextView text)
+        public void EnableNavigationButton(ImageView image, TextView text)
         {
-            DisableAllNavigationButton();
-            //image.Background = MainContext.GetDrawable(Resource.Drawable.shape_bg_bottom_navigation);
-            image.SetColorFilter(Color.ParseColor(AppSettings.MainColor));
-           
-            text.SetTextColor(Color.ParseColor(AppSettings.MainColor));
-            text.SetTypeface(Typeface.Default, TypefaceStyle.Bold);
-            text.SetTextSize(ComplexUnitType.Sp, 14);
+            try
+            {
+                DisableAllNavigationButton();
+                //image.Background = MainContext.GetDrawable(Resource.Drawable.shape_bg_bottom_navigation);
+                image.SetColorFilter(Color.ParseColor(AppSettings.MainColor));
+
+                text.SetTextColor(Color.ParseColor(AppSettings.MainColor));
+                text.SetTypeface(Typeface.Default, TypefaceStyle.Bold);
+                text.SetTextSize(ComplexUnitType.Sp, 14);
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
         }
 
         public void DisableAllNavigationButton()
         {
-            //CustomImage0.Background = null!;
-            CustomImage0.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
-            CustomText0.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
-            CustomText0.SetTypeface(Typeface.Default, TypefaceStyle.Normal);
-            CustomText0.SetTextSize(ComplexUnitType.Sp, 13);
+            try
+            {
+                //CustomImage0.Background = null;
+                CustomImage0.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
+                CustomText0.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
+                CustomText0.SetTypeface(Typeface.Default, TypefaceStyle.Normal);
+                CustomText0.SetTextSize(ComplexUnitType.Sp, 13);
 
-            //CustomImage2.Background = null!;
-            CustomImage2.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
-            CustomText2.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
-            CustomText2.SetTypeface(Typeface.Default, TypefaceStyle.Normal);
-            CustomText2.SetTextSize(ComplexUnitType.Sp, 13);
+                //CustomImage3.Background = null;
+                CustomImage3.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
+                CustomText3.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
+                CustomText3.SetTypeface(Typeface.Default, TypefaceStyle.Normal);
+                CustomText3.SetTextSize(ComplexUnitType.Sp, 13);
 
-            //CustomImage3.Background = null!;
-            CustomImage3.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
-            CustomText3.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
-            CustomText3.SetTypeface(Typeface.Default, TypefaceStyle.Normal);
-            CustomText3.SetTextSize(ComplexUnitType.Sp, 13);
+                //CustomImage4.Background = null;
+                CustomImage4.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
+                CustomText4.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
+                CustomText4.SetTypeface(Typeface.Default, TypefaceStyle.Normal);
+                CustomText4.SetTextSize(ComplexUnitType.Sp, 13);
 
-            //CustomImage4.Background = null!;
-            CustomImage4.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
-            CustomText4.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
-            CustomText4.SetTypeface(Typeface.Default, TypefaceStyle.Normal);
-            CustomText4.SetTextSize(ComplexUnitType.Sp, 13);
-
-            //CustomImage5.Background = null!;
-            CustomImage5.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
-            CustomText5.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
-            CustomText5.SetTypeface(Typeface.Default, TypefaceStyle.Normal);
-            CustomText5.SetTextSize(ComplexUnitType.Sp, 13);
-
+                //CustomImage5.Background = null;
+                CustomImage5.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
+                CustomText5.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
+                CustomText5.SetTypeface(Typeface.Default, TypefaceStyle.Normal);
+                CustomText5.SetTextSize(ComplexUnitType.Sp, 13);
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
         }
 
         //public void ShowNotificationBadge(bool showBadge)
@@ -227,50 +242,51 @@ namespace DeepSound.Activities.Tabbes
 
         public Fragment GetSelectedTabBackStackFragment()
         {
-            switch (PageNumber)
+            try
             {
-                case 0:
-                    {
-                        var currentFragment = FragmentListTab0[FragmentListTab0.Count - 2];
-                        if (currentFragment != null)
-                            return currentFragment;
-                        break;
-                    }
-                case 1:
-                    {
-                        var currentFragment = FragmentListTab1[FragmentListTab1.Count - 2];
-                        if (currentFragment != null)
-                            return currentFragment;
-                        break;
-                    }
-                case 2:
-                    {
-                        var currentFragment = FragmentListTab2[FragmentListTab2.Count - 2];
-                        if (currentFragment != null)
-                            return currentFragment;
-                        break;
-                    }
-                case 3:
-                    {
-                        var currentFragment = FragmentListTab3[FragmentListTab3.Count - 2];
-                        if (currentFragment != null)
-                            return currentFragment;
-                        break;
-                    }
-                case 4:
-                    {
-                        var currentFragment = FragmentListTab4[FragmentListTab4.Count - 2];
-                        if (currentFragment != null)
-                            return currentFragment;
-                        break;
-                    }
+                switch (PageNumber)
+                {
+                    case 0:
+                        {
+                            var currentFragment = FragmentListTab0[FragmentListTab0.Count - 2];
+                            if (currentFragment != null)
+                                return currentFragment;
+                            break;
+                        }
+                    case 1:
+                        {
+                            var currentFragment = FragmentListTab1[FragmentListTab1.Count - 2];
+                            if (currentFragment != null)
+                                return currentFragment;
+                            break;
+                        }
+                    case 3:
+                        {
+                            var currentFragment = FragmentListTab3[FragmentListTab3.Count - 2];
+                            if (currentFragment != null)
+                                return currentFragment;
+                            break;
+                        }
+                    case 4:
+                        {
+                            var currentFragment = FragmentListTab4[FragmentListTab4.Count - 2];
+                            if (currentFragment != null)
+                                return currentFragment;
+                            break;
+                        }
 
-                default:
-                    return null!;
+                    default:
+                        return null;
 
+                }
+
+                return null;
             }
-
-            return null!;
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+                return null;
+            }
         }
 
         public int GetCountFragment()
@@ -283,8 +299,6 @@ namespace DeepSound.Activities.Tabbes
                         return FragmentListTab0.Count > 1 ? FragmentListTab0.Count : 0;
                     case 1:
                         return FragmentListTab1.Count > 1 ? FragmentListTab1.Count : 0;
-                    case 2:
-                        return FragmentListTab2.Count > 1 ? FragmentListTab2.Count : 0;
                     case 3:
                         return FragmentListTab3.Count > 1 ? FragmentListTab4.Count : 0;
                     case 4:
@@ -319,7 +333,7 @@ namespace DeepSound.Activities.Tabbes
             }
         }
 
-        public void DisplayFragment(Fragment newFragment,View sharedElement = null)
+        public void DisplayFragment(Fragment newFragment, View sharedElement = null)
         {
             try
             {
@@ -363,7 +377,7 @@ namespace DeepSound.Activities.Tabbes
 
 
                 // ft.SetCustomAnimations(Resource.Animation.fab_scale_down, Resource.Animation.fab_scale_up);
-             
+
 
                 ft.Show(newFragment)?.Commit();
             }
@@ -608,7 +622,7 @@ namespace DeepSound.Activities.Tabbes
                 if (FragmentListTab2.Count <= 0) return;
                 var currentFragment = FragmentListTab2[FragmentListTab2.Count - 1];
                 if (currentFragment != null)
-                    DisplayFragment(currentFragment); 
+                    DisplayFragment(currentFragment);
             }
             catch (Exception e)
             {
@@ -623,7 +637,7 @@ namespace DeepSound.Activities.Tabbes
                 if (FragmentListTab3.Count <= 0) return;
                 var currentFragment = FragmentListTab3[FragmentListTab3.Count - 1];
                 if (currentFragment != null)
-                    DisplayFragment(currentFragment); 
+                    DisplayFragment(currentFragment);
             }
             catch (Exception e)
             {
@@ -638,7 +652,7 @@ namespace DeepSound.Activities.Tabbes
                 if (FragmentListTab4.Count <= 0) return;
                 var currentFragment = FragmentListTab4[FragmentListTab4.Count - 1];
                 if (currentFragment != null)
-                    DisplayFragment(currentFragment); 
+                    DisplayFragment(currentFragment);
             }
             catch (Exception e)
             {

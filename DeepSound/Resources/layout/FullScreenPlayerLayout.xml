@@ -130,28 +130,6 @@
                     android:tint="@color/gnt_white"
                     android:src="@drawable/icon_player_heart" />
             </FrameLayout>
-            <FrameLayout
-                android:id="@+id/ll_Dislike"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="@drawable/custom_ripple"
-                android:orientation="vertical">
-                <ImageView
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:padding="10dp"
-                    android:gravity="center"
-                    android:background="@drawable/shape_bg_bottom_navigation"
-                    android:backgroundTint="#99000000"
-                    android:layout_gravity="center"
-                    android:id="@+id/icon_Dislike"
-                    android:tint="@color/gnt_white"
-                    android:src="@drawable/icon_player_dislike" />
-            </FrameLayout>
             <RelativeLayout
                 android:id="@+id/ll_download"
                 android:layout_width="0dp"
@@ -264,6 +242,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:orientation="horizontal"
                 android:gravity="center_vertical"
                 android:layout_marginStart="10dp"
                 android:layout_marginEnd="10dp"
@@ -293,7 +272,7 @@
                     android:layout_marginStart="3dp"
                     android:background="@drawable/custom_ripple"
                     android:tint="#999999"
-                    app:srcCompat="@drawable/iccon_player_previos" />
+                    app:srcCompat="@drawable/icon_player_previous" />
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     style="@style/Widget.MaterialComponents.FloatingActionButton"
                     android:id="@+id/bt_play"

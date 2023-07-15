@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Graphics;
 using Android.Views;
 using Android.Widget;
@@ -13,6 +10,9 @@ using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Stations;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 using Object = Java.Lang.Object;
 
@@ -52,7 +52,7 @@ namespace DeepSound.Activities.Stations.Adapters
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -116,22 +116,22 @@ namespace DeepSound.Activities.Stations.Adapters
                         {
                             // My Friend
                             case true:
-                            {
-                                holder.BtnAdd.SetBackgroundResource(Resource.Drawable.round_button_pressed);
-                                holder.BtnAdd.SetTextColor(Color.ParseColor("#ffffff"));
-                                holder.BtnAdd.Text = ActivityContext.GetText(Resource.String.Lbl_Added);
-                                holder.BtnAdd.Tag = "true";
-                                holder.BtnAdd.Visibility = ViewStates.Invisible;//wael after update add new api for remove add 
-                                break;
-                            }
+                                {
+                                    holder.BtnAdd.SetBackgroundResource(Resource.Drawable.round_button_pressed);
+                                    holder.BtnAdd.SetTextColor(Color.ParseColor("#ffffff"));
+                                    holder.BtnAdd.Text = ActivityContext.GetText(Resource.String.Lbl_Added);
+                                    holder.BtnAdd.Tag = "true";
+                                    holder.BtnAdd.Visibility = ViewStates.Invisible;//wael after update add new api for remove add 
+                                    break;
+                                }
                             case false:
-                            {
-                                holder.BtnAdd.SetBackgroundResource(Resource.Drawable.round_button_normal);
-                                holder.BtnAdd.SetTextColor(Color.ParseColor(AppSettings.MainColor));
-                                holder.BtnAdd.Text = ActivityContext.GetText(Resource.String.Lbl_Add);
-                                holder.BtnAdd.Tag = "false";
-                                break;
-                            }
+                                {
+                                    holder.BtnAdd.SetBackgroundResource(Resource.Drawable.round_button_normal);
+                                    holder.BtnAdd.SetTextColor(Color.ParseColor(AppSettings.MainColor));
+                                    holder.BtnAdd.Text = ActivityContext.GetText(Resource.String.Lbl_Add);
+                                    holder.BtnAdd.Tag = "false";
+                                    break;
+                                }
                         }
                     }
                 }
@@ -205,7 +205,7 @@ namespace DeepSound.Activities.Stations.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString())
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString())
                 .Apply(new RequestOptions().CenterCrop());
         }
     }

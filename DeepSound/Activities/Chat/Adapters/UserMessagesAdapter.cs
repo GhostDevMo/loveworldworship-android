@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Core.Content;
 using AndroidX.RecyclerView.Widget;
 using DeepSound.Helpers.CacheLoaders;
-using DeepSound.Library.Anjo.SuperTextLibrary;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Utils;
+using DeepSound.Library.Anjo.SuperTextLibrary;
 using DeepSoundClient;
 using DeepSoundClient.Classes.Chat;
+using System;
+using System.Collections.ObjectModel;
 using Uri = Android.Net.Uri;
 
 namespace DeepSound.Activities.Chat.Adapters
@@ -22,7 +22,7 @@ namespace DeepSound.Activities.Chat.Adapters
 
         private readonly MessagesBoxActivity ActivityContext;
         public ObservableCollection<ChatMessagesDataObject> MessageList = new ObservableCollection<ChatMessagesDataObject>();
-        
+
         #endregion
 
         public UserMessagesAdapter(MessagesBoxActivity context)
@@ -30,7 +30,7 @@ namespace DeepSound.Activities.Chat.Adapters
             try
             {
                 ActivityContext = context;
-                HasStableIds = true; 
+                HasStableIds = true;
             }
             catch (Exception e)
             {
@@ -72,15 +72,15 @@ namespace DeepSound.Activities.Chat.Adapters
                         return imageViewHolder;
                     }
 
-                    return null!;
+                    return null;
                 }
 
-                return null!;
+                return null;
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -93,7 +93,7 @@ namespace DeepSound.Activities.Chat.Adapters
                 if (item == null) return;
                 switch (item.ApiType)
                 {
-                    case ApiType.Text :
+                    case ApiType.Text:
                         {
                             TextViewHolder holder = vh as TextViewHolder;
                             LoadTextOfChatItem(holder, position, item);
@@ -104,7 +104,7 @@ namespace DeepSound.Activities.Chat.Adapters
                             ImageViewHolder holder = vh as ImageViewHolder;
                             LoadImageOfChatItem(holder, position, item);
                             break;
-                        } 
+                        }
                 }
             }
             catch (Exception exception)
@@ -137,11 +137,11 @@ namespace DeepSound.Activities.Chat.Adapters
             {
                 Console.WriteLine(position);
                 string imageUrl = message.Image.Contains("upload/") && !message.Image.Contains(InitializeDeepSound.WebsiteUrl) ? InitializeDeepSound.WebsiteUrl + "/" + message.Image : message.Image;
-               
+
                 GlideImageLoader.LoadImage(ActivityContext, imageUrl, holder.ImageView, ImageStyle.CenterCrop, ImagePlaceholders.Drawable);
 
                 holder.Time.Text = Methods.Time.TimeAgo(Convert.ToInt32(message.Time));
-                  
+
                 holder.LoadingProgressView.Indeterminate = false;
                 holder.LoadingProgressView.Visibility = ViewStates.Gone;
 
@@ -173,18 +173,18 @@ namespace DeepSound.Activities.Chat.Adapters
                             Methods.DisplayReportResultTrack(e);
                         }
                     };
-                } 
+                }
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #endregion
 
         public override int ItemCount => MessageList?.Count ?? 0;
- 
+
         public ChatMessagesDataObject GetItem(int position)
         {
             return MessageList[position];
@@ -214,9 +214,9 @@ namespace DeepSound.Activities.Chat.Adapters
                 Methods.DisplayReportResultTrack(exception);
                 return 0;
             }
-        } 
+        }
     }
-     
+
     public class TextViewHolder : RecyclerView.ViewHolder
     {
         #region Variables Basic
@@ -282,5 +282,5 @@ namespace DeepSound.Activities.Chat.Adapters
                 Methods.DisplayReportResultTrack(e);
             }
         }
-    } 
+    }
 }

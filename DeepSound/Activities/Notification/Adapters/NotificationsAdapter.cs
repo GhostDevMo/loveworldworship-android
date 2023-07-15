@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Graphics;
 using Android.Text;
 using Android.Text.Style;
@@ -14,6 +11,9 @@ using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Common;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 
 namespace DeepSound.Activities.Notification.Adapters
@@ -51,7 +51,7 @@ namespace DeepSound.Activities.Notification.Adapters
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -66,17 +66,17 @@ namespace DeepSound.Activities.Notification.Adapters
                     if (item != null)
                     {
                         GlideImageLoader.LoadImage(ActivityContext, item.UserData?.UserDataClass.Avatar, holder.ImageUser, ImageStyle.RoundedCrop, ImagePlaceholders.DrawableUser);
-                         
-                        holder.NotificationsText.Text = item.NType.Replace("_"," ").ToUpper();
+
+                        holder.NotificationsText.Text = item.NType.Replace("_", " ").ToUpper();
                         holder.Time.Text = item.NTime;
 
                         if (item.NType == "your_song_is_ready")
                         {
                             holder.UserNameNoitfy.Text = AppSettings.ApplicationName;
-                            Glide.With(ActivityContext).Load(Resource.Mipmap.icon).Apply(new RequestOptions().CircleCrop()).Into(holder.ImageUser);
+                            Glide.With(ActivityContext?.BaseContext).Load(Resource.Mipmap.icon).Apply(new RequestOptions().CircleCrop()).Into(holder.ImageUser);
                         }
                         else
-                        { 
+                        {
                             var name = DeepSoundTools.GetNameFinal(item.UserData?.UserDataClass);
                             string tempString;
 
@@ -133,7 +133,7 @@ namespace DeepSound.Activities.Notification.Adapters
                             {
                                 holder.UserNameNoitfy.Text = tempString;
                             }
-                        } 
+                        }
                     }
                 }
             }
@@ -206,8 +206,8 @@ namespace DeepSound.Activities.Notification.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString()).Apply(new RequestOptions().CenterCrop());
-        } 
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString()).Apply(new RequestOptions().CenterCrop());
+        }
     }
 
     public class NotificationsAdapterViewHolder : RecyclerView.ViewHolder
@@ -234,7 +234,7 @@ namespace DeepSound.Activities.Notification.Adapters
                 UserNameNoitfy = (TextView)MainView.FindViewById(Resource.Id.NotificationsName);
                 NotificationsText = (TextView)MainView.FindViewById(Resource.Id.NotificationsText);
                 Time = (TextView)MainView.FindViewById(Resource.Id.NotificationsTime);
-                 
+
                 //Create an Event
                 itemView.Click += (sender, e) => clickListener(new NotificationsAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition, Image = ImageUser });
                 itemView.LongClick += (sender, e) => longClickListener(new NotificationsAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition, Image = ImageUser });

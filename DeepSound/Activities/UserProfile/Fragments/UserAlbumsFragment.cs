@@ -1,37 +1,36 @@
-﻿using Android.OS;
+﻿using Android.Graphics;
+using Android.OS;
 using Android.Views;
+using Android.Widget;
+using AndroidX.Fragment.App;
+using AndroidX.RecyclerView.Widget;
+using AndroidX.SwipeRefreshLayout.Widget;
 using Bumptech.Glide.Util;
+using Com.Adcolony.Sdk;
+using DeepSound.Activities.Albums;
 using DeepSound.Activities.Albums.Adapters;
+using DeepSound.Activities.Songs;
 using DeepSound.Activities.Tabbes;
+using DeepSound.Helpers.Ads;
+using DeepSound.Helpers.Controller;
+using DeepSound.Helpers.Model;
+using DeepSound.Helpers.Utils;
+using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Albums;
+using DeepSoundClient.Classes.User;
+using DeepSoundClient.Requests;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Android.Graphics;
-using Android.Widget;
-using DeepSound.Activities.Albums;
-using DeepSound.Helpers.Ads;
-using DeepSound.Helpers.Controller;
-using DeepSound.Helpers.Model;
-using DeepSound.Helpers.Utils;
-using DeepSoundClient.Classes.User;
-using DeepSoundClient.Requests;
-using Newtonsoft.Json;
 using Xamarin.Facebook.Ads;
-using AndroidX.Fragment.App;
-using AndroidX.SwipeRefreshLayout.Widget;
-using AndroidX.RecyclerView.Widget;
-using AndroidX.Transitions;
-using Com.Adcolony.Sdk;
-using DeepSound.Library.Anjo.IntegrationRecyclerView;
-using DeepSound.Activities.Songs;
 
 namespace DeepSound.Activities.UserProfile.Fragments
 {
     public class UserAlbumsFragment : Fragment
-    { 
+    {
         #region Variables Basic
 
         private HomeActivity GlobalContext;
@@ -74,10 +73,10 @@ namespace DeepSound.Activities.UserProfile.Fragments
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
-         
+
         public override void OnDestroy()
         {
             try
@@ -185,13 +184,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                         Arguments = bundle
                     };
 
-                    SharedElementReturnTransition = TransitionInflater.From(Activity).InflateTransition(Resource.Transition.change_image_transform);
-                    ExitTransition = TransitionInflater.From(Activity).InflateTransition(Resource.Transition.change_image_transform);
-
-                    albumsFragment.SharedElementEnterTransition = TransitionInflater.From(Activity).InflateTransition(Resource.Transition.change_image_transform);
-                    albumsFragment.ExitTransition = TransitionInflater.From(Activity).InflateTransition(Resource.Transition.change_image_transform);
-
-                    GlobalContext.FragmentBottomNavigator.DisplayFragment(albumsFragment, e.Image);
+                    GlobalContext.FragmentBottomNavigator.DisplayFragment(albumsFragment);
                 }
             }
             catch (Exception exception)
@@ -223,7 +216,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
         #endregion
 
         #region Load Data 
-             
+
         public void PopulateData(List<DataAlbumsObject> list)
         {
             try
@@ -244,7 +237,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         public void StartApiServiceWithOffset()
         {
             try
@@ -284,7 +277,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 MainScrollEvent.IsLoading = true;
 
                 int countList = MAdapter.AlbumsList.Count;
-                 var (apiStatus, respond) = await RequestsAsync.User.GetUserAlbumsAsync(UserId, "15", offset);
+                var (apiStatus, respond) = await RequestsAsync.User.GetUserAlbumsAsync(UserId, "15", offset);
                 if (apiStatus == 200)
                 {
                     if (respond is AlbumsObject result)
@@ -329,7 +322,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -365,7 +358,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoAlbums);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }

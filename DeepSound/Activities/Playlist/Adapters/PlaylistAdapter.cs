@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -11,6 +8,9 @@ using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Playlist;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 
 namespace DeepSound.Activities.Playlist.Adapters
@@ -49,7 +49,7 @@ namespace DeepSound.Activities.Playlist.Adapters
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -98,7 +98,7 @@ namespace DeepSound.Activities.Playlist.Adapters
         public override int GetItemViewType(int position)
         {
             try
-            { 
+            {
                 return position;
             }
             catch (Exception e)
@@ -138,7 +138,7 @@ namespace DeepSound.Activities.Playlist.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString()).Apply(new RequestOptions().CenterCrop());
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString()).Apply(new RequestOptions().CenterCrop());
         }
 
     }
@@ -150,7 +150,7 @@ namespace DeepSound.Activities.Playlist.Adapters
         public View MainView { get; set; }
         public ImageView Image { get; private set; }
         public TextView TxtName { get; private set; }
-          
+
         #endregion
 
         public PlaylistAdapterViewHolder(View itemView, Action<PlaylistAdapterClickEventArgs> clickListener, Action<PlaylistAdapterClickEventArgs> longClickListener) : base(itemView)
@@ -162,7 +162,7 @@ namespace DeepSound.Activities.Playlist.Adapters
                 //Get values
                 Image = (ImageView)MainView.FindViewById(Resource.Id.image);
                 TxtName = MainView.FindViewById<TextView>(Resource.Id.name);
-               
+
                 //Event
                 itemView.Click += (sender, e) => clickListener(new PlaylistAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });
                 itemView.LongClick += (sender, e) => longClickListener(new PlaylistAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });

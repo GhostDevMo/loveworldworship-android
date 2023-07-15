@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Content;
+﻿using Android.Content;
 using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
@@ -26,6 +21,11 @@ using DeepSoundClient.Classes.Product;
 using DeepSoundClient.Requests;
 using Google.Android.Material.FloatingActionButton;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Product
@@ -69,7 +69,7 @@ namespace DeepSound.Activities.Product
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -224,7 +224,7 @@ namespace DeepSound.Activities.Product
         }
 
         #endregion
-         
+
         #region Event
 
         //Add new Product 
@@ -232,7 +232,7 @@ namespace DeepSound.Activities.Product
         {
             try
             {
-                Activity.StartActivityForResult(new Intent(Activity,typeof(CreateProductActivity)), 3500);
+                Activity.StartActivityForResult(new Intent(Activity, typeof(CreateProductActivity)), 3500);
             }
             catch (Exception exception)
             {
@@ -311,7 +311,7 @@ namespace DeepSound.Activities.Product
         private void MAdapterItemClick(object sender, ProductAdapterClickEventArgs e)
         {
             try
-            { 
+            {
                 var item = MAdapter.GetItem(e.Position);
                 if (item != null)
                 {
@@ -420,7 +420,7 @@ namespace DeepSound.Activities.Product
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -440,7 +440,7 @@ namespace DeepSound.Activities.Product
                 if (MAdapter.ProductsList.Count > 0)
                 {
                     MRecycler.Visibility = ViewStates.Visible;
-                    EmptyStateLayout.Visibility = ViewStates.Gone; 
+                    EmptyStateLayout.Visibility = ViewStates.Gone;
                 }
                 else
                 {
@@ -453,7 +453,7 @@ namespace DeepSound.Activities.Product
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoProducts);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }

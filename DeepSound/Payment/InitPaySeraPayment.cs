@@ -1,16 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Graphics;
 using Android.Util;
 using Android.Webkit;
-using Android.Widget; 
+using Android.Widget;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Fonts;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Requests;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Exception = System.Exception;
 
 namespace DeepSound.Payment
@@ -155,7 +155,7 @@ namespace DeepSound.Payment
             }
         }
 
-        private class MyWebViewClient : WebViewClient 
+        private class MyWebViewClient : WebViewClient
         {
             private readonly InitPaySeraPayment MActivity;
             public MyWebViewClient(InitPaySeraPayment mActivity)
@@ -216,7 +216,7 @@ namespace DeepSound.Payment
                     Methods.DisplayReportResultTrack(e);
                 }
             }
-             
+
         }
     }
 }

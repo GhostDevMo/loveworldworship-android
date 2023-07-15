@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -12,6 +9,9 @@ using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Blog;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 
 namespace DeepSound.Activities.Blog.Adapters
@@ -53,7 +53,7 @@ namespace DeepSound.Activities.Blog.Adapters
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -160,11 +160,11 @@ namespace DeepSound.Activities.Blog.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString()).Apply(new RequestOptions().CenterCrop());
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString()).Apply(new RequestOptions().CenterCrop());
         }
     }
 
-    public class BlogAdapterViewHolder : RecyclerView.ViewHolder 
+    public class BlogAdapterViewHolder : RecyclerView.ViewHolder
     {
         public BlogAdapterViewHolder(View itemView, Action<BlogAdapterClickEventArgs> clickListener, Action<BlogAdapterClickEventArgs> longClickListener) : base(itemView)
         {
@@ -176,7 +176,7 @@ namespace DeepSound.Activities.Blog.Adapters
                 Category = MainView.FindViewById<TextView>(Resource.Id.subtitle);
                 Title = MainView.FindViewById<TextView>(Resource.Id.title);
                 Time = MainView.FindViewById<TextView>(Resource.Id.date);
- 
+
                 //Event
                 itemView.Click += (sender, e) => clickListener(new BlogAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });
                 itemView.LongClick += (sender, e) => longClickListener(new BlogAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });

@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Polly;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Polly;
 
 namespace DeepSound.Helpers.Controller
 {
-    public static class PollyController 
+    public static class PollyController
     {
         public static void RunRetryPolicyFunction(List<Func<Task>> actionList, int retryCount = 4, int everySecond = 1)
         {

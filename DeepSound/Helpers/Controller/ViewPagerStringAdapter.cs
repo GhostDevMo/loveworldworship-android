@@ -4,13 +4,13 @@ using Android.Widget;
 using AndroidX.ViewPager.Widget;
 using DeepSound.Helpers.Utils;
 using System;
-using System.Collections.Generic; 
+using System.Collections.Generic;
 using Object = Java.Lang.Object;
 
 namespace DeepSound.Helpers.Controller
 {
     public class ViewPagerStringAdapter : PagerAdapter
-    { 
+    {
         public class ViewPagerStrings
         {
             public string Description;
@@ -44,7 +44,7 @@ namespace DeepSound.Helpers.Controller
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
 
         }

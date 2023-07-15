@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Content;
+﻿using Android.Content;
 using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
@@ -24,6 +19,11 @@ using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Common;
 using DeepSoundClient.Requests;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Notification
@@ -64,7 +64,7 @@ namespace DeepSound.Activities.Notification
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -79,7 +79,7 @@ namespace DeepSound.Activities.Notification
                 SetRecyclerViewAdapters();
 
                 StartApiService();
-                AdsGoogle.Ad_Interstitial(Activity); 
+                AdsGoogle.Ad_Interstitial(Activity);
             }
             catch (Exception e)
             {
@@ -150,7 +150,7 @@ namespace DeepSound.Activities.Notification
             {
                 MRecycler = (RecyclerView)view.FindViewById(Resource.Id.recyler);
                 EmptyStateLayout = view.FindViewById<ViewStub>(Resource.Id.viewStub);
-              
+
                 SwipeRefreshLayout = (SwipeRefreshLayout)view.FindViewById(Resource.Id.swipeRefreshLayout);
                 SwipeRefreshLayout.SetColorSchemeResources(Android.Resource.Color.HoloBlueLight, Android.Resource.Color.HoloGreenLight, Android.Resource.Color.HoloOrangeLight, Android.Resource.Color.HoloRedLight);
                 SwipeRefreshLayout.Refreshing = true;
@@ -178,7 +178,7 @@ namespace DeepSound.Activities.Notification
         {
             try
             {
-               var toolbar = view.FindViewById<Toolbar>(Resource.Id.toolbar);  
+                var toolbar = view.FindViewById<Toolbar>(Resource.Id.toolbar);
                 GlobalContext.SetToolBar(toolbar, GetString(Resource.String.Lbl_Notifications));
             }
             catch (Exception e)
@@ -191,8 +191,8 @@ namespace DeepSound.Activities.Notification
         {
             try
             {
-                MAdapter = new NotificationsAdapter(Activity){NotificationsList = new ObservableCollection<NotificationsObject.Notifiation>()};
-                MAdapter.ItemClick += MAdapterItemClick; 
+                MAdapter = new NotificationsAdapter(Activity) { NotificationsList = new ObservableCollection<NotificationsObject.Notifiation>() };
+                MAdapter.ItemClick += MAdapterItemClick;
                 LayoutManager = new LinearLayoutManager(Activity);
                 MRecycler.SetLayoutManager(LayoutManager);
                 MRecycler.HasFixedSize = true;
@@ -279,7 +279,7 @@ namespace DeepSound.Activities.Notification
             if (Methods.CheckConnectivity())
             {
                 int countList = MAdapter.NotificationsList.Count;
-                 var (apiStatus, respond) = await RequestsAsync.Common.GetNotificationsAsync();
+                var (apiStatus, respond) = await RequestsAsync.Common.GetNotificationsAsync();
                 if (apiStatus == 200)
                 {
                     if (respond is NotificationsObject result)
@@ -299,7 +299,7 @@ namespace DeepSound.Activities.Notification
                             else
                             {
                                 MAdapter.NotificationsList = new ObservableCollection<NotificationsObject.Notifiation>(result.Notification);
-                                Activity?.RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); }); 
+                                Activity?.RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); });
                             }
                         }
                         else
@@ -311,7 +311,7 @@ namespace DeepSound.Activities.Notification
                 }
                 else Methods.DisplayReportResult(Activity, respond);
 
-                Activity?.RunOnUiThread(ShowEmptyPage);  
+                Activity?.RunOnUiThread(ShowEmptyPage);
             }
             else
             {
@@ -320,18 +320,18 @@ namespace DeepSound.Activities.Notification
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
                 Toast.MakeText(Context, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
             }
         }
-         
+
         private void ShowEmptyPage()
         {
             try
-            { 
+            {
                 SwipeRefreshLayout.Refreshing = false;
 
                 if (MAdapter.NotificationsList.Count > 0)
@@ -350,7 +350,7 @@ namespace DeepSound.Activities.Notification
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoNotifications);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }
@@ -374,8 +374,8 @@ namespace DeepSound.Activities.Notification
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
-          
+
     }
 }

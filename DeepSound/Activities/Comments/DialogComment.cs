@@ -1,12 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Globalization;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using MaterialDialogsCore;
-using Android.App;
+﻿using Android.App;
+using Android.Content;
 using Android.Content.Res;
 using Android.Graphics;
 using Android.Graphics.Drawables;
@@ -30,11 +23,19 @@ using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Requests;
 using Developer.SEmojis.Actions;
 using Developer.SEmojis.Helper;
+using Google.Android.Material.Dialog;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Exception = System.Exception;
 
 namespace DeepSound.Activities.Comments
 {
-    public class DialogComment: Java.Lang.Object, MaterialDialog.IListCallback, MaterialDialog.ISingleButtonCallback
+    public class DialogComment : Java.Lang.Object, IDialogListCallBack, IDialogInputCallBack
     {
         #region Variables Basic
 
@@ -73,27 +74,27 @@ namespace DeepSound.Activities.Comments
                 Methods.DisplayReportResultTrack(e);
             }
         }
-       
-        public void Display(SoundDataObject dataObject , string time)
+
+        public void Display(SoundDataObject dataObject, string time)
         {
             try
             {
                 DataObject = dataObject;
                 TimeComment = time;
-                 
+
                 CommentWindow = new Dialog(ActivityContext, Resource.Style.D1NoTitleDim);
 
                 if (AppSettings.EnableBlurBackgroundComment)
                 {
                     Resources res = Application.Context.Resources;
-                  
+
                     CommentWindow?.Create();
                     Bitmap map = TakeScreenShot(GlobalContext);
                     Bitmap fast = FastBlur(map);
                     Drawable draw = new BitmapDrawable(res, fast);
                     CommentWindow?.Window?.SetBackgroundDrawable(draw);
                 }
-                
+
                 CommentWindow?.SetContentView(Resource.Layout.CommentsLayout);
 
                 InitComponent();
@@ -101,14 +102,14 @@ namespace DeepSound.Activities.Comments
 
                 StartApiService();
 
-                CommentWindow?.Show(); 
+                CommentWindow?.Show();
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #region Functions
 
         private void InitComponent()
@@ -143,7 +144,7 @@ namespace DeepSound.Activities.Comments
                 emojis.ShowEmojIcon();
                 EmojisIconEditTextView.RequestFocus();
 
-               
+
             }
             catch (Exception e)
             {
@@ -155,7 +156,13 @@ namespace DeepSound.Activities.Comments
         {
             try
             {
-                SwipeRefreshLayout.Refreshing = true;
+                MAdapter.CommentList.Clear();
+                MAdapter.NotifyDataSetChanged();
+
+                MRecycler.Visibility = ViewStates.Visible;
+                EmptyStateLayout.Visibility = ViewStates.Gone;
+                MainScrollEvent.IsLoading = false;
+
                 StartApiService();
             }
             catch (Exception exception)
@@ -168,7 +175,7 @@ namespace DeepSound.Activities.Comments
         {
             try
             {
-                MAdapter = new CommentsAdapter(ActivityContext , "Song") { CommentList = new ObservableCollection<CommentsDataObject>() };
+                MAdapter = new CommentsAdapter(ActivityContext, "Song") { CommentList = new ObservableCollection<CommentsDataObject>() };
                 MAdapter.ItemLongClick += MAdapterOnItemLongClick;
                 MAdapter.OnAvatarClick += CommentsAdapterOnAvatarClick;
                 MAdapter.OnLikeClick += MAdapterOnOnLikeClick;
@@ -290,7 +297,7 @@ namespace DeepSound.Activities.Comments
                                     e.Holder.LikeNumber.Text = x.ToString(CultureInfo.InvariantCulture);
                                     item.CountLiked = Convert.ToInt32(x);
                                 }
-                                 
+
                                 PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Comments.LikeUnLikeCommentAsync(item.Id.ToString(), false) });
                             }
                             else
@@ -308,11 +315,11 @@ namespace DeepSound.Activities.Comments
                                     e.Holder.LikeNumber.Text = x.ToString(CultureInfo.InvariantCulture);
                                     item.CountLiked = Convert.ToInt32(x);
                                 }
-                                 
+
                                 PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Comments.LikeUnLikeCommentAsync(item.Id.ToString(), true) });
                             }
                         }
-                    } 
+                    }
                 }
                 else
                 {
@@ -322,37 +329,37 @@ namespace DeepSound.Activities.Comments
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-            } 
+            }
         }
-         
+
         //Report / Delete / Copy comment 
         private void MAdapterOnItemLongClick(object sender, CommentAdapterClickEventArgs e)
         {
             try
-            { 
+            {
                 var position = e.Position;
                 if (position > -1)
                 {
                     ItemComments = MAdapter.GetItem(position);
                     if (ItemComments != null)
-                    { 
+                    {
                         var arrayAdapter = new List<string>();
-                        var dialogList = new MaterialDialog.Builder(ActivityContext).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                        var dialogList = new MaterialAlertDialogBuilder(ActivityContext);
 
                         if (ItemComments.Owner != null && !ItemComments.Owner.Value && UserDetails.IsLogin)
                         {
                             arrayAdapter.Add(ItemComments.IsReported != null && ItemComments.IsReported.Value ? ActivityContext.GetText(Resource.String.Lbl_Report) : ActivityContext.GetText(Resource.String.Lbl_CancelReport));
                         }
-                         
+
                         if (ItemComments.Owner != null && (ItemComments.Owner.Value && UserDetails.IsLogin))
                             arrayAdapter.Add(ActivityContext.GetText(Resource.String.Lbl_Delete));
-                          
+
                         arrayAdapter.Add(ActivityContext.GetText(Resource.String.Lbl_Copy));
 
-                        dialogList.Items(arrayAdapter);
-                        dialogList.PositiveText(ActivityContext.GetText(Resource.String.Lbl_Close)).OnPositive(this);
-                        dialogList.AlwaysCallSingleChoiceCallback();
-                        dialogList.ItemsCallback(this).Build().Show(); 
+                        dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                        dialogList.SetPositiveButton(ActivityContext.GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                        dialogList.Show();
                     }
                 }
             }
@@ -373,7 +380,7 @@ namespace DeepSound.Activities.Comments
                     return;
                 }
 
-                if (string.IsNullOrEmpty(EmojisIconEditTextView.Text))
+                if (string.IsNullOrEmpty(EmojisIconEditTextView.Text?.Replace(" ", "")))
                     return;
 
                 if (Methods.CheckConnectivity())
@@ -381,7 +388,7 @@ namespace DeepSound.Activities.Comments
                     EmptyStateLayout.Visibility = ViewStates.Gone;
 
                     //Comment Code 
-                    string time = Methods.Time.TimeAgo(DateTime.Now , false);
+                    string time = Methods.Time.TimeAgo(DateTime.Now, false);
 
                     UnixTimestamp = (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
 
@@ -406,17 +413,12 @@ namespace DeepSound.Activities.Comments
                     };
 
                     MAdapter.CommentList.Add(comment);
-
-                    var index = MAdapter.CommentList.IndexOf(comment);
-                    if (index > -1)
-                    {
-                        MAdapter.NotifyItemInserted(index); 
-                    }
+                    MAdapter.NotifyDataSetChanged();
 
                     MRecycler.Visibility = ViewStates.Visible;
                     EmptyStateLayout.Visibility = ViewStates.Gone;
-                     
-                     var (apiStatus, respond) = await RequestsAsync.Comments.CreateCommentAsync(DataObject.AudioId, TimeComment, replacement).ConfigureAwait(false);
+
+                    var (apiStatus, respond) = await RequestsAsync.Comments.CreateCommentAsync(DataObject.AudioId, TimeComment, replacement);
                     if (apiStatus == 200)
                     {
                         if (respond is CreateCommentObject result)
@@ -424,27 +426,16 @@ namespace DeepSound.Activities.Comments
                             var date = MAdapter.CommentList.FirstOrDefault(a => a.Id == UnixTimestamp);
                             if (date != null)
                             {
-                                date.Id = result.Data.CommentId;
+                                date.Id = long.Parse(result.Data.Id);
+                                Console.WriteLine(date.Id);
 
-                                index = MAdapter.CommentList.IndexOf(comment);
+                                var index = MAdapter.CommentList.IndexOf(date);
                                 if (index > -1)
                                 {
-                                    ActivityContext?.RunOnUiThread(() =>
-                                    {
-                                        try
-                                        {
-                                            MAdapter.NotifyItemChanged(index);
-                                            MRecycler.ScrollToPosition(index);
-                                        }
-                                        catch (Exception exception)
-                                        {
-                                            Methods.DisplayReportResultTrack(exception);
-                                        }
-                                    });  
+                                    MAdapter.NotifyItemChanged(index);
+                                    MRecycler.ScrollToPosition(MAdapter.CommentList.Count - 1);
                                 }
                             }
-                             
-                            Console.WriteLine(date);
                         }
                     }
                     else
@@ -478,7 +469,7 @@ namespace DeepSound.Activities.Comments
             else
                 PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => LoadComments(offset) });
         }
-         
+
         private async Task LoadComments(string offset = "0")
         {
             if (MainScrollEvent.IsLoading)
@@ -489,7 +480,8 @@ namespace DeepSound.Activities.Comments
                 MainScrollEvent.IsLoading = true;
 
                 int countList = MAdapter.CommentList.Count;
-                 var (apiStatus, respond) = await RequestsAsync.Comments.GetCommentAsync(DataObject.Id.ToString(), "15", offset);
+
+                var (apiStatus, respond) = await RequestsAsync.Comments.GetCommentAsync(DataObject.Id.ToString(), "15", offset);
                 if (apiStatus == 200)
                 {
                     if (respond is CommentsObject result)
@@ -534,7 +526,7 @@ namespace DeepSound.Activities.Comments
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -567,7 +559,7 @@ namespace DeepSound.Activities.Comments
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoComments);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }
@@ -596,17 +588,17 @@ namespace DeepSound.Activities.Comments
         }
 
         #endregion
-         
+
         private static Bitmap TakeScreenShot(Activity activity)
         {
             try
-            { 
+            {
                 View view = activity.Window?.DecorView;
                 if (view != null)
-                { 
+                {
                     //view.DrawingCacheEnabled = true;
                     //view.BuildDrawingCache();
-                     
+
                     //Bitmap b1 = view.DrawingCache;
                     Bitmap b1 = BitmapUtil.LoadBitmapFromView(view);
 
@@ -622,20 +614,20 @@ namespace DeepSound.Activities.Comments
                     //view.DestroyDrawingCache();
                     return b;
                 }
-                return null!;
+                return null;
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
-            } 
+                return null;
+            }
         }
 
         private Bitmap FastBlur(Bitmap sentBitmap)
         {
             try
             {
-                if (null == sentBitmap) return null!;
+                if (null == sentBitmap) return null;
                 Bitmap outputBitmap = Bitmap.CreateBitmap(sentBitmap);
 
 #pragma warning disable CS0618
@@ -655,69 +647,42 @@ namespace DeepSound.Activities.Comments
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
         #region MaterialDialog
 
-        public void OnClick(MaterialDialog p0, DialogAction p1)
-        {
-            try
-            {
-                if (p1 == DialogAction.Positive)
-                {
-                }
-                else if (p1 == DialogAction.Negative)
-                {
-                    p0.Dismiss();
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-         
-        public void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+        public void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
             {
                 string text = itemString;
                 if (text == ActivityContext.GetText(Resource.String.Lbl_Report))
-                {                       
+                {
                     if (Methods.CheckConnectivity())
                     {
-                        var dialogBuilder = new MaterialDialog.Builder(GlobalContext).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                        dialogBuilder.Title(Resource.String.Lbl_Report).TitleColorRes(Resource.Color.primary);
-                        dialogBuilder.Input(0, 0, false, (materialDialog, s) =>
-                        {
-                            try
-                            {
-                                if (s.Length <= 0) return;
-                                Toast.MakeText(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_received_your_report), ToastLength.Short)?.Show();
-                                ItemComments.IsReported = true;
+                        var dialogBuilder = new MaterialAlertDialogBuilder(GlobalContext);
+                        dialogBuilder.SetTitle(Resource.String.Lbl_Report);
 
-                                //Sent Api >>
-                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Comments.ReportUnReportCommentAsync(ItemComments?.Id.ToString(), s, true) });
+                        EditText input = new EditText(ActivityContext);
 
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine(e);
-                            }
-                        });
-                        dialogBuilder.InputType(InputTypes.TextFlagImeMultiLine);
-                        dialogBuilder.PositiveText(GlobalContext.GetText(Resource.String.Lbl_Submit)).OnPositive(this);
-                        dialogBuilder.NegativeText(GlobalContext.GetText(Resource.String.Lbl_Cancel)).OnNegative(new MyMaterialDialog());
-                        dialogBuilder.AlwaysCallSingleChoiceCallback();
-                        dialogBuilder.Build().Show(); 
+                        input.InputType = InputTypes.ClassText | InputTypes.TextFlagMultiLine;
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+                        input.LayoutParameters = lp;
+
+                        dialogBuilder.SetView(input);
+
+                        dialogBuilder.SetPositiveButton(GlobalContext.GetText(Resource.String.Lbl_Submit), new MaterialDialogUtils(input, this));
+                        dialogBuilder.SetNegativeButton(GlobalContext.GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+
+                        dialogBuilder.Show();
                     }
                     else
                     {
                         Toast.MakeText(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
                     }
-                } 
+                }
                 if (text == ActivityContext.GetText(Resource.String.Lbl_CancelReport))
                 {
                     if (Methods.CheckConnectivity())
@@ -726,7 +691,7 @@ namespace DeepSound.Activities.Comments
                         ItemComments.IsReported = false;
 
                         //Sent Api >>
-                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Comments.ReportUnReportCommentAsync(ItemComments?.Id.ToString(),"", false) });
+                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Comments.ReportUnReportCommentAsync(ItemComments?.Id.ToString(), "", false) });
                     }
                     else
                     {
@@ -755,12 +720,12 @@ namespace DeepSound.Activities.Comments
                     else
                     {
                         Toast.MakeText(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
-                    } 
+                    }
                 }
                 else if (text == ActivityContext.GetText(Resource.String.Lbl_Copy))
                 {
                     GlobalContext?.SoundController?.ClickListeners?.OnMenuCopyOnClick(ItemComments?.Value);
-                } 
+                }
             }
             catch (Exception e)
             {
@@ -768,7 +733,24 @@ namespace DeepSound.Activities.Comments
             }
         }
 
+        public void OnInput(IDialogInterface dialog, string input)
+        {
+            try
+            {
+                if (input.Length <= 0) return;
+                Toast.MakeText(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_received_your_report), ToastLength.Short)?.Show();
+                ItemComments.IsReported = true;
+
+                //Sent Api >>
+                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Comments.ReportUnReportCommentAsync(ItemComments?.Id.ToString(), input, true) });
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
         #endregion
-         
+
     }
 }

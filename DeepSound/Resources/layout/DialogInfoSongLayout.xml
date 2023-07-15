@@ -41,59 +41,45 @@
                 <LinearLayout
                     android:orientation="vertical"
                     android:paddingBottom="6dp"
-                    android:background="@android:color/transparent"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
                     <View
                         android:layout_width="match_parent"
-                        android:background="@android:color/transparent"
                         android:layout_height="10dp" />
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@android:color/transparent"
                         android:orientation="horizontal">
+	                    <TextView
+		                    android:id="@+id/IconColse"
+		                    android:layout_width="wrap_content"
+		                    android:layout_height="wrap_content"
+		                    android:layout_gravity="end"
+		                    android:gravity="center"
+		                    android:textSize="25sp"
+		                    android:textColor="#ffffff"
+		                    android:paddingTop="10dp"
+		                    android:paddingEnd="10dp"
+		                    android:paddingBottom="10dp"
+		                    android:paddingStart="36dp"
+		                    android:layout_marginEnd="10dp" />
                         <TextView
-                            android:layout_width="0dp"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:id="@+id/titleTextView"
-                            android:layout_weight="1"
                             android:textColor="#ffffff"
-                            android:background="@android:color/transparent"
                             android:text="@string/Lbl_SongInfo"
                             android:gravity="end"
                             android:layout_gravity="center_vertical"
                             android:textAlignment="textEnd"/>
-                        <TextView
-                            android:id="@+id/IconColse"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_gravity="end"
-                            android:gravity="center"
-                            android:textSize="25sp"
-                            android:textColor="#ffffff"
-                            android:background="@android:color/transparent"
-                            android:paddingTop="10dp"
-                            android:paddingEnd="10dp"
-                            android:paddingBottom="10dp"
-                            android:paddingStart="36dp"
-                            android:layout_marginEnd="10dp"
-                            />
                     </LinearLayout>
-                    <View
-                        android:background="@color/gnt_gray"
-                        android:layout_marginBottom="24dp"
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp" />
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:background="@android:color/transparent"
                         android:orientation="horizontal">
                         <androidx.cardview.widget.CardView
                             android:id="@+id/cardview2"
                             android:layout_width="50dp"
-                            android:background="@android:color/transparent"
                             android:layout_centerVertical="true"
                             android:layout_height="50dp"
                             app:cardCornerRadius="5dp"
@@ -111,7 +97,6 @@
                         </androidx.cardview.widget.CardView>
                         <LinearLayout
                             android:layout_width="0dp"
-                            android:background="@android:color/transparent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
                             android:layout_gravity="center_vertical"
@@ -123,17 +108,14 @@
                                 android:textSize="18dp"
                                 android:paddingStart="16dp"
                                 android:textColor="#ffffff"
-                                android:background="@android:color/transparent"
                                 android:paddingEnd="16dp"
                                 android:layout_gravity="center"
-                                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
-                />
+                                android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"/>
                             <LinearLayout
                                 android:id="@+id/LayoutPublisher"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:paddingStart="16dp"
-                                android:background="@android:color/transparent"
                                 android:paddingEnd="16dp"
                                 android:layout_marginTop="4dp"
                                 android:orientation="horizontal">
@@ -144,7 +126,6 @@
                                     android:textColor="#ffffff"
                                     android:gravity="start"
                                     android:layout_gravity="center"
-                                    android:background="@android:color/transparent"
                                     android:textSize="14sp"
                                     android:layout_alignParentEnd="true" />
                                 <TextView
@@ -155,7 +136,6 @@
                                     android:layout_gravity="center"
                                     android:forceDarkAllowed="false"
                                     android:textColor="@color/accent"
-                                    android:background="@android:color/transparent"
                                     android:textSize="15sp"
                                     android:textStyle="bold"
                                     android:layout_marginStart="5dp"
@@ -167,7 +147,6 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:paddingStart="16dp"
-                                android:background="@android:color/transparent"
                                 android:paddingEnd="16dp"
                                 android:layout_marginTop="4dp"
                                 android:orientation="horizontal">
@@ -178,7 +157,6 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginEnd="@dimen/spacing_medium"
                                     android:textSize="20sp"
-                                    android:background="@android:color/transparent"
                                     android:text="#" />
                                 <TextView
                                     android:id="@+id/GenresText"
@@ -190,7 +168,6 @@
                                     android:layout_gravity="center"
                                     android:textColor="#ffffff"
                                     android:textSize="15sp"
-                                    android:background="@android:color/transparent"
                                     android:layout_alignParentEnd="true"
                                     android:layout_marginStart="0dp" />
                             </LinearLayout>
@@ -201,14 +178,12 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:layout_margin="20dp"
-                        android:background="@android:color/transparent"
                         android:gravity="center">
                         <TextView
                             android:id="@+id/iconLike"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:textColor="#ff0000"
-                            android:background="@android:color/transparent"
                             android:layout_centerInParent="true"
                             android:layout_alignParentEnd="true"
                             android:textSize="16sp" />
@@ -220,7 +195,6 @@
                             android:paddingEnd="4dp"
                             android:paddingStart="1dp"
                             android:textColor="#ffffff"
-                            android:background="@android:color/transparent"
                             android:textSize="10sp"
                             android:gravity="center" />
                         <TextView
@@ -229,7 +203,6 @@
                             android:layout_height="wrap_content"
                             android:textColor="#ff9900"
                             android:layout_marginStart="5dp"
-                            android:background="@android:color/transparent"
                             android:layout_centerInParent="true"
                             android:layout_alignParentEnd="true"
                             android:textSize="16sp" />
@@ -238,7 +211,6 @@
                             android:layout_width="wrap_content"
                             android:layout_height="16dp"
                             android:layout_marginStart="5dp"
-                            android:background="@android:color/transparent"
                             android:paddingEnd="4dp"
                             android:paddingStart="1dp"
                             android:textColor="#ffffff"
@@ -250,7 +222,6 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="5dp"
                             android:textColor="#1eee6c"
-                            android:background="@android:color/transparent"
                             android:textSize="16sp" />
                         <TextView
                             android:id="@+id/textView_views"
@@ -258,7 +229,6 @@
                             android:layout_height="wrap_content"
                             android:paddingEnd="4dp"
                             android:paddingStart="1dp"
-                            android:background="@android:color/transparent"
                             android:gravity="center"
                             android:textColor="#ffffff"
                             android:layout_marginStart="5dp"
@@ -269,7 +239,6 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="5dp"
                             android:textColor="#880E4F"
-                            android:background="@android:color/transparent"
                             android:textSize="16sp" />
                         <TextView
                             android:id="@+id/textView_share"
@@ -280,11 +249,9 @@
                             android:gravity="center"
                             android:textColor="#ffffff"
                             android:layout_marginStart="5dp"
-                            android:background="@android:color/transparent"
                             android:textSize="10sp" />
                         <TextView
                             android:id="@+id/iconComment"
-                            android:background="@android:color/transparent"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="5dp"
@@ -293,7 +260,6 @@
                         <TextView
                             android:id="@+id/textView_comment"
                             android:layout_width="wrap_content"
-                            android:background="@android:color/transparent"
                             android:layout_height="wrap_content"
                             android:paddingEnd="4dp"
                             android:paddingStart="1dp"
@@ -309,7 +275,6 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:background="?attr/colorFill"
                 android:paddingBottom="@dimen/spacing_large"
                 android:paddingTop="@dimen/spacing_large">
                 <TextView
@@ -379,19 +344,26 @@
                     android:paddingStart="20dp"
                     android:paddingEnd="20dp"
                     android:layout_alignParentEnd="true" />
-                <DeepSound.Library.Anjo.SuperTextLibrary.SuperTextView
-                    android:id="@+id/lyricsText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingStart="20dp"
-                    android:paddingEnd="20dp"
-                    android:layout_marginTop="8dp"
-                    android:layout_gravity="center"
-                    android:gravity="start"
-                    android:textIsSelectable="true"
-                    android:ellipsize="end"
-                    android:lines="5"
-                    android:textSize="15sp" />
+                <LinearLayout
+	                android:layout_width="match_parent"
+	                android:layout_height="wrap_content"
+	                android:layout_margin="8dp"
+	                android:background="@drawable/Shape_Radius_Btn" 
+	                android:backgroundTint="@color/primaryLight" >
+
+	                <DeepSound.Library.Anjo.SuperTextLibrary.SuperTextView
+		                android:id="@+id/lyricsText"
+		                android:layout_width="match_parent"
+		                android:layout_height="wrap_content"
+		                android:textColor="@color/accent"
+		                android:layout_gravity="center"
+		                android:padding="10dp"
+		                android:gravity="start"
+		                android:textIsSelectable="true"
+		                android:ellipsize="end"
+		                android:textSize="15sp" />
+
+                </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -401,9 +373,10 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/Lbl_OtherDetails"
+                        android:textAllCaps="true"
                         android:gravity="start"
                         android:alpha="0.5"
-                        android:layout_marginTop="30dp"
+                        android:layout_marginTop="20dp"
                         android:paddingStart="20dp"
                         android:paddingEnd="20dp"
                         android:layout_gravity="center"

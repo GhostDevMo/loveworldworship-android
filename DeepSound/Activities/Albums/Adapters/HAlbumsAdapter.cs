@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -12,6 +8,10 @@ using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Albums;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using IList = System.Collections.IList;
 
 namespace DeepSound.Activities.Albums.Adapters
@@ -52,7 +52,7 @@ namespace DeepSound.Activities.Albums.Adapters
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -64,7 +64,7 @@ namespace DeepSound.Activities.Albums.Adapters
                 if (viewHolder is not HAlbumsAdapterViewHolder holder) return;
 
                 var item = AlbumsList[position];
-               
+
                 if (item == null)
                     return;
 
@@ -79,13 +79,13 @@ namespace DeepSound.Activities.Albums.Adapters
 
                     var price = ListUtils.PriceList.FirstOrDefault(a => a.Id == item.Price)?.Price ?? item.Price.ToString();
 
-                    holder.Badge3.Text =  currencySymbol + price;
+                    holder.Badge3.Text = currencySymbol + price;
                 }
 
                 var count = !string.IsNullOrEmpty(item.CountSongs) ? item.CountSongs : item.SongsCount ?? "0";
 
                 holder.Badge2.Text = count + " " + ActivityContext.GetText(Resource.String.Lbl_Songs);
-                 
+
                 holder.TxtSecondaryText.Text = DeepSoundTools.GetNameFinal(item.Publisher ?? item.UserData);
                 holder.TxtCountSound.Text = item.CategoryName;
 
@@ -146,11 +146,11 @@ namespace DeepSound.Activities.Albums.Adapters
 
                 if (item == null)
                     return Collections.SingletonList(p0);
-                 
+
                 if (!string.IsNullOrEmpty(item.Thumbnail))
                 {
                     d.Add(item.Thumbnail);
-                } 
+                }
                 return d;
             }
             catch (Exception e)
@@ -162,7 +162,7 @@ namespace DeepSound.Activities.Albums.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString())
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString())
                 .Apply(new RequestOptions().CircleCrop());
         }
 
@@ -198,14 +198,14 @@ namespace DeepSound.Activities.Albums.Adapters
                 Badge3 = MainView.FindViewById<TextView>(Resource.Id.badge3);
 
                 //Event
-                itemView.Click += (sender, e) => clickListener(new HAlbumsAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition,Image = Image });
+                itemView.Click += (sender, e) => clickListener(new HAlbumsAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition, Image = Image });
                 itemView.LongClick += (sender, e) => longClickListener(new HAlbumsAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition, Image = Image });
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
-        } 
+        }
     }
 
     public class HAlbumsAdapterClickEventArgs : EventArgs

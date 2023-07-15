@@ -20,40 +20,40 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
                 switch (action)
                 {
                     case MotionEventActions.Down:
-                    {
-                        PressedSpan = GetPressedSpan(textView, spannable, e);
-                        if (PressedSpan != null)
                         {
-                            PressedSpan.SetPressed(true);
-                            Selection.SetSelection(spannable, spannable.GetSpanStart(PressedSpan), spannable.GetSpanEnd(PressedSpan));
-                        }
+                            PressedSpan = GetPressedSpan(textView, spannable, e);
+                            if (PressedSpan != null)
+                            {
+                                PressedSpan.SetPressed(true);
+                                Selection.SetSelection(spannable, spannable.GetSpanStart(PressedSpan), spannable.GetSpanEnd(PressedSpan));
+                            }
 
-                        break;
-                    }
+                            break;
+                        }
                     case MotionEventActions.Move:
-                    {
-                        XTouchableSpan touchedSpan = GetPressedSpan(textView, spannable, e);
-                        if (PressedSpan != null && touchedSpan != PressedSpan)
                         {
-                            PressedSpan.SetPressed(false);
-                            PressedSpan = null!;
-                            Selection.RemoveSelection(spannable);
-                        }
+                            XTouchableSpan touchedSpan = GetPressedSpan(textView, spannable, e);
+                            if (PressedSpan != null && touchedSpan != PressedSpan)
+                            {
+                                PressedSpan.SetPressed(false);
+                                PressedSpan = null;
+                                Selection.RemoveSelection(spannable);
+                            }
 
-                        break;
-                    }
+                            break;
+                        }
                     default:
-                    {
-                        if (PressedSpan != null)
                         {
-                            PressedSpan.SetPressed(false);
-                            base.OnTouchEvent(textView, spannable, e);
-                        }
+                            if (PressedSpan != null)
+                            {
+                                PressedSpan.SetPressed(false);
+                                base.OnTouchEvent(textView, spannable, e);
+                            }
 
-                        PressedSpan = null!;
-                        Selection.RemoveSelection(spannable);
-                        break;
-                    }
+                            PressedSpan = null;
+                            Selection.RemoveSelection(spannable);
+                            break;
+                        }
                 }
             }
             catch (Exception exception)
@@ -66,7 +66,7 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
         }
 
         private XTouchableSpan GetPressedSpan(TextView textView, ISpannable spannable, MotionEvent e)
-        { 
+        {
             try
             {
                 int x = (int)e.GetX();
@@ -87,10 +87,10 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
                 switch (link?.Length)
                 {
                     case > 0:
-                    {
-                        var sdfs = (XTouchableSpan)link[0];
-                        return sdfs;
-                    }
+                        {
+                            var sdfs = (XTouchableSpan)link[0];
+                            return sdfs;
+                        }
                 }
             }
             catch (Exception exception)
@@ -98,7 +98,7 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
                 Methods.DisplayReportResultTrack(exception);
             }
 
-            return null!;
+            return null;
         }
 
     }

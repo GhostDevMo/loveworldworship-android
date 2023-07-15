@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using AmulyaKhare.TextDrawableLib;
+﻿using AmulyaKhare.TextDrawableLib;
 using Android.App;
 using Android.Graphics;
 using Android.Views;
@@ -17,6 +14,9 @@ using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Chat;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 using Object = Java.Lang.Object;
 
@@ -50,7 +50,7 @@ namespace DeepSound.Activities.Chat.Adapters
                 {
                     var item = UserList[position];
                     if (item != null)
-                    { 
+                    {
                         Initialize(holder, item);
                     }
                 }
@@ -79,20 +79,20 @@ namespace DeepSound.Activities.Chat.Adapters
                     switch (item.GetLastMessage?.GetLastMessageClass.ApiType)
                     {
                         case ApiType.Text:
-                        {
-                            holder.LastMessagesIcon.Visibility = ViewStates.Gone;
-                            holder.TxtLastMessages.Text = item.GetLastMessage.Value.GetLastMessageClass != null && item.GetLastMessage.Value.GetLastMessageClass.Text.Contains("http")
-                                ? Methods.FunString.SubStringCutOf(item.GetLastMessage?.GetLastMessageClass.Text, 30) : Methods.FunString.DecodeString(Methods.FunString.SubStringCutOf(item.GetLastMessage?.GetLastMessageClass.Text, 30))
-                                  ?? ActivityContext.GetText(Resource.String.Lbl_SendMessage);
-                            break;
-                        }
+                            {
+                                holder.LastMessagesIcon.Visibility = ViewStates.Gone;
+                                holder.TxtLastMessages.Text = item.GetLastMessage.Value.GetLastMessageClass != null && item.GetLastMessage.Value.GetLastMessageClass.Text.Contains("http")
+                                    ? Methods.FunString.SubStringCutOf(item.GetLastMessage?.GetLastMessageClass.Text, 30) : Methods.FunString.DecodeString(Methods.FunString.SubStringCutOf(item.GetLastMessage?.GetLastMessageClass.Text, 30))
+                                      ?? ActivityContext.GetText(Resource.String.Lbl_SendMessage);
+                                break;
+                            }
                         case ApiType.Image:
-                        {
-                            holder.LastMessagesIcon.Visibility = ViewStates.Visible;
-                            FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, holder.LastMessagesIcon, IonIconsFonts.Images);
-                            holder.TxtLastMessages.Text = Application.Context.GetText(Resource.String.Lbl_SendImageFile);
-                            break;
-                        }
+                            {
+                                holder.LastMessagesIcon.Visibility = ViewStates.Visible;
+                                FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, holder.LastMessagesIcon, IonIconsFonts.Images);
+                                holder.TxtLastMessages.Text = Application.Context.GetText(Resource.String.Lbl_SendImageFile);
+                                break;
+                            }
                     }
 
                     //last seen time  
@@ -159,12 +159,12 @@ namespace DeepSound.Activities.Chat.Adapters
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
         public override int ItemCount => UserList?.Count ?? 0;
-          
+
         public DataConversation GetItem(int position)
         {
             return UserList[position];
@@ -233,7 +233,7 @@ namespace DeepSound.Activities.Chat.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString())
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString())
                 .Apply(new RequestOptions().CircleCrop().SetDiskCacheStrategy(DiskCacheStrategy.All));
         }
     }

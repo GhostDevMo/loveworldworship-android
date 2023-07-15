@@ -1,20 +1,20 @@
 ﻿using Android.App;
 using Android.Content;
+using Android.Graphics.Drawables;
+using Android.Util;
 using Android.Views;
 using Android.Widget;
+using DeepSound.Activities.Albums.Adapters;
+using DeepSound.Activities.Playlist.Adapters;
+using DeepSound.Activities.Songs.Adapters;
 using DeepSound.Helpers.Utils;
+using DeepSoundClient.Classes.Albums;
+using DeepSoundClient.Classes.Global;
+using DeepSoundClient.Classes.Playlist;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using Android.Graphics.Drawables;
-using Android.Util;
-using DeepSoundClient.Classes.Global;
-using DeepSound.Activities.Songs.Adapters;
-using DeepSound.Activities.Albums.Adapters;
-using DeepSoundClient.Classes.Albums;
-using DeepSound.Activities.Playlist.Adapters;
-using DeepSoundClient.Classes.Playlist;
 
 namespace DeepSound.Activities.Songs
 {
@@ -28,7 +28,7 @@ namespace DeepSound.Activities.Songs
         public RelativeLayout TopLayout;
         public TextView TxtSongName, TxtSwap;
         private readonly string Type = "";
-      
+
         public PopupFilterList(View view, Activity activity, RowSoundAdapter adapter)
         {
             try
@@ -182,7 +182,8 @@ namespace DeepSound.Activities.Songs
                 popupWindow.Focusable = true;
                 popupWindow.ClippingEnabled = true;
                 popupWindow.OutsideTouchable = false;
-                popupWindow.DismissEvent += delegate (object sender, EventArgs args) {
+                popupWindow.DismissEvent += delegate (object sender, EventArgs args)
+                {
                     try
                     {
                         popupWindow.Dismiss();
@@ -271,7 +272,7 @@ namespace DeepSound.Activities.Songs
                     SoundAdapter.NotifyDataSetChanged();
                 }
                 else if (Type == "Albums")
-                { 
+                {
                     List<DataAlbumsObject> sortList = new List<DataAlbumsObject>(AlbumsAdapter.AlbumsList);
                     switch (type)
                     {
@@ -290,7 +291,7 @@ namespace DeepSound.Activities.Songs
                     AlbumsAdapter.NotifyDataSetChanged();
                 }
                 else if (Type == "Playlist")
-                { 
+                {
                     List<PlaylistDataObject> sortList = new List<PlaylistDataObject>(PlaylistAdapter.PlaylistList);
                     switch (type)
                     {
@@ -317,6 +318,6 @@ namespace DeepSound.Activities.Songs
             {
                 Methods.DisplayReportResultTrack(e);
             }
-        } 
+        }
     }
 }

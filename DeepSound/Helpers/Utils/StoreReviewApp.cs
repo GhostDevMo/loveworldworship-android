@@ -1,13 +1,11 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.OS;
-using Android.Runtime;
+using System;
 using Uri = Android.Net.Uri;
 
 namespace DeepSound.Helpers.Utils
 {
-    [Preserve(AllMembers = true)]
     public class StoreReviewApp : IStoreReview
     {
         /// <summary>
@@ -15,7 +13,7 @@ namespace DeepSound.Helpers.Utils
         /// </summary>
         /// <param name="appId">App identifier.</param>
         public void OpenStoreListing(string appId) => OpenStoreReviewPage(appId);
-         
+
         private Intent GetRateIntent(string url)
         {
             try
@@ -39,7 +37,7 @@ namespace DeepSound.Helpers.Utils
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -79,9 +77,9 @@ namespace DeepSound.Helpers.Utils
         /// </summary>
         public void RequestReview()
         {
-        } 
+        }
     }
-     
+
     public interface IStoreReview
     {
         /// <summary>

@@ -1,15 +1,15 @@
 ﻿using Android.App;
 using Android.Views;
 using Android.Widget;
-using DeepSound.Helpers.Utils;
-using System;
-using System.Collections.ObjectModel;
 using AndroidX.RecyclerView.Widget;
-using DeepSoundClient.Classes.User;
 using Bumptech.Glide;
-using Java.Util;
-using System.Collections.Generic;
 using Bumptech.Glide.Request;
+using DeepSound.Helpers.Utils;
+using DeepSoundClient.Classes.User;
+using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 
 namespace DeepSound.Activities.Search.Adapters
@@ -39,7 +39,7 @@ namespace DeepSound.Activities.Search.Adapters
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -53,7 +53,7 @@ namespace DeepSound.Activities.Search.Adapters
                     var item = KeywordsList[position];
                     if (item != null)
                     {
-                        holder.KeywordText.Text = item.Keyword; 
+                        holder.KeywordText.Text = item.Keyword;
                     }
                 }
             }
@@ -97,12 +97,12 @@ namespace DeepSound.Activities.Search.Adapters
 
         void OnClick(LastSearchAdapterClickEventArgs args) => ItemClick?.Invoke(ActivityContext, args);
         void OnLongClick(LastSearchAdapterClickEventArgs args) => ItemLongClick?.Invoke(ActivityContext, args);
-         
+
         public IList GetPreloadItems(int p0)
         {
             try
             {
-                var d = new List<string>(); 
+                var d = new List<string>();
                 return d;
             }
             catch (Exception e)
@@ -114,7 +114,7 @@ namespace DeepSound.Activities.Search.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString())
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString())
                 .Apply(new RequestOptions().CircleCrop());
         }
     }

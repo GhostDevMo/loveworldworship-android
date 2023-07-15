@@ -1,29 +1,29 @@
-﻿using Android.OS;
+﻿using Android.Graphics;
+using Android.OS;
 using Android.Views;
+using Android.Widget;
+using AndroidX.Fragment.App;
+using AndroidX.RecyclerView.Widget;
+using AndroidX.SwipeRefreshLayout.Widget;
 using Bumptech.Glide.Util;
+using Com.Adcolony.Sdk;
+using DeepSound.Activities.Product;
+using DeepSound.Activities.Product.Adapters;
 using DeepSound.Activities.Tabbes;
+using DeepSound.Helpers.Ads;
+using DeepSound.Helpers.Controller;
+using DeepSound.Helpers.Model;
+using DeepSound.Helpers.Utils;
+using DeepSound.Library.Anjo.IntegrationRecyclerView;
+using DeepSoundClient.Classes.Product;
+using DeepSoundClient.Requests;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Android.Graphics;
-using Android.Widget;
-using DeepSound.Helpers.Ads;
-using DeepSound.Helpers.Controller;
-using DeepSound.Helpers.Model;
-using DeepSound.Helpers.Utils;
-using DeepSoundClient.Requests;
-using Newtonsoft.Json;
 using Xamarin.Facebook.Ads;
-using AndroidX.Fragment.App;
-using AndroidX.SwipeRefreshLayout.Widget;
-using AndroidX.RecyclerView.Widget;
-using Com.Adcolony.Sdk;
-using DeepSound.Activities.Product;
-using DeepSound.Activities.Product.Adapters;
-using DeepSound.Library.Anjo.IntegrationRecyclerView;
-using DeepSoundClient.Classes.Product;
 
 namespace DeepSound.Activities.UserProfile.Fragments
 {
@@ -73,7 +73,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -168,7 +168,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void MAdapterOnAddButtonItemClick(object sender, ProductAdapterClickEventArgs e)
         {
             try
@@ -205,7 +205,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         //Open profile Products
         private void MAdapterItemClick(object sender, ProductAdapterClickEventArgs e)
         {
@@ -361,7 +361,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -394,7 +394,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoProducts);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }

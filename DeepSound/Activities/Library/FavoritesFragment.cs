@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -23,6 +18,11 @@ using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.User;
 using DeepSoundClient.Requests;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DeepSound.Activities.Library
 {
@@ -66,7 +66,7 @@ namespace DeepSound.Activities.Library
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -76,11 +76,11 @@ namespace DeepSound.Activities.Library
             {
                 base.OnViewCreated(view, savedInstanceState);
 
-                InitComponent(view); 
+                InitComponent(view);
                 SetRecyclerViewAdapters();
 
                 PopupFilterList = new PopupFilterList(view, Activity, MAdapter);
-                StartApiService(); 
+                StartApiService();
             }
             catch (Exception e)
             {
@@ -100,7 +100,7 @@ namespace DeepSound.Activities.Library
                 Methods.DisplayReportResultTrack(e);
             }
         }
-        
+
         #endregion
 
         #region Functions
@@ -140,7 +140,7 @@ namespace DeepSound.Activities.Library
         {
             try
             {
-                MAdapter = new RowSoundAdapter(Activity, "FavoritesFragment") {SoundsList = new ObservableCollection<SoundDataObject>()};
+                MAdapter = new RowSoundAdapter(Activity, "FavoritesFragment") { SoundsList = new ObservableCollection<SoundDataObject>() };
                 MAdapter.ItemClick += MAdapterItemClick;
                 LayoutManager = new LinearLayoutManager(Activity);
                 MRecycler.SetLayoutManager(LayoutManager);
@@ -284,7 +284,7 @@ namespace DeepSound.Activities.Library
                 //Code get last id where LoadMore >>
                 var item = MAdapter.SoundsList.LastOrDefault();
                 if (item != null && !string.IsNullOrEmpty(item.Id.ToString()) && !MainScrollEvent.IsLoading)
-                    StartApiService(item.Id.ToString()); 
+                    StartApiService(item.Id.ToString());
             }
             catch (Exception exception)
             {
@@ -297,13 +297,13 @@ namespace DeepSound.Activities.Library
         {
             try
             {
-                   var item = MAdapter.GetItem(e.Position);
+                var item = MAdapter.GetItem(e.Position);
                 if (item != null)
                 {
                     if (item.IsPlay)
                     {
                         item.IsPlay = false;
-                        
+
                         var index = MAdapter.SoundsList.IndexOf(item);
                         MAdapter.NotifyItemChanged(index, "playerAction");
 
@@ -349,7 +349,7 @@ namespace DeepSound.Activities.Library
                 EmptyStateLayout.Visibility = ViewStates.Gone;
                 MainScrollEvent.IsLoading = false;
 
-                StartApiService(); 
+                StartApiService();
             }
             catch (Exception exception)
             {
@@ -368,7 +368,7 @@ namespace DeepSound.Activities.Library
             else
                 PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => LoadFavorites(offset) });
         }
-         
+
         private async Task LoadFavorites(string offset = "0")
         {
             if (MainScrollEvent.IsLoading)
@@ -379,7 +379,7 @@ namespace DeepSound.Activities.Library
                 MainScrollEvent.IsLoading = true;
 
                 int countList = MAdapter.SoundsList.Count;
-                 var (apiStatus, respond) = await RequestsAsync.User.GetFavoriteAsync(UserDetails.UserId.ToString(), "15", offset);
+                var (apiStatus, respond) = await RequestsAsync.User.GetFavoriteAsync(UserDetails.UserId.ToString(), "15", offset);
                 if (apiStatus == 200)
                 {
                     if (respond is GetSoundObject result)
@@ -417,7 +417,7 @@ namespace DeepSound.Activities.Library
                     Methods.DisplayReportResult(Activity, respond);
                 }
 
-                Activity?.RunOnUiThread(ShowEmptyPage); 
+                Activity?.RunOnUiThread(ShowEmptyPage);
             }
             else
             {
@@ -426,7 +426,7 @@ namespace DeepSound.Activities.Library
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -455,7 +455,7 @@ namespace DeepSound.Activities.Library
                 else
                 {
                     PopupFilterList.TopLayout.Visibility = ViewStates.Gone;
-                    TopButton.Visibility = ViewStates.Gone; 
+                    TopButton.Visibility = ViewStates.Gone;
                     MRecycler.Visibility = ViewStates.Gone;
 
                     Inflated ??= EmptyStateLayout.Inflate();
@@ -464,7 +464,7 @@ namespace DeepSound.Activities.Library
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoFavorites);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }

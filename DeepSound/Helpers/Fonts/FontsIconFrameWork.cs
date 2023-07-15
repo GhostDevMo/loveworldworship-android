@@ -6,6 +6,6 @@
         FontAwesomeSolid,
         FontAwesomeRegular,
         FontAwesomeBrands,
-        FontAwesomeLight, 
-    } 
+        FontAwesomeLight,
+    }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
@@ -8,6 +6,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.Content;
 using AndroidX.ViewPager.Widget;
 using Bumptech.Glide;
 using Bumptech.Glide.Load.Resource.Drawable;
@@ -19,6 +18,9 @@ using DeepSound.Library.OneSignalNotif;
 using DeepSound.SQLite;
 using DeepSoundClient;
 using Me.Relex.CircleIndicatorLib;
+using System;
+using System.Collections.Generic;
+using Android;
 using static DeepSound.Helpers.Controller.ViewPagerStringAdapter;
 
 namespace DeepSound.Activities.Default
@@ -30,7 +32,7 @@ namespace DeepSound.Activities.Default
 
         private ImageView ImageBackground;
         private AppCompatButton BtnRegister, BtnSkip;
-       
+
         private ViewPager ViewPagerView;
         private ViewPagerStringAdapter ViewPagerStringAdapter;
         private CircleIndicator CircleIndicatorView;
@@ -44,7 +46,7 @@ namespace DeepSound.Activities.Default
             try
             {
                 base.OnCreate(savedInstanceState);
-                InitializeDeepSound.Initialize(AppSettings.Cert, PackageName, AppSettings.TurnTrustFailureOnWebException);
+                InitializeDeepSound.Initialize(AppSettings.Cert, PackageName, AppSettings.TurnTrustFailureOnWebException, AppSettings.SetApisReportMode);
 
                 Methods.App.FullScreenApp(this);
 
@@ -64,7 +66,7 @@ namespace DeepSound.Activities.Default
         {
             try
             {
-                base.OnResume(); 
+                base.OnResume();
                 AddOrRemoveEvent(true);
             }
             catch (Exception e)
@@ -89,7 +91,7 @@ namespace DeepSound.Activities.Default
         public override void OnTrimMemory(TrimMemory level)
         {
             try
-            { 
+            {
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
                 base.OnTrimMemory(level);
             }
@@ -111,7 +113,7 @@ namespace DeepSound.Activities.Default
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #endregion
 
         #region Menu
@@ -137,21 +139,39 @@ namespace DeepSound.Activities.Default
             try
             {
                 ImageBackground = FindViewById<ImageView>(Resource.Id.Logoplace);
-             
+
                 BtnRegister = FindViewById<AppCompatButton>(Resource.Id.RegisterButton);
-                
+
                 BtnSkip = FindViewById<AppCompatButton>(Resource.Id.SkipButton);
 
                 ViewPagerView = FindViewById<ViewPager>(Resource.Id.viewPager);
                 CircleIndicatorView = FindViewById<CircleIndicator>(Resource.Id.indicator);
 
                 BtnRegister.Click += BtnRegisterOnClick;
-                 
+
                 if (!AppSettings.ShowSkipButton)
                     BtnSkip.Visibility = ViewStates.Gone;
 
-                if (string.IsNullOrEmpty(UserDetails.DeviceId))
-                    OneSignalNotification.Instance.RegisterNotificationDevice(this);
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+                {
+                    if (ContextCompat.CheckSelfPermission(this, Manifest.Permission.PostNotifications) == Permission.Granted)
+                    {
+                        if (string.IsNullOrEmpty(UserDetails.DeviceId))
+                            OneSignalNotification.Instance.RegisterNotificationDevice(this);
+                    }
+                    else
+                    {
+                        RequestPermissions(new[]
+                        {
+                            Manifest.Permission.PostNotifications
+                        }, 16248);
+                    }
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(UserDetails.DeviceId))
+                        OneSignalNotification.Instance.RegisterNotificationDevice(this);
+                }
 
                 var stringsList = new List<ViewPagerStrings>
                 {
@@ -192,12 +212,12 @@ namespace DeepSound.Activities.Default
             {
                 // true +=  // false -=
                 if (addEvent)
-                { 
+                {
                     BtnRegister.Click += BtnRegisterOnClick;
                     BtnSkip.Click += SkipButtonOnClick;
                 }
                 else
-                { 
+                {
                     BtnRegister.Click -= BtnRegisterOnClick;
                     BtnSkip.Click -= SkipButtonOnClick;
                 }
@@ -224,7 +244,7 @@ namespace DeepSound.Activities.Default
                 UserDetails.Status = "Pending";
                 UserDetails.Cookie = "";
                 UserDetails.Email = "";
-                  
+
                 //Insert user data to database
                 var user = new DataTables.LoginTb
                 {
@@ -260,30 +280,56 @@ namespace DeepSound.Activities.Default
             int drawableResourceId = this.Resources.GetIdentifier("new_person_image2", "drawable", PackageName);
             Glide.With(this).Load(drawableResourceId).Transition(DrawableTransitionOptions.WithCrossFade(400)).Into(ImageBackground);
 
-            ViewPagerView.SetCurrentItem(ViewPagerView.CurrentItem +1, true);
-           
+            ViewPagerView.SetCurrentItem(ViewPagerView.CurrentItem + 1, true);
+
         }
         private void BtnRegisterOnClick(object sender, EventArgs e)
         {
             try
             {
-                if(BtnRegister.Text == GetString(Resource.String.bt_next))
+                if (BtnRegister.Text == GetString(Resource.String.bt_next))
                 {
                     OnMoveSliderEffect();
-                    BtnRegister.Text = GetString(Resource.String.Btn_GetStarted); 
+                    BtnRegister.Text = GetString(Resource.String.Btn_GetStarted);
                 }
                 else
                 {
                     StartActivity(new Intent(this, typeof(LoginActivity)));
-                }  
+                }
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
-          
+
+        #region Permissions 
+         
+        //Permissions
+        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
+        {
+            try
+            {
+                base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
+                switch (requestCode)
+                {
+                    case 16248 when grantResults.Length > 0 && grantResults[0] == Permission.Granted:
+                        if (string.IsNullOrEmpty(UserDetails.DeviceId))
+                            OneSignalNotification.Instance.RegisterNotificationDevice(this);
+                        break;
+                    case 16248:
+                        Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        #endregion
     }
 }

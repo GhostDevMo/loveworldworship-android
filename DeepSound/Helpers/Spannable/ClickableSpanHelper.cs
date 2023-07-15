@@ -1,7 +1,7 @@
-﻿using System;
-using Android.Text;
+﻿using Android.Text;
 using Android.Text.Style;
 using Android.Views;
+using System;
 
 namespace DeepSound.Helpers.Spannable
 {

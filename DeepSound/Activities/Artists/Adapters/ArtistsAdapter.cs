@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -12,6 +9,9 @@ using DeepSound.Helpers.Fonts;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Global;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 
 namespace DeepSound.Activities.Artists.Adapters
@@ -50,7 +50,7 @@ namespace DeepSound.Activities.Artists.Adapters
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -112,7 +112,7 @@ namespace DeepSound.Activities.Artists.Adapters
         }
 
         void Click(ArtistsAdapterClickEventArgs args) => ItemClick?.Invoke(this, args);
-       // void LongClick(ArtistsAdapterClickEventArgs args) => ItemLongClick?.Invoke(this, args);
+        // void LongClick(ArtistsAdapterClickEventArgs args) => ItemLongClick?.Invoke(this, args);
 
         public IList GetPreloadItems(int p0)
         {
@@ -141,7 +141,7 @@ namespace DeepSound.Activities.Artists.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString())
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString())
                 .Apply(new RequestOptions().CircleCrop());
         }
     }

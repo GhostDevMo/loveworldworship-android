@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Gms.Ads.DoubleClick;
@@ -17,14 +15,16 @@ using DeepSound.Helpers.Fonts;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Address;
 using DeepSoundClient.Requests;
-using MaterialDialogsCore;
+using Google.Android.Material.Dialog;
 using Newtonsoft.Json;
+using System;
+using System.Linq;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Address
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class EditAddressActivity : BaseActivity, MaterialDialog.IListCallback
+    public class EditAddressActivity : BaseActivity, IDialogListCallBack
     {
         #region Variables Basic
 
@@ -265,18 +265,18 @@ namespace DeepSound.Activities.Address
         {
             try
             {
-                if (e.Event?.Action != MotionEventActions.Down) return;
+                if (e.Event?.Action != MotionEventActions.Up) return;
 
                 var countriesArray = DeepSoundTools.GetCountryList(this);
                 var arrayAdapter = countriesArray.Select(item => item.Value).ToList();
 
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
-                dialogList.Title(GetText(Resource.String.Lbl_Country));
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetTitle(GetText(Resource.String.Lbl_Country));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -337,7 +337,7 @@ namespace DeepSound.Activities.Address
 
         #region MaterialDialog
 
-        public void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+        public void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
             {

@@ -1,5 +1,4 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
@@ -15,6 +14,7 @@ using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Requests;
+using System;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser.Security
@@ -26,13 +26,13 @@ namespace DeepSound.Activities.SettingsUser.Security
 
         private Toolbar Toolbar;
         private AppCompatButton SaveTextView;
-        private TextView LinkTextView; 
+        private TextView LinkTextView;
         private EditText CurrentPasswordEditText, NewPasswordEditText, RepeatPasswordEditText;
 
         #endregion
 
         #region General
-         
+
         protected override void OnCreate(Bundle savedInstanceState)
         {
             try
@@ -135,8 +135,8 @@ namespace DeepSound.Activities.SettingsUser.Security
                 CurrentPasswordEditText = FindViewById<EditText>(Resource.Id.currentPasswordText);
                 NewPasswordEditText = FindViewById<EditText>(Resource.Id.newPsswordText);
                 RepeatPasswordEditText = FindViewById<EditText>(Resource.Id.repeatPasswordText);
-                 
-                Methods.SetColorEditText(CurrentPasswordEditText, DeepSoundTools.IsTabDark() ? Color.White : Color.Black); 
+
+                Methods.SetColorEditText(CurrentPasswordEditText, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(NewPasswordEditText, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(RepeatPasswordEditText, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
 
@@ -195,7 +195,7 @@ namespace DeepSound.Activities.SettingsUser.Security
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #endregion
 
         #region Events
@@ -235,14 +235,14 @@ namespace DeepSound.Activities.SettingsUser.Security
                         AndHUD.Shared.Show(this, GetText(Resource.String.Lbl_Loading));
 
                         //Send Api
-                         var (apiStatus, respond) = await RequestsAsync.User.ChangePasswordAsync(UserDetails.UserId.ToString(), CurrentPasswordEditText.Text, NewPasswordEditText.Text, RepeatPasswordEditText.Text);
+                        var (apiStatus, respond) = await RequestsAsync.User.ChangePasswordAsync(UserDetails.UserId.ToString(), CurrentPasswordEditText.Text, NewPasswordEditText.Text, RepeatPasswordEditText.Text);
                         if (apiStatus == 200)
                         {
                             UserDetails.Password = NewPasswordEditText.Text;
                             AndHUD.Shared.ShowSuccess(this, GetText(Resource.String.Lbl_UpdatedSuccessfully), MaskType.Clear, TimeSpan.FromSeconds(2));
                             Finish();
                         }
-                        else 
+                        else
                         {
                             Methods.DisplayAndHudErrorResult(this, respond);
                         }

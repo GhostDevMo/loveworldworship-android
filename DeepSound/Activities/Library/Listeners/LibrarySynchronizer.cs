@@ -1,15 +1,15 @@
-﻿using System.Linq;
-using Android.App;
+﻿using Android.App;
 using Android.OS;
 using DeepSound.Activities.Albums;
 using DeepSound.Activities.Playlist;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Albums;
+using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.Playlist;
 using Newtonsoft.Json;
+using System.Linq;
 using Exception = System.Exception;
-using DeepSoundClient.Classes.Global;
 
 namespace DeepSound.Activities.Library.Listeners
 {
@@ -21,7 +21,7 @@ namespace DeepSound.Activities.Library.Listeners
         public LibrarySynchronizer(Activity activityContext)
         {
             try
-            { 
+            {
                 ActivityContext = activityContext;
                 GlobalContext = HomeActivity.GetInstance();
             }
@@ -30,16 +30,16 @@ namespace DeepSound.Activities.Library.Listeners
                 Methods.DisplayReportResultTrack(e);
             }
         }
-          
+
         public void AddToRecentlyPlayed(SoundDataObject item)
         {
             try
-            { 
+            {
                 var check = GlobalContext?.LibraryFragment?.MAdapter?.SoundsList?.FirstOrDefault(a => a.Id == item.Id);
                 if (check != null)
                 {
                     GlobalContext.LibraryFragment.MAdapter.SoundsList.Remove(check);
-                    GlobalContext.LibraryFragment.MAdapter.SoundsList.Insert(0, item); 
+                    GlobalContext.LibraryFragment.MAdapter.SoundsList.Insert(0, item);
                 }
                 else
                 {
@@ -91,5 +91,5 @@ namespace DeepSound.Activities.Library.Listeners
                 Methods.DisplayReportResultTrack(e);
             }
         }
-    } 
+    }
 }

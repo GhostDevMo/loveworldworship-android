@@ -529,29 +529,7 @@
 		<item name="android:background">@android:color/transparent</item>
 		<item name="android:windowCloseOnTouchOutside">false</item>
 	</style>
-
-	<style name="ProfileTheme" parent="Theme.MaterialComponents.Light.DarkActionBar">
-		<item name="android:windowTranslucentNavigation">true</item>
-		<item name="colorPrimary">#9E000000</item>
-		<item name="colorPrimaryDark">#000000</item>
-		<item name="colorAccent">?attr/colorFill</item>
-		<item name="windowActionBar">false</item>
-		<item name="windowNoTitle">true</item>
-		<item name="android:statusBarColor">#000000</item>
-		<item name="android:windowDrawsSystemBarBackgrounds">true</item>
-		<item name="android:windowTranslucentStatus">true</item>
-	</style>
-	<style name="ProfileTheme.NoActionBar">
-		<item name="windowActionBar">false</item>
-		<item name="windowNoTitle">true</item>
-		<item name="android:windowDrawsSystemBarBackgrounds" >true</item>
-		<item name="android:windowTranslucentStatus">true</item>
-	</style>
-	<style name="tab_style_ProfileTheme" parent="TextAppearance.Design.Tab">
-		<item name="textAllCaps">false</item>
-		<item name="android:textSize">13sp</item>
-	</style>
-
+ 
 	<style name="EditText">
 		<item name="android:singleLine">true</item>
 		<item name="colorControlNormal">#FFFFFF</item>

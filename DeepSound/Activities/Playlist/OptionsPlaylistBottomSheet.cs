@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Content;
+﻿using Android.Content;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -14,13 +9,18 @@ using DeepSound.Adapters;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
-using DeepSound.Library.Anjo.Share.Abstractions;
 using DeepSound.Library.Anjo.Share;
+using DeepSound.Library.Anjo.Share.Abstractions;
 using DeepSoundClient.Classes.Playlist;
 using DeepSoundClient.Requests;
 using Google.Android.Material.BottomSheet;
-using MaterialDialogsCore;
+using Google.Android.Material.Dialog;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Exception = System.Exception;
 
 namespace DeepSound.Activities.Playlist
@@ -56,14 +56,14 @@ namespace DeepSound.Activities.Playlist
             {
                 Context contextThemeWrapper = DeepSoundTools.IsTabDark() ? new ContextThemeWrapper(Activity, Resource.Style.MyTheme_Dark) : new ContextThemeWrapper(Activity, Resource.Style.MyTheme);
                 // clone the inflater using the ContextThemeWrapper
-                LayoutInflater localInflater = inflater.CloneInContext(contextThemeWrapper); 
+                LayoutInflater localInflater = inflater.CloneInContext(contextThemeWrapper);
                 View view = localInflater?.Inflate(Resource.Layout.BottomSheetDefaultLayout, container, false);
                 return view;
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -107,8 +107,8 @@ namespace DeepSound.Activities.Playlist
                 Image = view.FindViewById<ImageView>(Resource.Id.Image);
                 TxtTitle = view.FindViewById<TextView>(Resource.Id.title);
                 TxtSeconderText = view.FindViewById<TextView>(Resource.Id.brief);
-                IconHeart = view.FindViewById<ImageView>(Resource.Id.heart); 
-                IconHeart.Visibility = ViewStates.Gone; 
+                IconHeart = view.FindViewById<ImageView>(Resource.Id.heart);
+                IconHeart.Visibility = ViewStates.Gone;
             }
             catch (Exception e)
             {
@@ -212,10 +212,10 @@ namespace DeepSound.Activities.Playlist
 
                 if (Methods.CheckConnectivity())
                 {
-                    var dialog = new MaterialDialog.Builder(Activity).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                    dialog.Title(GlobalContext.GetText(Resource.String.Lbl_DeletePlaylist));
-                    dialog.Content(GlobalContext.GetText(Resource.String.Lbl_AreYouSureDeletePlaylist));
-                    dialog.PositiveText(Activity.GetText(Resource.String.Lbl_Yes)).OnPositive((materialDialog, action) =>
+                    var dialog = new MaterialAlertDialogBuilder(Activity);
+                    dialog.SetTitle(GlobalContext.GetText(Resource.String.Lbl_DeletePlaylist));
+                    dialog.SetMessage(GlobalContext.GetText(Resource.String.Lbl_AreYouSureDeletePlaylist));
+                    dialog.SetPositiveButton(Activity.GetText(Resource.String.Lbl_Yes), (materialDialog, action) =>
                     {
                         try
                         {
@@ -230,7 +230,7 @@ namespace DeepSound.Activities.Playlist
                                         {
                                             ListUtils.PlaylistList.Remove(dataPlaylist);
                                         }
-                                         
+
                                         var dataMyPlaylistFragment = GlobalContext?.LibraryFragment.MyPlaylistFragment?.MAdapter;
                                         var list2 = dataMyPlaylistFragment?.PlaylistList;
                                         var dataMyPlaylist = list2?.FirstOrDefault(a => a.Id == PlaylistObject?.Id);
@@ -266,9 +266,9 @@ namespace DeepSound.Activities.Playlist
                             Methods.DisplayReportResultTrack(e);
                         }
                     });
-                    dialog.NegativeText(Activity.GetText(Resource.String.Lbl_No)).OnNegative(new MyMaterialDialog());
-                    dialog.AlwaysCallSingleChoiceCallback();
-                    dialog.Build().Show();
+                    dialog.SetNegativeButton(Activity.GetText(Resource.String.Lbl_No), new MaterialDialogUtils());
+
+                    dialog.Show();
                 }
                 else
                 {
@@ -349,7 +349,7 @@ namespace DeepSound.Activities.Playlist
                         Id = "3",
                         Text = GetText(Resource.String.Lbl_Share),
                         Icon = Resource.Drawable.icon_send_vector,
-                    }); 
+                    });
                 }
             }
             catch (Exception exception)

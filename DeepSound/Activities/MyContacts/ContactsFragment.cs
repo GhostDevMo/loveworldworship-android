@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Gms.Ads;
+﻿using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -21,7 +16,12 @@ using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.User;
-using DeepSoundClient.Requests; 
+using DeepSoundClient.Requests;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Exception = System.Exception;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
@@ -31,17 +31,17 @@ namespace DeepSound.Activities.MyContacts
     {
         #region Variables Basic
 
-       public ContactsAdapter MAdapter;
-       private HomeActivity GlobalContext;
-       private SwipeRefreshLayout SwipeRefreshLayout;
-       private RecyclerView MRecycler;
-       private LinearLayoutManager LayoutManager;
-       private ViewStub EmptyStateLayout;
-       private View Inflated;
-       private RecyclerViewOnScrollListener MainScrollEvent;
-       private string UserType = "", UserId = "";
-       
-       private AdView MAdView;
+        public ContactsAdapter MAdapter;
+        private HomeActivity GlobalContext;
+        private SwipeRefreshLayout SwipeRefreshLayout;
+        private RecyclerView MRecycler;
+        private LinearLayoutManager LayoutManager;
+        private ViewStub EmptyStateLayout;
+        private View Inflated;
+        private RecyclerViewOnScrollListener MainScrollEvent;
+        private string UserType = "", UserId = "";
+
+        private AdView MAdView;
         #endregion
 
         #region General
@@ -58,13 +58,13 @@ namespace DeepSound.Activities.MyContacts
         {
             try
             {
-                View view = inflater.Inflate(Resource.Layout.RecyclerDefaultLayout, container, false); 
+                View view = inflater.Inflate(Resource.Layout.RecyclerDefaultLayout, container, false);
                 return view;
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -86,7 +86,7 @@ namespace DeepSound.Activities.MyContacts
 
                 StartApiService();
 
-                AdsGoogle.Ad_RewardedVideo(Activity); 
+                AdsGoogle.Ad_RewardedVideo(Activity);
             }
             catch (Exception e)
             {
@@ -113,7 +113,7 @@ namespace DeepSound.Activities.MyContacts
             try
             {
                 base.OnResume();
-                MAdView?.Resume(); 
+                MAdView?.Resume();
             }
             catch (Exception e)
             {
@@ -126,7 +126,7 @@ namespace DeepSound.Activities.MyContacts
             try
             {
                 base.OnPause();
-                MAdView?.Pause();  
+                MAdView?.Pause();
             }
             catch (Exception e)
             {
@@ -138,7 +138,7 @@ namespace DeepSound.Activities.MyContacts
         {
             try
             {
-                MAdView?.Destroy(); 
+                MAdView?.Destroy();
                 base.OnDestroy();
             }
             catch (Exception exception)
@@ -184,7 +184,7 @@ namespace DeepSound.Activities.MyContacts
                 switch (UserType)
                 {
                     case "Following":
-                        title = Context.GetText(Resource.String.Lbl_Following);  
+                        title = Context.GetText(Resource.String.Lbl_Following);
                         break;
                     case "Followers":
                         title = Context.GetText(Resource.String.Lbl_Followers);
@@ -227,9 +227,9 @@ namespace DeepSound.Activities.MyContacts
             }
         }
 
-         
+
         #endregion
-         
+
         #region Event
 
         //Scroll
@@ -240,7 +240,7 @@ namespace DeepSound.Activities.MyContacts
                 //Code get last id where LoadMore >>
                 var item = MAdapter.UsersList.LastOrDefault();
                 if (item != null && !string.IsNullOrEmpty(item.Id.ToString()) && !MainScrollEvent.IsLoading)
-                    StartApiService(item.Id.ToString()); 
+                    StartApiService(item.Id.ToString());
             }
             catch (Exception exception)
             {
@@ -252,7 +252,7 @@ namespace DeepSound.Activities.MyContacts
         private void MAdapterItemClick(object sender, ContactsAdapterClickEventArgs e)
         {
             try
-            { 
+            {
                 var item = MAdapter.GetItem(e.Position);
                 if (item?.Id != null) GlobalContext.OpenProfile(item.Id, item);
             }
@@ -315,14 +315,14 @@ namespace DeepSound.Activities.MyContacts
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
                 Toast.MakeText(Context, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
             }
         }
-         
+
         private async Task LoadUserFollowingAsync(string offset = "0")
         {
             if (MainScrollEvent.IsLoading)
@@ -331,7 +331,7 @@ namespace DeepSound.Activities.MyContacts
             MainScrollEvent.IsLoading = true;
 
             int countList = MAdapter.UsersList.Count;
-             var (apiStatus, respond) = await RequestsAsync.User.GetFollowingAsync(UserId, "15", offset);
+            var (apiStatus, respond) = await RequestsAsync.User.GetFollowingAsync(UserId, "15", offset);
             if (apiStatus == 200)
             {
                 if (respond is GetUserObject result)
@@ -362,10 +362,10 @@ namespace DeepSound.Activities.MyContacts
                 }
             }
             else
-                {
-                    MainScrollEvent.IsLoading = false;
-                    Methods.DisplayReportResult(Activity, respond);
-                }
+            {
+                MainScrollEvent.IsLoading = false;
+                Methods.DisplayReportResult(Activity, respond);
+            }
 
             Activity?.RunOnUiThread(ShowEmptyPage);
         }
@@ -378,7 +378,7 @@ namespace DeepSound.Activities.MyContacts
             MainScrollEvent.IsLoading = true;
 
             int countList = MAdapter.UsersList.Count;
-             var (apiStatus, respond) = await RequestsAsync.User.GetFollowerAsync(UserId, "15", offset);
+            var (apiStatus, respond) = await RequestsAsync.User.GetFollowerAsync(UserId, "15", offset);
             if (apiStatus == 200)
             {
                 if (respond is GetUserObject result)
@@ -409,10 +409,10 @@ namespace DeepSound.Activities.MyContacts
                 }
             }
             else
-                {
-                    MainScrollEvent.IsLoading = false;
-                    Methods.DisplayReportResult(Activity, respond);
-                }
+            {
+                MainScrollEvent.IsLoading = false;
+                Methods.DisplayReportResult(Activity, respond);
+            }
 
             Activity?.RunOnUiThread(ShowEmptyPage);
         }
@@ -427,7 +427,7 @@ namespace DeepSound.Activities.MyContacts
                 if (MAdapter.UsersList.Count > 0)
                 {
                     MRecycler.Visibility = ViewStates.Visible;
-                    EmptyStateLayout.Visibility = ViewStates.Gone; 
+                    EmptyStateLayout.Visibility = ViewStates.Gone;
                 }
                 else
                 {
@@ -440,7 +440,7 @@ namespace DeepSound.Activities.MyContacts
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoUsers);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }

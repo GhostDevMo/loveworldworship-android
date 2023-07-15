@@ -18,7 +18,7 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
         public static readonly string Tag = "STReadMoreOption";
         public static readonly int TypeLine = 1;
         public static readonly int TypeCharacter = 2;
-         
+
         // optional
         private readonly int TextLength;
         private readonly int TextLengthType;
@@ -31,7 +31,7 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
 
         private StReadMoreOption(Builder builder)
         {
-            
+
             TextLength = builder.MTextLength;
             TextLengthType = builder.MTextLengthType;
             MoreLabel = builder.MMoreLabel;
@@ -62,7 +62,7 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
                     //wael textView.SetTextFuture(PrecomputedTextCompat.GetTextFuture(text, TextViewCompat.GetTextMetricsParams(textView), null));
                     textView.SetText(text, TextView.BufferType.Spannable);
                 }
-                textView.Post(new StRunnable(this, textView, text)); 
+                textView.Post(new StRunnable(this, textView, text));
             }
             catch (Exception e)
             {
@@ -84,9 +84,9 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
                 ClickableSpan rclickableSpan = new StRclickableSpan(this, textView, text, StTools.StTypeText.ReadLess);
                 ss.SetSpan(rclickableSpan, ss.Length() - LessLabel.Length, ss.Length(), SpanTypes.ExclusiveExclusive);
 
-               // textView.SetTextFuture(PrecomputedTextCompat.GetTextFuture(ss, TextViewCompat.GetTextMetricsParams(textView), null));
+                // textView.SetTextFuture(PrecomputedTextCompat.GetTextFuture(ss, TextViewCompat.GetTextMetricsParams(textView), null));
                 textView.SetText(ss, TextView.BufferType.Spannable);
-                textView.MovementMethod=LinkMovementMethod.Instance;
+                textView.MovementMethod = LinkMovementMethod.Instance;
             }
             catch (Exception e)
             {
@@ -120,7 +120,7 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
                     int textLengthNew = Option.TextLength;
 
                     if (Option.TextLengthType == TypeLine)
-                    { 
+                    {
                         if (TextView.Layout.LineCount <= Option.TextLength)
                         {
                             TextView.SetText(Text, TextView.BufferType.Spannable);
@@ -145,12 +145,12 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
                     switch (Build.VERSION.SdkInt)
                     {
                         case >= BuildVersionCodes.JellyBean when Option.ExpandAnimation:
-                        {
-                            LayoutTransition layoutTransition = new LayoutTransition();
-                            layoutTransition.EnableTransitionType(LayoutTransitionType.Changing);
-                            ((ViewGroup)TextView?.Parent).LayoutTransition = layoutTransition;
-                            break;
-                        }
+                            {
+                                LayoutTransition layoutTransition = new LayoutTransition();
+                                layoutTransition.EnableTransitionType(LayoutTransitionType.Changing);
+                                ((ViewGroup)TextView?.Parent).LayoutTransition = layoutTransition;
+                                break;
+                            }
                     }
                     //TextView.SetTextFuture(PrecomputedTextCompat.GetTextFuture(ss, TextViewCompat.GetTextMetricsParams(TextView), null));
                     TextView.SetText(ss, TextView.BufferType.Spannable);
@@ -211,10 +211,10 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
                 }
             }
         }
-         
+
         public class Builder
         {
-            
+
             // optional
             public int MTextLength = 100;
             public int MTextLengthType = TypeCharacter;
@@ -227,9 +227,9 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
 
             public Builder()
             {
-               
+
             }
-             
+
             /// <summary>
             /// 
             /// </summary>

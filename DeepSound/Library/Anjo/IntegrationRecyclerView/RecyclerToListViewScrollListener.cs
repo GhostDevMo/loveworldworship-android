@@ -1,6 +1,6 @@
-﻿using System;
-using Android.Widget;
+﻿using Android.Widget;
 using AndroidX.RecyclerView.Widget;
+using System;
 
 namespace DeepSound.Library.Anjo.IntegrationRecyclerView
 {
@@ -20,7 +20,7 @@ namespace DeepSound.Library.Anjo.IntegrationRecyclerView
         public override void OnScrollStateChanged(RecyclerView recyclerView, int newState)
         {
             base.OnScrollStateChanged(recyclerView, newState);
-            ScrollState listViewState = ScrollState.TouchScroll;  
+            ScrollState listViewState = ScrollState.TouchScroll;
 
             switch (newState)
             {

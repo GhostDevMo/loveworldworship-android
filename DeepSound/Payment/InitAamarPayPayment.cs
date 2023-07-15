@@ -1,9 +1,5 @@
-﻿using Android.App;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using AamarPay;
+﻿using AamarPay;
+using Android.App;
 using Android.Widget;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Utils;
@@ -11,6 +7,10 @@ using DeepSoundClient.Classes.Payment;
 using DeepSoundClient.Requests;
 using Newtonsoft.Json;
 using Org.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace DeepSound.Payment
 {
@@ -27,7 +27,7 @@ namespace DeepSound.Payment
         {
             try
             {
-                ActivityContext = activity; 
+                ActivityContext = activity;
             }
             catch (Exception exception)
             {
@@ -41,9 +41,9 @@ namespace DeepSound.Payment
             try
             {
                 Price = price;
-                var option = ListUtils.MyUserInfoList.FirstOrDefault(); 
+                var option = ListUtils.MyUserInfoList.FirstOrDefault();
                 var currency = ListUtils.SettingsSiteList?.Currency ?? "USD";
-                 
+
                 DialogBuilder = new DialogBuilder(ActivityContext, AlertDialog);
 
                 // Initiate payment
@@ -74,7 +74,7 @@ namespace DeepSound.Payment
                 DialogBuilder.ShowLoading();
                 AamarPay.SetTransactionParameter(price, currency, "Pay the card");
                 AamarPay.SetCustomerDetails(option.Name, option.Email, option.PhoneNumber, "Nidakule Göztepe, Merdivenköy Mah. Bora Sok. No:1", "Istanbul", "Turkey");
-                AamarPay.InitPgw(this); 
+                AamarPay.InitPgw(this);
             }
             catch (Exception exception)
             {
@@ -89,7 +89,7 @@ namespace DeepSound.Payment
         }
 
         public void OnPaymentSuccess(JSONObject jsonObject)
-        { 
+        {
             try
             {
                 var data = JsonConvert.DeserializeObject<SuccessAamarPayObject>(jsonObject.ToString());
@@ -101,7 +101,7 @@ namespace DeepSound.Payment
             }
             catch (Exception e)
             {
-                Console.WriteLine(e); 
+                Console.WriteLine(e);
             }
         }
 
@@ -126,7 +126,7 @@ namespace DeepSound.Payment
                 Console.WriteLine(e);
             }
         }
-         
+
         public void OnSuccess(JSONObject jsonObject)
         {
             DialogBuilder.DismissDialog();
@@ -137,19 +137,19 @@ namespace DeepSound.Payment
             DialogBuilder.DismissDialog();
             DialogBuilder.ErrorPopUp(message);
         }
-        
+
         private async Task SuccessAamarPay(string merTxnid, string payStatus)
         {
             try
             {
                 if (Methods.CheckConnectivity())
-                { 
+                {
                     var (apiStatus, respond) = await RequestsAsync.Payments.SuccessAamarPayAsync(Price, merTxnid, payStatus);
                     switch (apiStatus)
                     {
                         case 200:
                             Toast.MakeText(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_PaymentSuccessfully), ToastLength.Long)?.Show();
-                             
+
                             break;
                         default:
                             Methods.DisplayReportResult(ActivityContext, respond);

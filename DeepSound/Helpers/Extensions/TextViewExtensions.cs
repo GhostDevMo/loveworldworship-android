@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
-using Android.Content;
+﻿using Android.Content;
 using Android.Text;
 using Android.Text.Method;
 using Android.Text.Style;
 using Android.Widget;
 using DeepSound.Helpers.Spannable;
+using System.Collections.Generic;
 
 namespace DeepSound.Helpers.Extensions
 {
@@ -20,7 +20,7 @@ namespace DeepSound.Helpers.Extensions
                 spannableText = x.IsNoWrap ? spannableText.FormatNoWrapHtml() : spannableText;
                 spannableTextString += spannableText;
             });
-            var spannableString = new SpannableString(Html.FromHtml(spannableTextString , FromHtmlOptions.ModeLegacy));
+            var spannableString = new SpannableString(Html.FromHtml(spannableTextString, FromHtmlOptions.ModeLegacy));
             var currentCharPointer = 0;
             spannableTextList.ForEach(x =>
             {

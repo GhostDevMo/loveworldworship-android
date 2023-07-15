@@ -1,7 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Graphics;
 using Android.Media;
@@ -14,23 +11,25 @@ using AndroidX.Core.App;
 using AndroidX.Core.Content;
 using AndroidX.Media.Session;
 using Com.Google.Android.Exoplayer2;
-using Com.Google.Android.Exoplayer2.Source;
-using Com.Google.Android.Exoplayer2.Source.Dash;
-using Com.Google.Android.Exoplayer2.Source.Hls;
-using Com.Google.Android.Exoplayer2.Source.Smoothstreaming;
 using Com.Google.Android.Exoplayer2.Trackselection;
-using Com.Google.Android.Exoplayer2.Upstream;
-using Com.Google.Android.Exoplayer2.Util;
 using DeepSound.Activities;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
+using DeepSound.SQLite;
 using DeepSoundClient;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.Tracks;
 using DeepSoundClient.Requests;
-using Uri = Android.Net.Uri;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Com.Google.Android.Exoplayer2.Source;
+using Com.Google.Android.Exoplayer2.Upstream;
+using Java.Lang;
 using AudioAttributes = Com.Google.Android.Exoplayer2.Audio.AudioAttributes;
+using Exception = System.Exception;
+using Uri = Android.Net.Uri;
 
 namespace DeepSound.Helpers.MediaPlayerController
 {
@@ -55,7 +54,7 @@ namespace DeepSound.Helpers.MediaPlayerController
         private NotificationManager MNotificationManager;
         private CallBroadcastReceiver OnCallIncome;
         private static PlayerService Service;
-        private HomeActivity GlobalContext;
+        public HomeActivity GlobalContext;
         private SoundDataObject Item;
 
         private HeadPhoneBroadcastReceiver OnHeadPhoneDetect;
@@ -85,7 +84,7 @@ namespace DeepSound.Helpers.MediaPlayerController
 
         public override IBinder OnBind(Intent intent)
         {
-            return null!;
+            return null;
         }
 
         public override void OnCreate()
@@ -123,31 +122,31 @@ namespace DeepSound.Helpers.MediaPlayerController
                 if (OnAudioFocusChangeListener == null)
                 {
                     OnAudioFocusChangeListener = new MyAudioFocusChangeListener();
-                    AudioManager = (AudioManager)Constant.Context.GetSystemService(Context.AudioService);
+                    AudioManager = (AudioManager)Application.Context.GetSystemService(Context.AudioService);
 
+#pragma warning disable 618
                     if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
                     {
                         var playbackAttributes = new Android.Media.AudioAttributes.Builder()
-                            .SetUsage(AudioUsageKind.Media)
-                            .SetContentType(AudioContentType.Music)
-                            .Build();
+                            ?.SetUsage(AudioUsageKind.Media)
+                            ?.SetContentType(AudioContentType.Music)
+                            ?.Build();
 
                         FocusRequest = new AudioFocusRequestClass.Builder(AudioFocus.Gain)
-                            .SetAudioAttributes(playbackAttributes)
-                            .SetAcceptsDelayedFocusGain(true)
-                            .SetOnAudioFocusChangeListener(OnAudioFocusChangeListener)
-                            .Build();
+                            ?.SetAudioAttributes(playbackAttributes)
+                            ?.SetAcceptsDelayedFocusGain(true)
+                            ?.SetOnAudioFocusChangeListener(OnAudioFocusChangeListener)
+                            ?.Build();
 
-                        AudioManager.RequestAudioFocus(FocusRequest);
+                        AudioManager?.RequestAudioFocus(FocusRequest);
                     }
                     else
                     {
-#pragma warning disable 618
                         AudioManager.RequestAudioFocus(OnAudioFocusChangeListener, Stream.Music, AudioFocus.Gain);
 #pragma warning restore 618
                     }
 
-                    ComponentName = new ComponentName(Constant.Context.PackageName, new MediaButtonIntentReceiver().Class.Name);
+                    ComponentName = new ComponentName(Application.Context.PackageName, new MediaButtonIntentReceiver().Class.Name);
 #pragma warning disable 618
                     AudioManager.RegisterMediaButtonEventReceiver(ComponentName);
 #pragma warning restore 618 
@@ -167,13 +166,13 @@ namespace DeepSound.Helpers.MediaPlayerController
                 {
                     AdaptiveTrackSelection.Factory trackSelectionFactory = new AdaptiveTrackSelection.Factory();
                     var trackSelector = new DefaultTrackSelector(Application.Context, trackSelectionFactory);
-                    Constant.Player = new SimpleExoPlayer.Builder(Constant.Context).Build();
+                    Constant.Player = new IExoPlayer.Builder(Application.Context)?.SetTrackSelector(trackSelector)?.Build();
                     Constant.Player.ShuffleModeEnabled = Constant.IsSuffle;
                     PlayerListener = new PlayerEvents(this);
                     Constant.Player.AddListener(PlayerListener);
-                    Constant.Player.SetAudioAttributes(new AudioAttributes.Builder().SetUsage(C.UsageMedia).SetContentType(C.ContentTypeMusic).Build(), true);
+                    Constant.Player.SetAudioAttributes(new AudioAttributes.Builder()?.SetUsage(C.UsageMedia)?.SetContentType(2)?.Build(), true);
                     Constant.Player.SeekParameters = SeekParameters.Default;
-                    Constant.Player.AudioAttributes = AudioAttributes.Default;
+                    Constant.Player.SetAudioAttributes(AudioAttributes.Default, true);
                 }
             }
             catch (Exception e)
@@ -327,27 +326,25 @@ namespace DeepSound.Helpers.MediaPlayerController
 
                 if (AudioManager != null)
                 {
+#pragma warning disable 618
                     if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
                     {
                         if (FocusRequest != null) AudioManager.AbandonAudioFocusRequest(FocusRequest);
                     }
                     else
-#pragma warning disable 618
                         AudioManager.AbandonAudioFocus(OnAudioFocusChangeListener);
-#pragma warning restore 618
 
-#pragma warning disable 618
                     AudioManager.UnregisterMediaButtonEventReceiver(ComponentName);
 #pragma warning restore 618
                 }
-
-                try { UnregisterReceiver(OnCallIncome); }catch { }
-                try { UnregisterReceiver(OnHeadPhoneDetect); }catch { }
                  
-                if (intent != null) StopService(intent);
-                StopForeground(true);
+                try { UnregisterReceiver(OnCallIncome); } catch { }
+                try { UnregisterReceiver(OnHeadPhoneDetect); } catch { }
 
-                GlobalContext?.OffWakeLock(); 
+                if (intent != null) StopService(intent);
+                StopForeground(StopForegroundFlags.Remove);
+
+                GlobalContext?.OffWakeLock();
                 StopSelf();
             }
             catch (Exception e)
@@ -551,7 +548,7 @@ namespace DeepSound.Helpers.MediaPlayerController
             try
             {
                 MNotificationManager.CancelAll();
-                Notification = null!;
+                Notification = null;
             }
             catch (Exception e)
             {
@@ -610,12 +607,12 @@ namespace DeepSound.Helpers.MediaPlayerController
                     mChannel = new NotificationChannel(NotificationChannelId, AppSettings.ApplicationName, importance);
                     MNotificationManager.CreateNotificationChannel(mChannel);
 
-                  
+
                     var mMediaSession = new MediaSession(Application.Context, AppSettings.ApplicationName);
-                    mMediaSession.SetFlags(MediaSessionFlags.HandlesMediaButtons | MediaSessionFlags.HandlesTransportControls);  
+                    mMediaSession.SetFlags(MediaSessionFlags.HandlesMediaButtons | MediaSessionFlags.HandlesTransportControls);
 
                     Notification.SetStyle(new AndroidX.Media.App.NotificationCompat.MediaStyle()?
-                             //.SetMediaSession(mMediaSession.SessionToken)  
+                            //.SetMediaSession(mMediaSession.SessionToken)  
                             .SetShowCancelButton(true)?
                             .SetShowActionsInCompactView(0, 1, 2)?
                            .SetCancelButtonIntent(MediaButtonReceiver.BuildMediaButtonPendingIntent(Application.Context, PlaybackState.ActionStop)))
@@ -657,6 +654,7 @@ namespace DeepSound.Helpers.MediaPlayerController
         {
             try
             {
+                UpdateNotiPlay(Constant.Player.PlayWhenReady);
                 Task.Run(() =>
                 {
                     try
@@ -675,9 +673,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                             BigViews.SetTextViewText(Resource.Id.textView_noti_artist, genresName);
                             SmallViews.SetTextViewText(Resource.Id.status_bar_artist_name, genresName);
                             SmallViews.SetTextViewText(Resource.Id.status_bar_track_name, songName);
-                        }
-
-                        UpdateNotiPlay(Constant.Player.PlayWhenReady);
+                        } 
                     }
                     catch (Exception e)
                     {
@@ -695,7 +691,7 @@ namespace DeepSound.Helpers.MediaPlayerController
         {
             try
             {
-                Task.Run(() =>
+                Task.Run(async () =>
                 {
                     try
                     {
@@ -748,7 +744,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                         var url = Constant.ArrayListPlay[Constant.PlayPos]?.Thumbnail?.Replace(" ", "%20");
                         if (!string.IsNullOrEmpty(url))
                         {
-                            var bit = BitmapUtil.GetImageBitmapFromUrl(url);
+                            var bit = await BitmapUtil.GetImageBitmapFromUrl(url);
                             if (bit != null)
                                 Notification?.SetLargeIcon(bit);
                         }
@@ -772,7 +768,7 @@ namespace DeepSound.Helpers.MediaPlayerController
         #region Player && Listener
 
         public bool ShouldShowMusicPurchaseDialog()
-        { 
+        {
             try
             {
                 Item = Constant.ArrayListPlay[Constant.PlayPos];
@@ -794,7 +790,7 @@ namespace DeepSound.Helpers.MediaPlayerController
             {
                 Console.WriteLine(e);
                 return false;
-            } 
+            }
         }
 
         public void ShowMusicPurchaseDialog()
@@ -819,7 +815,7 @@ namespace DeepSound.Helpers.MediaPlayerController
             }
         }
 
-        private void OnCompletion()
+        public void OnCompletion()
         {
             try
             {
@@ -931,7 +927,7 @@ namespace DeepSound.Helpers.MediaPlayerController
         private void SetPlayAudio()
         {
             try
-            { 
+            {
                 try
                 {
                     if (Constant.Player != null && Constant.Player.PlayWhenReady)
@@ -940,7 +936,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                         Constant.Player.Release();
                     }
 
-                    Constant.Player = null!;
+                    Constant.Player = null;
                     InitializePlayer();
 
                     //GC Collector
@@ -959,20 +955,28 @@ namespace DeepSound.Helpers.MediaPlayerController
                 ChangeText();
                 Uri mediaUri;
 
-                if (Item.AudioLocation.Contains("stream") && Item.AudioLocationOriginal.Contains("stream"))
+                string filePath = Item.AudioLocation;
+                var sqlEntity = new SqLiteDatabase();
+                SoundDataObject dataSound = sqlEntity.Get_LatestDownloadsSound(Item.Id);
+                if (dataSound != null && !string.IsNullOrEmpty(dataSound.AudioLocation) && (dataSound.AudioLocation.Contains("file://") || dataSound.AudioLocation.Contains("content://") || dataSound.AudioLocation.Contains("storage") || dataSound.AudioLocation.Contains("/data/user/0/")))
+                {
+                    filePath = SoundDownloadAsyncController.GetDownloadedDiskVideoUri(dataSound.Title);
+                }
+
+                if (filePath.Contains("stream") && Item.AudioLocationOriginal.Contains("stream"))
                 {
                     mediaUri = Uri.Parse(Item.AudioLocationOriginal);
                 }
-                else if (!string.IsNullOrEmpty(Item.AudioLocation) && Item.AudioLocation.Contains("http"))
-                { 
+                else if (!string.IsNullOrEmpty(filePath) && filePath.Contains("http"))
+                {
                     if (Item.IsOwner != null && Item.IsOwner.Value || Item.Price == 0)
                     {
-                        mediaUri = Uri.Parse(Item.AudioLocation);
+                        mediaUri = Uri.Parse(filePath);
                     }
                     else if (Item.IsPurchased != null && Item.IsPurchased.Value)
                     {
-                        mediaUri = Uri.Parse(Item.AudioLocation);
-                    } 
+                        mediaUri = Uri.Parse(filePath);
+                    }
                     else if (Item.Price != 0 && !string.IsNullOrEmpty(Item.DemoTrack))
                     {
                         if (!Item.DemoTrack.Contains(InitializeDeepSound.WebsiteUrl))
@@ -980,19 +984,27 @@ namespace DeepSound.Helpers.MediaPlayerController
 
                         mediaUri = Uri.Parse(Item.DemoTrack);
                     }
+                    else if (Item.Price != 0)
+                    {
+                        mediaUri = null;
+                        //This song is paid, You must pay
+                        ShowMusicPurchaseDialog();
+                        return;
+                    }
                     else
-                        mediaUri = Uri.Parse(Item.AudioLocation);
+                        mediaUri = Uri.Parse(filePath);
                 }
-                else if (!string.IsNullOrEmpty(Item.AudioLocation) && (Item.AudioLocation.Contains("file://") || Item.AudioLocation.Contains("content://") || Item.AudioLocation.Contains("storage") || Item.AudioLocation.Contains("/data/user/0/")))
-                {
-                    mediaUri = Uri.Parse(Item.AudioLocation);
-                }
+                //else if (!string.IsNullOrEmpty(filePath) && (filePath.Contains("file://") || filePath.Contains("content://") || filePath.Contains("storage") || filePath.Contains("/data/user/0/")))
+                //{
+                //    mediaUri = Uri.Parse(filePath);
+                //}
                 else
-                    mediaUri = Uri.Parse(Item.AudioLocation);
+                    mediaUri = Uri.Parse(filePath);
 
-                PlayerSource = null!;
+                PlayerSource = null;
                 PlayerSource = GetMediaSourceFromUrl(mediaUri, "normal");
-                Constant.Player?.Prepare(PlayerSource);
+                Constant.Player?.SetMediaSource(PlayerSource);
+                Constant.Player?.Prepare();
                 Constant.Player?.AddListener(PlayerListener);
 
                 OnPrepared();
@@ -1002,34 +1014,36 @@ namespace DeepSound.Helpers.MediaPlayerController
                 Methods.DisplayReportResultTrack(e);
             }
         }
-
+         
         private IMediaSource GetMediaSourceFromUrl(Uri uri, string tag)
         {
             try
-            {
-                var mBandwidthMeter = new DefaultBandwidthMeter.Builder(GlobalContext).Build();
-                //DefaultDataSourceFactory dataSourceFactory = new DefaultDataSourceFactory(Constant.Context, Util.GetUserAgent(Constant.Context, AppSettings.ApplicationName), mBandwidthMeter);
-                var buildHttpDataSourceFactory = new DefaultDataSourceFactory(Constant.Context, mBandwidthMeter, new DefaultHttpDataSourceFactory(Util.GetUserAgent(Constant.Context, AppSettings.ApplicationName), new DefaultBandwidthMeter.Builder(GlobalContext).Build()));
-                var buildHttpDataSourceFactoryNull = new DefaultDataSourceFactory(Constant.Context, mBandwidthMeter, new DefaultHttpDataSourceFactory(Util.GetUserAgent(Constant.Context, AppSettings.ApplicationName), null));
-                int type = Util.InferContentType(uri, null);
-                var src = type switch
+            { 
+                IMediaSource src; 
+                if (!string.IsNullOrEmpty(uri.Path) && (uri.Path.Contains("file://") || uri.Path.Contains("content://") || uri.Path.Contains("storage") || uri.Path.Contains("/data/user/0/")))
                 {
-                    C.TypeSs => new SsMediaSource.Factory(new DefaultSsChunkSource.Factory(buildHttpDataSourceFactory), buildHttpDataSourceFactoryNull).SetTag(tag).CreateMediaSource(uri),
-                    C.TypeDash => new DashMediaSource.Factory(new DefaultDashChunkSource.Factory(buildHttpDataSourceFactory), buildHttpDataSourceFactoryNull).SetTag(tag).CreateMediaSource(uri),
-                    C.TypeHls => new HlsMediaSource.Factory(buildHttpDataSourceFactory).SetTag(tag).CreateMediaSource(uri),
-                    C.TypeOther => new ProgressiveMediaSource.Factory(buildHttpDataSourceFactory).SetTag(tag).CreateMediaSource(uri),
-                    _ => new ProgressiveMediaSource.Factory(buildHttpDataSourceFactory).SetTag(tag).CreateMediaSource(uri)
-                };
+                    var defaultDataSourceFactory = new FileDataSource.Factory();
+                    src = new ProgressiveMediaSource.Factory(defaultDataSourceFactory).CreateMediaSource(MediaItem.FromUri(uri));
+                }
+                else
+                {
+                    var httpDataSourceFactory = new DefaultHttpDataSource.Factory().SetAllowCrossProtocolRedirects(true);
+                    src = new ProgressiveMediaSource.Factory(httpDataSourceFactory).CreateMediaSource(MediaItem.FromUri(uri));
+                }
+
+                if (src?.MediaItem != null)
+                    src.MediaItem.MediaId = tag;
+
                 return src;
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
-        private void SetBuffer(bool isBuffer)
+        public void SetBuffer(bool isBuffer)
         {
             try
             {
@@ -1067,7 +1081,7 @@ namespace DeepSound.Helpers.MediaPlayerController
             }
         }
 
-        private void ChangePlayPauseIcon()
+        public void ChangePlayPauseIcon()
         {
             try
             {
@@ -1078,7 +1092,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         [BroadcastReceiver]
         private class CallBroadcastReceiver : BroadcastReceiver
         {
@@ -1137,7 +1151,19 @@ namespace DeepSound.Helpers.MediaPlayerController
                     {
                         return;
                     }
-                    var key = intent.GetParcelableExtra(Intent.ExtraKeyEvent);
+
+                    Java.Lang.Object key;
+                    if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+                    {
+                        key = intent.GetParcelableExtra(Intent.ExtraKeyEvent, Class.FromType(typeof(Java.Lang.Object)));
+                    }
+                    else
+                    {
+#pragma warning disable CS0618
+                        key = intent.GetParcelableExtra(Intent.ExtraKeyEvent);
+#pragma warning restore CS0618
+                    }
+
                     if (key == null)
                     {
                         return;
@@ -1200,104 +1226,6 @@ namespace DeepSound.Helpers.MediaPlayerController
                     Methods.DisplayReportResultTrack(e);
                 }
             }
-        }
-
-        private class PlayerEvents : Java.Lang.Object, IPlayerEventListener
-        {
-            private static PlayerService PlayerController;
-
-            public PlayerEvents(PlayerService controller)
-            {
-                PlayerController = controller;
-            }
-
-            public void OnLoadingChanged(bool isLoading)
-            {
-
-            }
-
-            public void OnPlaybackParametersChanged(PlaybackParameters playbackParameters)
-            {
-
-            }
-
-            public void OnPlayerError(ExoPlaybackException error)
-            {
-                try
-                {
-                    Constant.Player.PlayWhenReady = false;
-                    PlayerController.SetBuffer(false);
-                    PlayerController.ChangePlayPauseIcon();
-                }
-                catch (Exception e)
-                {
-                    Methods.DisplayReportResultTrack(e);
-                }
-            }
-
-            public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
-            {
-                try
-                {
-                    if (playbackState == IPlayer.StateEnded)
-                    {
-                        PlayerController.OnCompletion();
-                    }
-                    else if (playbackState == IPlayer.StateReady && playWhenReady)
-                    {
-
-                    }
-
-                    if (playWhenReady)
-                    {
-                        PlayerController.GlobalContext?.SetWakeLock();
-                    }
-                    else
-                    {
-                        PlayerController.GlobalContext?.OffWakeLock();
-                    }
-                }
-                catch (Exception e)
-                {
-                    Methods.DisplayReportResultTrack(e);
-                }
-            }
-
-            public void OnPositionDiscontinuity(int reason)
-            {
-
-            }
-
-            public void OnRepeatModeChanged(int repeatMode)
-            {
-
-            }
-
-            public void OnSeekProcessed()
-            {
-
-            }
-
-            public void OnShuffleModeEnabledChanged(bool shuffleModeEnabled)
-            {
-
-            }
-
-            public void OnTimelineChanged(Timeline timeline, int reason)
-            {
-
-            }
-
-            public void OnIsPlayingChanged(bool isPlaying)
-            {
-
-            }
-
-            public void OnTracksChanged(TrackGroupArray trackGroups, TrackSelectionArray trackSelections)
-            {
-
-            }
-        }
-
+        } 
     }
 }

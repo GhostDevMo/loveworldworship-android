@@ -1,5 +1,4 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Gms.Common;
 using Android.Locations;
@@ -12,8 +11,8 @@ using DeepSound.Helpers.Utils;
 using Java.IO;
 using Java.Text;
 using Java.Util;
+using System;
 using Uri = Android.Net.Uri;
-
 
 namespace DeepSound.Helpers.Controller
 {
@@ -50,12 +49,6 @@ namespace DeepSound.Helpers.Controller
         {
             try
             {
-                if (!DeepSoundTools.CheckAllowedFileUpload())
-                {
-                    Methods.DialogPopup.InvokeAndShowDialog(Context, Context.GetText(Resource.String.Lbl_Security), Context.GetText(Resource.String.Lbl_Error_AllowedFileUpload), Context.GetText(Resource.String.Lbl_Ok));
-                    return;
-                }
-
                 Methods.Path.Chack_MyFolder();
 
                 Intent intent = (int)Build.VERSION.SdkInt switch
@@ -107,11 +100,6 @@ namespace DeepSound.Helpers.Controller
         {
             try
             {
-                if (!DeepSoundTools.CheckAllowedFileUpload())
-                {
-                    Methods.DialogPopup.InvokeAndShowDialog(Context, Context.GetText(Resource.String.Lbl_Security), Context.GetText(Resource.String.Lbl_Error_AllowedFileUpload), Context.GetText(Resource.String.Lbl_Ok));
-                    return;
-                }
                 Methods.Path.Chack_MyFolder();
 
                 //var intent = new Intent(Intent.ActionPick, MediaStore.Video.Media.ExternalContentUri);
@@ -190,7 +178,7 @@ namespace DeepSound.Helpers.Controller
         {
             // Create an image file name
             string timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").Format(new Date());
-            string imageFileName = "JPEG_" + timeStamp + "_";
+            string imageFileName = "Img_" + timeStamp + "_";
             string storageDir = Methods.Path.FolderDcimImage;
 
             try
@@ -218,47 +206,27 @@ namespace DeepSound.Helpers.Controller
         {
             try
             {
-                if (!DeepSoundTools.CheckAllowedFileUpload())
-                {
-                    Methods.DialogPopup.InvokeAndShowDialog(Context, Context.GetText(Resource.String.Lbl_Security), Context.GetText(Resource.String.Lbl_Error_AllowedFileUpload), Context.GetText(Resource.String.Lbl_Ok));
-                    return;
-                }
                 Methods.Path.Chack_MyFolder();
 
                 if (Methods.MultiMedia.IsCameraAvailable())
                 {
                     Intent takePictureIntent = new Intent(MediaStore.ActionImageCapture);
                     // Ensure that there's a camera activity to handle the intent
-                    var packageManager = takePictureIntent.ResolveActivity(Context.PackageManager);
+                    var packageManager = takePictureIntent?.ResolveActivity(Context.PackageManager);
                     if (packageManager != null)
                     {
                         // Create the File where the photo should go
-                        File photoFile;
-                        try
-                        {
-                            photoFile = CreateImageFile();
-                            CurrentPhotoPath = photoFile.Path;
-                        }
-                        catch (Exception ex)
-                        {
-                            string timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").Format(new Date());
-                            photoFile = new File(Methods.Path.FolderDcimImage + "/" + timeStamp + ".jpg");
-                            CurrentPhotoPath = photoFile.AbsolutePath;
-
-                            // Error occurred while create  ...
-                            Methods.DisplayReportResultTrack(ex);
-                        }
+                        File photoFile = CreateImageFile();
 
                         // Continue only if the File was successfully created
                         if (photoFile != null)
                         {
                             var photoUri = FileProvider.GetUriForFile(Context, Context.PackageName + ".fileprovider", photoFile);
-                            takePictureIntent.PutExtra(MediaStore.ExtraOutput, photoUri);
+                            takePictureIntent?.PutExtra(MediaStore.ExtraOutput, photoUri);
                         }
                     }
 
-                    if (takePictureIntent.ResolveActivity(Context.PackageManager) != null)
-                        Context.StartActivityForResult(takePictureIntent, 503);
+                    Context.StartActivityForResult(takePictureIntent, 503);
                 }
                 else
                 {
@@ -276,13 +244,24 @@ namespace DeepSound.Helpers.Controller
             // Create an image file name
             string timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").Format(new Date());
             string videoFileName = "Video_" + timeStamp + "_";
-            string storageDir = Methods.Path.FolderDcimMyApp + "/Video/";
+            string storageDir = Methods.Path.FolderDcimMyApp + "/Video";
 
-            File video = new File(storageDir + "/" + videoFileName + ".mp4");
+            try
+            {
+                File video = File.CreateTempFile(videoFileName, ".mp4", new File(storageDir));
 
-            // Save a file: path for use with ACTION_VIEW intents
-            CurrentVideoPath = video.AbsolutePath;
-            return video;
+                // Save a file: path for use with ACTION_VIEW intents
+                CurrentVideoPath = video.AbsolutePath;
+                return video;
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+                File video = new File(storageDir + "/" + videoFileName, ".mp4");
+                // Save a file: path for use with ACTION_VIEW intents
+                CurrentVideoPath = video.AbsolutePath;
+                return video;
+            }
         }
 
         /// <summary>
@@ -292,40 +271,27 @@ namespace DeepSound.Helpers.Controller
         {
             try
             {
-                if (!DeepSoundTools.CheckAllowedFileUpload())
-                {
-                    Methods.DialogPopup.InvokeAndShowDialog(Context, Context.GetText(Resource.String.Lbl_Security), Context.GetText(Resource.String.Lbl_Error_AllowedFileUpload), Context.GetText(Resource.String.Lbl_Ok));
-                    return;
-                }
                 Methods.Path.Chack_MyFolder();
 
                 if (Methods.MultiMedia.IsCameraAvailable())
                 {
                     Intent intent = new Intent(MediaStore.ActionVideoCapture);
 
-                    File mediaFile;
-                    try
+                    var packageManager = intent.ResolveActivity(Context.PackageManager);
+                    if (packageManager != null)
                     {
-                        mediaFile = CreateVideoFile();
-                    }
-                    catch (Exception ex)
-                    {
-                        string timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").Format(new Date());
-                        mediaFile = new File(Methods.Path.FolderDcimMyApp + "/Video/" + timeStamp + ".mp4");
-                        CurrentVideoPath = mediaFile.AbsolutePath;
+                        // Create the File where the Video should go
+                        File videoFile = CreateVideoFile();
 
-                        // Error occurred while create  ...
-                        Methods.DisplayReportResultTrack(ex);
-                    }
-
-                    if (mediaFile != null)
-                    {
-                        //var videoUri = FileProvider.GetUriForFile(Context, Context.PackageName + ".fileprovider", mediaFile); 
-                        //intent.PutExtra(MediaStore.ExtraOutput, videoUri);
+                        // Continue only if the File was successfully created
+                        if (videoFile != null)
+                        {
+                            var videoFileUri = FileProvider.GetUriForFile(Context, Context.PackageName + ".fileprovider", videoFile);
+                            intent.PutExtra(MediaStore.ExtraOutput, videoFileUri);
+                        }
                     }
 
-                    if (intent.ResolveActivity(Context.PackageManager) != null)
-                        Context.StartActivityForResult(intent, 513);
+                    Context.StartActivityForResult(intent, 513);
                 }
                 else
                 {
@@ -346,11 +312,6 @@ namespace DeepSound.Helpers.Controller
         {
             try
             {
-                if (!DeepSoundTools.CheckAllowedFileUpload())
-                {
-                    Methods.DialogPopup.InvokeAndShowDialog(Context, Context.GetText(Resource.String.Lbl_Security), Context.GetText(Resource.String.Lbl_Error_AllowedFileUpload), Context.GetText(Resource.String.Lbl_Ok));
-                    return;
-                }
                 Methods.Path.Chack_MyFolder();
 
                 Intent intent;
@@ -380,19 +341,16 @@ namespace DeepSound.Helpers.Controller
                         }
                 }
 
-                if (intent.ResolveActivity(Context.PackageManager) != null)
-                    Context.StartActivityForResult(Intent.CreateChooser(intent, title), 504);
+                Context.StartActivityForResult(Intent.CreateChooser(intent, title), 504);
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
 
                 var fileIntent = new Intent(Intent.ActionPick);
-                fileIntent.SetAction(Intent.ActionGetContent);
-                fileIntent.SetType("*/*");
-
-                if (fileIntent.ResolveActivity(Context.PackageManager) != null)
-                    Context.StartActivityForResult(Intent.CreateChooser(fileIntent, title), 504);
+                fileIntent?.SetAction(Intent.ActionGetContent);
+                fileIntent?.SetType("*/*");
+                Context.StartActivityForResult(Intent.CreateChooser(fileIntent, title), 504);
             }
         }
 
@@ -403,11 +361,6 @@ namespace DeepSound.Helpers.Controller
         {
             try
             {
-                if (!DeepSoundTools.CheckAllowedFileUpload())
-                {
-                    Methods.DialogPopup.InvokeAndShowDialog(Context, Context.GetText(Resource.String.Lbl_Security), Context.GetText(Resource.String.Lbl_Error_AllowedFileUpload), Context.GetText(Resource.String.Lbl_Ok));
-                    return;
-                }
                 Methods.Path.Chack_MyFolder();
 
                 Intent intent = (int)Build.VERSION.SdkInt switch
@@ -438,9 +391,7 @@ namespace DeepSound.Helpers.Controller
             {
                 Intent pickcontact = new Intent(Intent.ActionPick, ContactsContract.Contacts.ContentUri);
                 pickcontact.SetType(ContactsContract.CommonDataKinds.Phone.ContentType);
-
-                if (pickcontact.ResolveActivity(Context.PackageManager) != null)
-                    Context.StartActivityForResult(pickcontact, 506);
+                Context.StartActivityForResult(pickcontact, 506);
             }
             catch (Exception e)
             {
@@ -481,9 +432,7 @@ namespace DeepSound.Helpers.Controller
                 var intent = new Intent(Intent.ActionSendto, smsUri);
                 intent.PutExtra("sms_body", textMessages);
                 intent.AddFlags(ActivityFlags.NewTask);
-
-                if (intent.ResolveActivity(Context.PackageManager) != null)
-                    Context.StartActivity(intent);
+                Context.StartActivity(intent);
 
                 //Or use this code
                 //SmsManager.Default?.SendTextMessage(phoneNumber, null, textMessages, null, null);
@@ -522,9 +471,7 @@ namespace DeepSound.Helpers.Controller
                             var contactUri = Uri.Parse("tel:" + phoneNumber);
                             Intent intent = new Intent(ContactsContract.Intents.ShowOrCreateContact, contactUri);
                             intent.PutExtra(ContactsContract.Intents.ExtraRecipientContactName, true);
-
-                            if (intent.ResolveActivity(Context.PackageManager) != null)
-                                Context.StartActivity(intent);
+                            Context.StartActivity(intent);
                             break;
                         }
                 }
@@ -547,10 +494,8 @@ namespace DeepSound.Helpers.Controller
             {
                 string mailto = "mailto:" + email + "?cc=" + email + "&subject=" + subject + "&body=" + text;
                 Intent emailIntent = new Intent(Intent.ActionSendto);
-                emailIntent.SetData(Uri.Parse(mailto));
-
-                if (emailIntent.ResolveActivity(Context.PackageManager) != null)
-                    Context.StartActivity(Intent.CreateChooser(emailIntent, "Send Email"));
+                emailIntent?.SetData(Uri.Parse(mailto));
+                Context.StartActivity(Intent.CreateChooser(emailIntent, "Send Email"));
             }
             catch (Exception e)
             {
@@ -571,8 +516,7 @@ namespace DeepSound.Helpers.Controller
                 intent.SetData(urlNumber);
                 intent.AddFlags(ActivityFlags.NewTask);
 
-                if (intent.ResolveActivity(Context.PackageManager) != null)
-                    Context.StartActivity(intent);
+                Context.StartActivity(intent);
             }
             catch (Exception e)
             {
@@ -591,9 +535,7 @@ namespace DeepSound.Helpers.Controller
                 var uri = Uri.Parse(website);
                 var intent = new Intent(Intent.ActionView, uri);
                 intent.AddFlags(ActivityFlags.NewTask);
-
-                if (intent.ResolveActivity(Context.PackageManager) != null)
-                    Context.StartActivity(intent);
+                Context.StartActivity(intent);
             }
             catch (Exception e)
             {
@@ -611,12 +553,12 @@ namespace DeepSound.Helpers.Controller
             {
                 CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
                 CustomTabsIntent customTabsIntent = builder.Build();
-                customTabsIntent.Intent.SetAction(Intent.ActionView);
-                customTabsIntent.Intent.AddFlags(ActivityFlags.NewTask);
+                customTabsIntent?.Intent?.SetAction(Intent.ActionView);
+                customTabsIntent?.Intent?.AddFlags(ActivityFlags.NewTask);
                 //builder.SetToolbarColor(Color.ParseColor(AppSettings.MainColor));
                 builder.SetStartAnimations(Context, Resource.Animation.abc_fade_in, Resource.Animation.abc_fade_out);
                 builder.SetExitAnimations(Context, Resource.Animation.abc_fade_in, Resource.Animation.abc_fade_out);
-                customTabsIntent.LaunchUrl(Context, Uri.Parse(url));
+                customTabsIntent?.LaunchUrl(Context, Uri.Parse(url));
             }
             catch (Exception e)
             {
@@ -639,13 +581,16 @@ namespace DeepSound.Helpers.Controller
                     intent = new Intent(Intent.ActionView, Uri.Parse("market://details?id=" + appPackageName));
                     if (intent.ResolveActivity(Context.PackageManager) != null)
                         Context.StartActivity(intent);
+                    else
+                    {
+                        intent = new Intent(Intent.ActionView, Uri.Parse("https://play.google.com/store/apps/details?id=" + appPackageName));
+                        Context.StartActivity(intent);
+                    }
                 }
                 catch (ActivityNotFoundException exception)
                 {
                     intent = new Intent(Intent.ActionView, Uri.Parse("https://play.google.com/store/apps/details?id=" + appPackageName));
-
-                    if (intent.ResolveActivity(Context.PackageManager) != null)
-                        Context.StartActivity(intent);
+                    Context.StartActivity(intent);
                     Methods.DisplayReportResultTrack(exception);
                 }
             }
@@ -659,7 +604,7 @@ namespace DeepSound.Helpers.Controller
         {
             try
             {
-                context.PackageManager?.GetPackageInfo("com.facebook.katana", 0); //Checks if FB is even installed.
+                //PackageManager?.GetPackageInfo("com.facebook.katana", 0); //Checks if FB is even installed.
                 //return new Intent(Intent.ActionView,Uri.Parse("fb://profile/" + name)); //Try's to make intent with FB is URI
                 return new Intent(Intent.ActionView, Uri.Parse("fb://facewebmodal/f?href=https://www.facebook.com/" + name)); //Try's to make intent with FB is URI
             }
@@ -676,7 +621,7 @@ namespace DeepSound.Helpers.Controller
             {
                 Intent facebookIntent = GetOpenFacebookIntent(context, name);
 
-                if (facebookIntent.ResolveActivity(Context.PackageManager) != null)
+                if (facebookIntent?.ResolveActivity(Context.PackageManager) != null)
                     Context.StartActivity(facebookIntent);
             }
             catch (Exception e)
@@ -692,6 +637,10 @@ namespace DeepSound.Helpers.Controller
                 Intent intent = new Intent(Intent.ActionView, Uri.Parse("twitter://user?screen_name=" + name));
                 if (intent.ResolveActivity(Context.PackageManager) != null)
                     Context.StartActivity(intent);
+                else
+                {
+                    OpenBrowserFromApp("https://twitter.com/#!/" + name);
+                }
             }
             catch (Exception e)
             {
@@ -707,10 +656,8 @@ namespace DeepSound.Helpers.Controller
             {
                 string url = "https://www.linkedin.com/in/" + name;
                 Intent linkedInAppIntent = new Intent(Intent.ActionView, Uri.Parse(url));
-                linkedInAppIntent.AddFlags(ActivityFlags.ClearWhenTaskReset);
-
-                if (linkedInAppIntent.ResolveActivity(Context.PackageManager) != null)
-                    Context.StartActivity(linkedInAppIntent);
+                linkedInAppIntent?.AddFlags(ActivityFlags.ClearWhenTaskReset);
+                Context.StartActivity(linkedInAppIntent);
             }
             catch (Exception e)
             {
@@ -729,13 +676,17 @@ namespace DeepSound.Helpers.Controller
                 {
                     if (likeIng.ResolveActivity(Context.PackageManager) != null)
                         Context.StartActivity(likeIng);
+                    else
+                    {
+                        var intent = new Intent(Intent.ActionView, Uri.Parse("http://instagram.com/" + name));
+                        Context.StartActivity(intent);
+                    }
                 }
                 catch (ActivityNotFoundException e)
                 {
                     Methods.DisplayReportResultTrack(e);
                     var intent = new Intent(Intent.ActionView, Uri.Parse("http://instagram.com/" + name));
-                    if (intent.ResolveActivity(Context.PackageManager) != null)
-                        Context.StartActivity(intent);
+                    Context.StartActivity(intent);
                 }
             }
             catch (Exception e)
@@ -754,13 +705,17 @@ namespace DeepSound.Helpers.Controller
                 {
                     if (likeIng.ResolveActivity(Context.PackageManager) != null)
                         Context.StartActivity(likeIng);
+                    else
+                    {
+                        var intent = new Intent(Intent.ActionView, Uri.Parse("http://www.youtube.com/" + channelId));
+                        Context.StartActivity(intent);
+                    }
                 }
                 catch (ActivityNotFoundException e)
                 {
                     Methods.DisplayReportResultTrack(e);
                     var intent = new Intent(Intent.ActionView, Uri.Parse("http://www.youtube.com/" + channelId));
-                    if (intent.ResolveActivity(Context.PackageManager) != null)
-                        Context.StartActivity(intent);
+                    Context.StartActivity(intent);
                 }
             }
             catch (Exception e)
@@ -779,13 +734,17 @@ namespace DeepSound.Helpers.Controller
                 {
                     if (likeIng.ResolveActivity(Context.PackageManager) != null)
                         Context.StartActivity(likeIng);
+                    else
+                    {
+                        var intent = new Intent(Intent.ActionView, Uri.Parse("http://vk.com/" + friendId));
+                        Context.StartActivity(intent);
+                    }
                 }
                 catch (ActivityNotFoundException e)
                 {
                     Methods.DisplayReportResultTrack(e);
                     var intent = new Intent(Intent.ActionView, Uri.Parse("http://vk.com/" + friendId));
-                    if (intent.ResolveActivity(Context.PackageManager) != null)
-                        Context.StartActivity(intent);
+                    Context.StartActivity(intent);
                 }
             }
             catch (Exception e)
@@ -804,13 +763,17 @@ namespace DeepSound.Helpers.Controller
                 {
                     if (likeIng.ResolveActivity(Context.PackageManager) != null)
                         Context.StartActivity(likeIng);
+                    else
+                    {
+                        var intent = new Intent(Intent.ActionView, Uri.Parse("https://telegram.me/" + friendId));
+                        Context.StartActivity(intent);
+                    }
                 }
                 catch (ActivityNotFoundException e)
                 {
                     Methods.DisplayReportResultTrack(e);
                     var intent = new Intent(Intent.ActionView, Uri.Parse("https://telegram.me/" + friendId));
-                    if (intent.ResolveActivity(Context.PackageManager) != null)
-                        Context.StartActivity(intent);
+                    Context.StartActivity(intent);
                 }
             }
             catch (Exception e)

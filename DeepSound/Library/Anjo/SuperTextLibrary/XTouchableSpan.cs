@@ -38,7 +38,7 @@ namespace DeepSound.Library.Anjo.SuperTextLibrary
                 if (AutoLinkItem != null)
                 {
                     MoreTextView.AutoLinkOnClickListener?.AutoLinkTextClick(AutoLinkItem.GetAutoLinkMode(), AutoLinkItem.GetMatchedText(), AutoLinkItem.GetUserIdText());
-                } 
+                }
             }
             catch (Exception e)
             {

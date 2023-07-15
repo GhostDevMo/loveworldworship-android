@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
+using System;
+using System.Collections.ObjectModel;
 
 namespace DeepSound.Adapters
 {
@@ -45,7 +45,7 @@ namespace DeepSound.Adapters
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -116,11 +116,11 @@ namespace DeepSound.Adapters
         #region Variables Basic
 
         public View MainView { get; }
-         
+
         public LinearLayout ContentLayout { get; set; }
         public ImageView IconContent { get; set; }
         public TextView ContentText { get; set; }
-         
+
         #endregion
 
         public ItemOptionAdapterViewHolder(View itemView, Action<ItemOptionAdapterClickEventArgs> clickListener, Action<ItemOptionAdapterClickEventArgs> longClickListener) : base(itemView)

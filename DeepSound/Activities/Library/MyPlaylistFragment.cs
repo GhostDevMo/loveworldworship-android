@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -22,11 +17,16 @@ using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Playlist;
 using DeepSoundClient.Requests;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Library
 {
-    public class MyPlaylistFragment : Fragment 
+    public class MyPlaylistFragment : Fragment
     {
         #region Variables Basic
 
@@ -38,7 +38,7 @@ namespace DeepSound.Activities.Library
         private ViewStub EmptyStateLayout;
         private View Inflated;
         private RecyclerViewOnScrollListener MainScrollEvent;
-        private PlaylistProfileFragment PlaylistProfileFragment; 
+        private PlaylistProfileFragment PlaylistProfileFragment;
         private PopupFilterList PopupFilterList;
 
         #endregion
@@ -63,7 +63,7 @@ namespace DeepSound.Activities.Library
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -78,14 +78,14 @@ namespace DeepSound.Activities.Library
                 SetRecyclerViewAdapters();
                 PopupFilterList = new PopupFilterList(view, Activity, MAdapter);
 
-                StartApiService(); 
+                StartApiService();
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         public override void OnLowMemory()
         {
             try
@@ -98,7 +98,7 @@ namespace DeepSound.Activities.Library
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #endregion
 
         #region Functions
@@ -109,21 +109,21 @@ namespace DeepSound.Activities.Library
             {
                 MRecycler = (RecyclerView)view.FindViewById(Resource.Id.recyler);
                 EmptyStateLayout = view.FindViewById<ViewStub>(Resource.Id.viewStub);
-                 
+
                 SwipeRefreshLayout = (SwipeRefreshLayout)view.FindViewById(Resource.Id.swipeRefreshLayout);
                 SwipeRefreshLayout.SetColorSchemeResources(Android.Resource.Color.HoloBlueLight, Android.Resource.Color.HoloGreenLight, Android.Resource.Color.HoloOrangeLight, Android.Resource.Color.HoloRedLight);
                 SwipeRefreshLayout.Refreshing = true;
                 SwipeRefreshLayout.Enabled = true;
                 SwipeRefreshLayout.SetProgressBackgroundColorSchemeColor(DeepSoundTools.IsTabDark() ? Color.ParseColor("#424242") : Color.ParseColor("#f7f7f7"));
                 SwipeRefreshLayout.Refresh += SwipeRefreshLayoutOnRefresh;
-                 
+
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-           
+
         private void InitToolbar(View view)
         {
             try
@@ -141,7 +141,7 @@ namespace DeepSound.Activities.Library
         {
             try
             {
-                MAdapter = new PlaylistRowAdapter(Activity) {PlaylistList = new ObservableCollection<PlaylistDataObject>()};
+                MAdapter = new PlaylistRowAdapter(Activity) { PlaylistList = new ObservableCollection<PlaylistDataObject>() };
                 MAdapter.ItemClick += MAdapterItemClick;
                 LayoutManager = new LinearLayoutManager(Activity);
                 MRecycler.SetLayoutManager(LayoutManager);
@@ -157,7 +157,7 @@ namespace DeepSound.Activities.Library
                 MainScrollEvent = xamarinRecyclerViewOnScrollListener;
                 MainScrollEvent.LoadMoreEvent += MainScrollEventOnLoadMoreEvent;
                 MRecycler.AddOnScrollListener(xamarinRecyclerViewOnScrollListener);
-                MainScrollEvent.IsLoading = false; 
+                MainScrollEvent.IsLoading = false;
             }
             catch (Exception e)
             {
@@ -166,7 +166,7 @@ namespace DeepSound.Activities.Library
         }
 
         #endregion
-         
+
         #region Refresh
 
         private void SwipeRefreshLayoutOnRefresh(object sender, EventArgs e)
@@ -184,11 +184,11 @@ namespace DeepSound.Activities.Library
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
 
         #region Get Playlist Api 
-         
+
         private void StartApiService(string offset = "0")
         {
             if (!Methods.CheckConnectivity())
@@ -196,7 +196,7 @@ namespace DeepSound.Activities.Library
             else
                 PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => GetPlaylist(offset) });
         }
-         
+
         private async Task GetPlaylist(string offset = "0")
         {
             if (MainScrollEvent.IsLoading)
@@ -223,7 +223,7 @@ namespace DeepSound.Activities.Library
                     MAdapter.PlaylistList.Insert(0, addNewPlaylist);
 
                 int countList = MAdapter.PlaylistList.Count;
-                 var (apiStatus, respond) = await RequestsAsync.Playlist.GetPlaylistAsync(UserDetails.UserId.ToString(), "15", offset);
+                var (apiStatus, respond) = await RequestsAsync.Playlist.GetPlaylistAsync(UserDetails.UserId.ToString(), "15", offset);
                 if (apiStatus.Equals(200))
                 {
                     if (respond is PlaylistObject result)
@@ -268,7 +268,7 @@ namespace DeepSound.Activities.Library
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -284,7 +284,7 @@ namespace DeepSound.Activities.Library
             {
                 MainScrollEvent.IsLoading = false;
                 SwipeRefreshLayout.Refreshing = false;
-                 
+
                 if (MAdapter.PlaylistList.Count > 1)
                 {
                     PopupFilterList.TxtSongName.Text = MAdapter.PlaylistList.Count - 1 + " " + GetText(Resource.String.Lbl_Playlist);
@@ -304,15 +304,15 @@ namespace DeepSound.Activities.Library
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoPlaylist);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
-                } 
+                }
             }
             catch (Exception e)
             {
                 MainScrollEvent.IsLoading = false;
-                SwipeRefreshLayout.Refreshing = false; 
+                SwipeRefreshLayout.Refreshing = false;
                 Methods.DisplayReportResultTrack(e);
             }
         }
@@ -333,7 +333,7 @@ namespace DeepSound.Activities.Library
         #endregion
 
         #region Scroll
-        
+
         //My Playlist
         private void MainScrollEventOnLoadMoreEvent(object sender, EventArgs e)
         {
@@ -342,14 +342,14 @@ namespace DeepSound.Activities.Library
                 //Code get last id where LoadMore >>
                 var item = MAdapter.PlaylistList.LastOrDefault();
                 if (item != null && !string.IsNullOrEmpty(item.Id.ToString()) && !MainScrollEvent.IsLoading)
-                    StartApiService(item.Id.ToString()); 
+                    StartApiService(item.Id.ToString());
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
 
         #region Event 
@@ -362,7 +362,7 @@ namespace DeepSound.Activities.Library
                 if (item != null)
                 {
                     if (item?.Name == Context.GetText(Resource.String.Lbl_AddNewPlaylist))
-                    { 
+                    {
                         CreatePlaylistBottomSheet createPlaylistBottomSheet = new CreatePlaylistBottomSheet();
                         createPlaylistBottomSheet.Show(GlobalContext.SupportFragmentManager, createPlaylistBottomSheet.Tag);
                     }
@@ -378,15 +378,15 @@ namespace DeepSound.Activities.Library
                         };
 
                         GlobalContext.FragmentBottomNavigator.DisplayFragment(PlaylistProfileFragment);
-                    } 
-                }  
+                    }
+                }
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-        
-        #endregion 
+
+        #endregion
     }
 }

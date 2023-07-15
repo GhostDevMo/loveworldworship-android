@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Gms.Ads.DoubleClick;
+﻿using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -15,20 +10,25 @@ using Bumptech.Glide.Util;
 using DeepSound.Activities.Library.Listeners;
 using DeepSound.Activities.Songs.Adapters;
 using DeepSound.Activities.Tabbes;
+using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.MediaPlayerController;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
-using DeepSound.Library.Anjo.Share.Abstractions;
 using DeepSound.Library.Anjo.Share;
+using DeepSound.Library.Anjo.Share.Abstractions;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.Playlist;
 using DeepSoundClient.Requests;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Exception = System.Exception;
-using DeepSound.Helpers.Ads;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Playlist
@@ -82,7 +82,7 @@ namespace DeepSound.Activities.Playlist
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -112,7 +112,7 @@ namespace DeepSound.Activities.Playlist
         {
             try
             {
-                base.OnResume(); 
+                base.OnResume();
                 PublisherAdView?.Resume();
             }
             catch (Exception e)
@@ -125,7 +125,7 @@ namespace DeepSound.Activities.Playlist
         {
             try
             {
-                base.OnPause(); 
+                base.OnPause();
                 PublisherAdView?.Pause();
             }
             catch (Exception e)
@@ -133,7 +133,7 @@ namespace DeepSound.Activities.Playlist
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         public override void OnLowMemory()
         {
             try
@@ -167,7 +167,7 @@ namespace DeepSound.Activities.Playlist
         private void InitComponent(View view)
         {
             try
-            { 
+            {
                 SwipeRefreshLayout = (SwipeRefreshLayout)view.FindViewById(Resource.Id.swipeRefreshLayout);
                 SwipeRefreshLayout.SetColorSchemeResources(Android.Resource.Color.HoloBlueLight, Android.Resource.Color.HoloGreenLight, Android.Resource.Color.HoloOrangeLight, Android.Resource.Color.HoloRedLight);
                 SwipeRefreshLayout.Refreshing = true;
@@ -256,13 +256,13 @@ namespace DeepSound.Activities.Playlist
         {
             try
             {
-                   var item = MAdapter.GetItem(e.Position);
+                var item = MAdapter.GetItem(e.Position);
                 if (item != null)
                 {
                     if (item.IsPlay)
                     {
                         item.IsPlay = false;
-                        
+
                         var index = MAdapter.SoundsList.IndexOf(item);
                         MAdapter.NotifyItemChanged(index, "playerAction");
 
@@ -424,15 +424,15 @@ namespace DeepSound.Activities.Playlist
         private void DownloadsIconOnClick(object sender, EventArgs e)
         {
             try
-            { 
+            {
                 foreach (var item in MAdapter.SoundsList)
                 {
                     var SoundDownload = new SoundDownloadAsyncController(item.AudioLocation, item.Title, Activity);
                     if (!SoundDownload.CheckDownloadLinkIfExits())
                     {
-                        SoundDownload.StartDownloadManager(item.Title, item, "Playlist"); 
+                        SoundDownload.StartDownloadManager(item.Title, item, "Playlist");
                     }
-                } 
+                }
             }
             catch (Exception exception)
             {
@@ -466,7 +466,7 @@ namespace DeepSound.Activities.Playlist
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
 
         #region Load Playlist Songs And Data 
@@ -496,7 +496,7 @@ namespace DeepSound.Activities.Playlist
                             MoreIcon.Visibility = ViewStates.Visible;
                         }
                         else
-                        { 
+                        {
                             MoreIcon.Visibility = ViewStates.Gone;
                         }
                     }
@@ -566,7 +566,7 @@ namespace DeepSound.Activities.Playlist
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
                 Toast.MakeText(Context, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
@@ -585,7 +585,7 @@ namespace DeepSound.Activities.Playlist
                     TopButton.Visibility = ViewStates.Visible;
                     DownloadsIcon.Visibility = ViewStates.Visible;
 
-                    EmptyStateLayout.Visibility = ViewStates.Gone; 
+                    EmptyStateLayout.Visibility = ViewStates.Gone;
                 }
                 else
                 {
@@ -599,7 +599,7 @@ namespace DeepSound.Activities.Playlist
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSound);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }

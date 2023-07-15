@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
@@ -14,6 +10,10 @@ using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Product;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using IList = System.Collections.IList;
 
 namespace DeepSound.Activities.Product.Adapters
@@ -52,7 +52,7 @@ namespace DeepSound.Activities.Product.Adapters
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -84,7 +84,7 @@ namespace DeepSound.Activities.Product.Adapters
                         {
                             holder.AddButton.Text = ActivityContext.GetText(Resource.String.Lbl_AddToCart);
                             holder.AddButton.Tag = "false";
-                        } 
+                        }
                     }
                 }
             }
@@ -159,9 +159,9 @@ namespace DeepSound.Activities.Product.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Java.Lang.Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString())
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString())
                 .Apply(new RequestOptions().CircleCrop());
-        } 
+        }
     }
 
     public class ProductAdapterViewHolder : RecyclerView.ViewHolder
@@ -171,10 +171,10 @@ namespace DeepSound.Activities.Product.Adapters
         public View MainView { get; private set; }
 
         public ImageView Image { get; private set; }
-        public TextView Title { get; private set; } 
-        public TextView Price { get; private set; } 
-        public TextView Cat { get; private set; } 
-        public AppCompatButton AddButton { get; private set; } 
+        public TextView Title { get; private set; }
+        public TextView Price { get; private set; }
+        public TextView Cat { get; private set; }
+        public AppCompatButton AddButton { get; private set; }
 
         #endregion
 
@@ -185,7 +185,7 @@ namespace DeepSound.Activities.Product.Adapters
                 MainView = itemView;
 
                 //Get values
-                Image  = (ImageView)MainView.FindViewById(Resource.Id.image);
+                Image = (ImageView)MainView.FindViewById(Resource.Id.image);
                 Title = MainView.FindViewById<TextView>(Resource.Id.title);
                 Price = MainView.FindViewById<TextView>(Resource.Id.price);
                 Cat = MainView.FindViewById<TextView>(Resource.Id.catText);

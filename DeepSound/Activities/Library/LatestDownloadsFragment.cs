@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Android.Gms.Ads;
+﻿using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
-using AndroidX.AppCompat.Widget;
+using Android.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
@@ -18,6 +15,10 @@ using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSound.SQLite;
 using DeepSoundClient.Classes.Global;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
+using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Library
 {
@@ -32,7 +33,7 @@ namespace DeepSound.Activities.Library
         private LinearLayoutManager LayoutManager;
         private ViewStub EmptyStateLayout;
         private View Inflated;
-        
+
         private AdView MAdView;
 
         #endregion
@@ -57,7 +58,7 @@ namespace DeepSound.Activities.Library
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -73,7 +74,7 @@ namespace DeepSound.Activities.Library
 
                 LoadLatestDownloads();
 
-                AdsGoogle.Ad_RewardedVideo(Activity); 
+                AdsGoogle.Ad_RewardedVideo(Activity);
             }
             catch (Exception e)
             {
@@ -97,9 +98,9 @@ namespace DeepSound.Activities.Library
         public override void OnResume()
         {
             try
-            { 
+            {
                 base.OnResume();
-                
+
                 MAdView?.Resume();
             }
             catch (Exception e)
@@ -113,7 +114,7 @@ namespace DeepSound.Activities.Library
             try
             {
                 base.OnPause();
-                
+
                 MAdView?.Pause();
             }
             catch (Exception e)
@@ -126,8 +127,8 @@ namespace DeepSound.Activities.Library
         {
             try
             {
-                
-                MAdView?.Destroy(); 
+
+                MAdView?.Destroy();
                 base.OnDestroy();
             }
             catch (Exception exception)
@@ -198,7 +199,7 @@ namespace DeepSound.Activities.Library
         }
 
         #endregion
-         
+
         #region Event
 
         //Start Play Sound 
@@ -206,39 +207,57 @@ namespace DeepSound.Activities.Library
         {
             try
             {
-                   var item = MAdapter.GetItem(e.Position);
+                var item = MAdapter.GetItem(e.Position);
                 if (item != null)
                 {
-                    if (item.IsPlay)
+                    var sqlEntity = new SqLiteDatabase();
+                    SoundDataObject dataSound = sqlEntity.Get_LatestDownloadsSound(item.Id);
+                    if (dataSound != null && !string.IsNullOrEmpty(dataSound.AudioLocation) && (dataSound.AudioLocation.Contains("file://") || dataSound.AudioLocation.Contains("content://") || dataSound.AudioLocation.Contains("storage") || dataSound.AudioLocation.Contains("/data/user/0/")))
                     {
-                        item.IsPlay = false;
-                        
-                        var index = MAdapter.SoundsList.IndexOf(item);
-                        MAdapter.NotifyItemChanged(index, "playerAction");
+                        var filePath = SoundDownloadAsyncController.GetDownloadedDiskVideoUri(dataSound.Title);
+                        if (!string.IsNullOrEmpty(filePath))
+                            item.AudioLocation = filePath;
+                        else
+                        {
+                            Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_FileNotFoundInDownload), ToastLength.Long)?.Show();
+                            return;
+                        }
 
-                        GlobalContext?.SoundController.StartOrPausePlayer();
+                        if (item.IsPlay)
+                        {
+                            item.IsPlay = false;
+
+                            var index = MAdapter.SoundsList.IndexOf(item);
+                            MAdapter.NotifyItemChanged(index, "playerAction");
+
+                            GlobalContext?.SoundController.StartOrPausePlayer();
+                        }
+                        else
+                        {
+                            var list = MAdapter.SoundsList.Where(sound => sound.IsPlay).ToList();
+                            if (list.Count > 0)
+                            {
+                                foreach (var all in list)
+                                {
+                                    all.IsPlay = false;
+
+                                    var index = MAdapter.SoundsList.IndexOf(all);
+                                    MAdapter.NotifyItemChanged(index, "playerAction");
+                                }
+                            }
+
+                            item.IsPlay = true;
+                            MAdapter.NotifyItemChanged(e.Position, "playerAction");
+
+                            Constant.PlayPos = e.Position;
+                            GlobalContext?.SoundController?.StartPlaySound(item, MAdapter.SoundsList, MAdapter);
+                        }
                     }
                     else
                     {
-                        var list = MAdapter.SoundsList.Where(sound => sound.IsPlay).ToList();
-                        if (list.Count > 0)
-                        {
-                            foreach (var all in list)
-                            {
-                                all.IsPlay = false;
-
-                                var index = MAdapter.SoundsList.IndexOf(all);
-                                MAdapter.NotifyItemChanged(index, "playerAction");
-                            }
-                        }
-
-                        item.IsPlay = true;
-                        MAdapter.NotifyItemChanged(e.Position, "playerAction");
-
-                        Constant.PlayPos = e.Position;
-                        GlobalContext?.SoundController?.StartPlaySound(item, MAdapter.SoundsList, MAdapter);
+                        Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_FileNotFoundInDownload), ToastLength.Long)?.Show();
                     }
-                }               
+                }
             }
             catch (Exception exception)
             {
@@ -259,9 +278,9 @@ namespace DeepSound.Activities.Library
 
                 var sqlEntity = new SqLiteDatabase();
                 var watchOffline = sqlEntity.Get_LatestDownloadsSound();
-             
+
                 if (watchOffline?.Count > 0)
-                { 
+                {
                     MAdapter.SoundsList = new ObservableCollection<SoundDataObject>(watchOffline);
                     MAdapter.NotifyDataSetChanged();
 
@@ -278,7 +297,7 @@ namespace DeepSound.Activities.Library
                         Inflated = EmptyStateLayout.Inflate();
 
                     EmptyStateInflater x = new EmptyStateInflater();
-                    x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSound);  
+                    x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSound);
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }
 
@@ -288,7 +307,7 @@ namespace DeepSound.Activities.Library
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
 
     }

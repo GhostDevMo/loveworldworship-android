@@ -1,5 +1,5 @@
-﻿using System;
-using DeepSound.Helpers.Utils;
+﻿using DeepSound.Helpers.Utils;
+using System;
 using Xamarin.Facebook;
 using Exception = System.Exception;
 
@@ -19,7 +19,7 @@ namespace DeepSound.Helpers.SocialLogins
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-            }  
+            }
         }
     }
 
@@ -35,7 +35,7 @@ namespace DeepSound.Helpers.SocialLogins
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-            }           
+            }
         }
         //Extract or delete HTML tags based on their name or whether or not they contain some attributes or content with the HTML editor pro online program.
     }

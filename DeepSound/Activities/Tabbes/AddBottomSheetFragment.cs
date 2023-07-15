@@ -2,8 +2,6 @@
 using Android.OS;
 using Android.Views;
 using Android.Widget;
-using System;
-using System.Linq;
 using DeepSound.Activities.Advertise;
 using DeepSound.Activities.Event;
 using DeepSound.Activities.Playlist;
@@ -11,15 +9,17 @@ using DeepSound.Activities.Product;
 using DeepSound.Activities.Stations;
 using DeepSound.Helpers.Utils;
 using Google.Android.Material.BottomSheet;
+using System;
+using System.Linq;
 
 namespace DeepSound.Activities.Tabbes
 {
     public class AddBottomSheetFragment : BottomSheetDialogFragment
     {
         #region Variables Basic
-         
+
         private LinearLayout UploadSongLayout, UploadAlbumLayout, ImportSongLayout, CreatePlaylistLayout, CreateStationsLayout, CreateEventLayout, CreateProductLayout, CreateAdvertiseLayout;
-      
+
         private HomeActivity GlobalContext;
 
         #endregion
@@ -49,7 +49,7 @@ namespace DeepSound.Activities.Tabbes
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -60,7 +60,7 @@ namespace DeepSound.Activities.Tabbes
                 base.OnViewCreated(view, savedInstanceState);
 
                 //Get Value And Set Toolbar
-                InitComponent(view); 
+                InitComponent(view);
             }
             catch (Exception e)
             {
@@ -103,25 +103,25 @@ namespace DeepSound.Activities.Tabbes
 
                 if (!AppSettings.ShowButtonUploadAlbum)
                     UploadAlbumLayout.Visibility = ViewStates.Gone;
-                 
+
                 if (!AppSettings.ShowButtonImportSong)
                     ImportSongLayout.Visibility = ViewStates.Gone;
-                 
+
                 if (!AppSettings.ShowStations)
                     CreateStationsLayout.Visibility = ViewStates.Gone;
-                 
+
                 if (!AppSettings.ShowPlaylist)
                     CreatePlaylistLayout.Visibility = ViewStates.Gone;
-                 
+
                 if (!AppSettings.ShowEvent)
                     CreateEventLayout.Visibility = ViewStates.Gone;
-                 
+
                 if (!AppSettings.ShowProduct)
                     CreateProductLayout.Visibility = ViewStates.Gone;
-                 
+
                 if (!AppSettings.ShowAdvertise)
                     CreateAdvertiseLayout.Visibility = ViewStates.Gone;
-                 
+
                 UploadSongLayout.Click += UploadSongLayoutOnClick;
                 UploadAlbumLayout.Click += UploadAlbumLayoutOnClick;
                 ImportSongLayout.Click += ImportSongLayoutOnClick;
@@ -131,12 +131,12 @@ namespace DeepSound.Activities.Tabbes
                 CreateProductLayout.Click += CreateProductLayoutOnClick;
                 CreateAdvertiseLayout.Click += CreateAdvertiseLayoutOnClick;
 
-                var artist = ListUtils.MyUserInfoList?.FirstOrDefault()?.Artist ?? 0; 
+                var artist = ListUtils.MyUserInfoList?.FirstOrDefault()?.Artist ?? 0;
                 if (artist == 0)
                 {
                     CreateEventLayout.Visibility = ViewStates.Gone;
                     CreateProductLayout.Visibility = ViewStates.Gone;
-                } 
+                }
             }
             catch (Exception e)
             {
@@ -160,7 +160,7 @@ namespace DeepSound.Activities.Tabbes
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void CreatePlaylistLayoutOnClick(object sender, EventArgs e)
         {
             try
@@ -198,7 +198,7 @@ namespace DeepSound.Activities.Tabbes
             }
             catch (Exception exception)
             {
-                Methods.DisplayReportResultTrack(exception); 
+                Methods.DisplayReportResultTrack(exception);
             }
         }
 
@@ -221,7 +221,7 @@ namespace DeepSound.Activities.Tabbes
             {
                 GlobalContext?.BtnImportSongOnClick();
 
-                Dismiss(); 
+                Dismiss();
             }
             catch (Exception exception)
             {
@@ -233,7 +233,7 @@ namespace DeepSound.Activities.Tabbes
         {
             try
             {
-                GlobalContext?.BtnUploadAnAlbumOnClick(); 
+                GlobalContext?.BtnUploadAnAlbumOnClick();
                 Dismiss();
             }
             catch (Exception exception)
@@ -246,8 +246,8 @@ namespace DeepSound.Activities.Tabbes
         {
             try
             {
-                GlobalContext?.BtnUploadSingleSongOnClick();  
-                Dismiss(); 
+                GlobalContext?.BtnUploadSingleSongOnClick();
+                Dismiss();
             }
             catch (Exception exception)
             {

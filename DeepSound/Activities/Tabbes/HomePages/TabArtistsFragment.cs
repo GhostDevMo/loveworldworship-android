@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -20,6 +15,11 @@ using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.User;
 using DeepSoundClient.Requests;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Xamarin.Facebook.Ads;
 
 namespace DeepSound.Activities.Tabbes.HomePages
@@ -28,7 +28,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
     {
         #region Variables Basic
 
-        public ContactsAdapter MAdapter;
+        private ContactsAdapter MAdapter;
         private HomeActivity GlobalContext;
         private SwipeRefreshLayout SwipeRefreshLayout;
         private RecyclerView MRecycler;
@@ -40,7 +40,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
         private AdView BannerAd;
         private bool MIsVisibleToUser;
 
-       
+
         #endregion
 
         #region General
@@ -50,7 +50,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
             base.OnCreate(savedInstanceState);
             HasOptionsMenu = true;
             // Create your fragment here
-            GlobalContext = (HomeActivity) Activity;
+            GlobalContext = (HomeActivity)Activity;
         }
 
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
@@ -63,7 +63,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -140,7 +140,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #endregion
 
         #region Functions
@@ -149,10 +149,10 @@ namespace DeepSound.Activities.Tabbes.HomePages
         {
             try
             {
-                MRecycler = (RecyclerView) view.FindViewById(Resource.Id.recyler);
+                MRecycler = (RecyclerView)view.FindViewById(Resource.Id.recyler);
                 EmptyStateLayout = view.FindViewById<ViewStub>(Resource.Id.viewStub);
 
-                SwipeRefreshLayout = (SwipeRefreshLayout) view.FindViewById(Resource.Id.swipeRefreshLayout);
+                SwipeRefreshLayout = (SwipeRefreshLayout)view.FindViewById(Resource.Id.swipeRefreshLayout);
                 SwipeRefreshLayout.SetColorSchemeResources(Android.Resource.Color.HoloBlueLight, Android.Resource.Color.HoloGreenLight, Android.Resource.Color.HoloOrangeLight, Android.Resource.Color.HoloRedLight);
                 SwipeRefreshLayout.Refreshing = true;
                 SwipeRefreshLayout.Enabled = true;
@@ -175,7 +175,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
         {
             try
             {
-                MAdapter = new ContactsAdapter(Activity) {UsersList = new ObservableCollection<UserDataObject>()};
+                MAdapter = new ContactsAdapter(Activity) { UsersList = new ObservableCollection<UserDataObject>() };
                 MAdapter.ItemClick += MAdapterItemClick;
                 LayoutManager = new LinearLayoutManager(Activity);
                 MRecycler.SetLayoutManager(LayoutManager);
@@ -267,7 +267,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 else
                 {
                     ShowEmptyPage();
-                } 
+                }
             }
             catch (Exception e)
             {
@@ -280,7 +280,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
             if (!Methods.CheckConnectivity())
                 Toast.MakeText(Context, Context.GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
             else
-                PollyController.RunRetryPolicyFunction(new List<Func<Task>> {() => LoadDataAsync(offset)});
+                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => LoadDataAsync(offset) });
         }
 
         private async Task LoadDataAsync(string offset = "0")
@@ -298,12 +298,12 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 {
                     if (respond is GetUserObject result)
                     {
-                        var respondList = result.Data?.UserList.Count;
+                        var respondList = result.Data?.UserList?.Count;
                         if (respondList > 0)
                         {
                             if (countList > 0)
                             {
-                                foreach (var item in from item in result.Data?.UserList let check = MAdapter.UsersList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
+                                foreach (var item in from item in result.Data.UserList let check = MAdapter.UsersList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
                                 {
                                     MAdapter.UsersList.Add(item);
                                 }
@@ -312,7 +312,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                             }
                             else
                             {
-                                MAdapter.UsersList = new ObservableCollection<UserDataObject>(result.Data?.UserList);
+                                MAdapter.UsersList = new ObservableCollection<UserDataObject>(result.Data.UserList);
                                 Activity?.RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); });
                             }
                         }
@@ -338,7 +338,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -369,7 +369,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoArtists);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
 
                     EmptyStateLayout.Visibility = ViewStates.Visible;

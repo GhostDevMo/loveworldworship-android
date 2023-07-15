@@ -1,5 +1,4 @@
-﻿using System;
-using Android.OS;
+﻿using Android.OS;
 using Android.Views;
 using Android.Widget;
 using AndroidX.ViewPager2.Widget;
@@ -12,6 +11,7 @@ using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using Google.Android.Material.Tabs;
+using System;
 
 namespace DeepSound.Activities.Tabbes.Fragments
 {
@@ -22,7 +22,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
         private TextView AppName;
         public ImageView AddIcon, NotificationIcon;
         private ImageView SearchIcon;
-         
+
         private HomeActivity ContextGlobal;
 
         public ViewPager2 ViewPager;
@@ -31,11 +31,11 @@ namespace DeepSound.Activities.Tabbes.Fragments
         private MainTabAdapter Adapter;
         public LatestHomeFragment LatestHomeTab;
         private SongsByTypeFragment TopSongsTab;
-        private TopAlbumsFragment TopAlbumsTab;
         private SongsByTypeFragment LatestSongsTab;
         private SongsByTypeFragment RecentlyPlayedTab;
         private SongsByTypeFragment PopularSongsTab;
         private TabArtistsFragment ArtistsTab;
+        private TopAlbumsFragment TopAlbumsTab;
         public SearchFragment SearchFragment;
 
         #endregion
@@ -65,7 +65,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -126,14 +126,14 @@ namespace DeepSound.Activities.Tabbes.Fragments
 
                 NotificationIcon = (ImageView)view.FindViewById(Resource.Id.notificationIcon);
                 NotificationIcon.Click += NotificationButtonOnClick;
-                 
+
                 ViewPager = view.FindViewById<ViewPager2>(Resource.Id.ViewPager);
                 TabLayout = view.FindViewById<TabLayout>(Resource.Id.tab_home);
 
                 SetUpViewPager(ViewPager);
                 new TabLayoutMediator(TabLayout, ViewPager, this).Attach();
 
-                //TabLayout.SetTabTextColors(AppTools.IsTabDark() ? Color.White : Color.Black, Color.ParseColor(AppSettings.MainColor));
+                //TabLayout.SetTabTextColors(DeepSoundTools.IsTabDark() ? Color.White : Color.Black, Color.ParseColor(AppSettings.MainColor));
             }
             catch (Exception e)
             {
@@ -146,14 +146,14 @@ namespace DeepSound.Activities.Tabbes.Fragments
             try
             {
                 LatestHomeTab = new LatestHomeFragment();
-                 
+
                 Bundle bundleTopSongsTab = new Bundle();
                 bundleTopSongsTab.PutString("SongsType", "BrowseTopSongs");
-                TopSongsTab = new SongsByTypeFragment(){ Arguments = bundleTopSongsTab };
+                TopSongsTab = new SongsByTypeFragment() { Arguments = bundleTopSongsTab };
 
                 Bundle bundleLatestSongsTab = new Bundle();
                 bundleLatestSongsTab.PutString("SongsType", "NewReleases");
-                LatestSongsTab = new SongsByTypeFragment(){ Arguments = bundleLatestSongsTab };
+                LatestSongsTab = new SongsByTypeFragment() { Arguments = bundleLatestSongsTab };
 
                 if (UserDetails.IsLogin)
                 {
@@ -161,29 +161,29 @@ namespace DeepSound.Activities.Tabbes.Fragments
                     bundleRecentlyPlayedTab.PutString("SongsType", "RecentlyPlayed");
                     RecentlyPlayedTab = new SongsByTypeFragment() { Arguments = bundleRecentlyPlayedTab };
                 }
-             
+
                 Bundle bundlePopularSongsTab = new Bundle();
                 bundlePopularSongsTab.PutString("SongsType", "Popular");
-                PopularSongsTab = new SongsByTypeFragment(){ Arguments = bundlePopularSongsTab };
+                PopularSongsTab = new SongsByTypeFragment() { Arguments = bundlePopularSongsTab };
 
-                TopAlbumsTab = new TopAlbumsFragment(); 
-                 
-                ArtistsTab = new TabArtistsFragment(); 
-               
+                TopAlbumsTab = new TopAlbumsFragment();
+
+                ArtistsTab = new TabArtistsFragment();
+
                 Adapter = new MainTabAdapter(this);
 
                 Adapter.AddFragment(LatestHomeTab, GetText(Resource.String.Lbl_Suggestion));
-                  
+
                 Adapter.AddFragment(TopSongsTab, GetText(Resource.String.Lbl_TopSongs_Title));
-                Adapter.AddFragment(TopAlbumsTab, GetText(Resource.String.Lbl_TopAlbums_Title));
+                Adapter.AddFragment(LatestSongsTab, GetText(Resource.String.Lbl_LatestSongs_Title));
 
                 if (UserDetails.IsLogin)
                     Adapter.AddFragment(RecentlyPlayedTab, GetText(Resource.String.Lbl_RecentlyPlayed));
-                
-                Adapter.AddFragment(LatestSongsTab, GetText(Resource.String.Lbl_LatestSongs_Title));
-                Adapter.AddFragment(PopularSongsTab, GetText(Resource.String.Lbl_Popular_Title)); 
+
+                Adapter.AddFragment(TopAlbumsTab, GetText(Resource.String.Lbl_TopAlbums_Title));
+                Adapter.AddFragment(PopularSongsTab, GetText(Resource.String.Lbl_Popular_Title));
                 Adapter.AddFragment(ArtistsTab, GetText(Resource.String.Lbl_Artists));
-                 
+
                 viewPager.UserInputEnabled = false;
                 viewPager.CurrentItem = Adapter.ItemCount;
                 viewPager.OffscreenPageLimit = Adapter.ItemCount;
@@ -192,7 +192,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 viewPager.Orientation = ViewPager2.OrientationHorizontal;
                 viewPager.RegisterOnPageChangeCallback(new MyOnPageChangeCallback(this));
                 viewPager.Adapter = Adapter;
-                viewPager.Adapter.NotifyDataSetChanged(); 
+                viewPager.Adapter.NotifyDataSetChanged();
             }
             catch (Exception exception)
             {
@@ -275,7 +275,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void SearchButtonOnClick(object sender, EventArgs e)
         {
             try
@@ -288,7 +288,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
     }
 }

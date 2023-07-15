@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -12,10 +9,13 @@ using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Global;
 using Java.IO;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Object = Java.Lang.Object;
 
 namespace DeepSound.Activities.Playlist.Adapters
-{ 
+{
     public class AttachmentsAdapter : RecyclerView.Adapter
     {
         public event EventHandler<AttachmentsAdapterClickEventArgs> DeleteItemClick;
@@ -37,7 +37,7 @@ namespace DeepSound.Activities.Playlist.Adapters
         }
 
         public override int ItemCount => AttachmentList?.Count ?? 0;
-         
+
         // Create new views (invoked by the layout manager)
         public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
         {
@@ -51,7 +51,7 @@ namespace DeepSound.Activities.Playlist.Adapters
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null!;
+                return null;
             }
         }
 
@@ -62,35 +62,35 @@ namespace DeepSound.Activities.Playlist.Adapters
                 switch (viewHolder)
                 {
                     case AttachmentsAdapterViewHolder holder:
-                    {
-                        var item = AttachmentList[position];
-                        if (item != null)
                         {
-                            switch (item.TypeAttachment)
+                            var item = AttachmentList[position];
+                            if (item != null)
                             {
-                                case "Default":
-                                    Glide.With(ActivityContext).Load(Resource.Drawable.addImage).Apply(new RequestOptions().Placeholder(Resource.Drawable.ImagePlacholder)).Into(holder.Image);
-                                    break;
-                                default:
+                                switch (item.TypeAttachment)
                                 {
-                                    if (item.FileSimple.Contains("http"))
-                                    {
-                                        GlideImageLoader.LoadImage(ActivityContext, item.FileSimple, holder.Image, ImageStyle.CenterCrop, ImagePlaceholders.Drawable);
-                                    } 
-                                    else
-                                    {
-                                        Glide.With(ActivityContext).Load(new File(item.FileUrl)).Apply(new RequestOptions()).Into(holder.Image);
-                                    }
+                                    case "Default":
+                                        Glide.With(ActivityContext?.BaseContext).Load(Resource.Drawable.addImage).Apply(new RequestOptions().Placeholder(Resource.Drawable.ImagePlacholder)).Into(holder.Image);
+                                        break;
+                                    default:
+                                        {
+                                            if (item.FileSimple.Contains("http"))
+                                            {
+                                                GlideImageLoader.LoadImage(ActivityContext, item.FileSimple, holder.Image, ImageStyle.CenterCrop, ImagePlaceholders.Drawable);
+                                            }
+                                            else
+                                            {
+                                                Glide.With(ActivityContext?.BaseContext).Load(new File(item.FileUrl)).Apply(new RequestOptions()).Into(holder.Image);
+                                            }
 
-                                    break;
+                                            break;
+                                        }
                                 }
+
+                                holder.ImageDelete.Visibility = item.TypeAttachment == "Default" ? ViewStates.Invisible : ViewStates.Visible;
                             }
 
-                            holder.ImageDelete.Visibility = item.TypeAttachment == "Default" ? ViewStates.Invisible : ViewStates.Visible;
+                            break;
                         }
-
-                        break;
-                    }
                 }
             }
             catch (Exception exception)
@@ -98,7 +98,7 @@ namespace DeepSound.Activities.Playlist.Adapters
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-        
+
         public override void OnViewRecycled(Object holder)
         {
             try
@@ -109,7 +109,7 @@ namespace DeepSound.Activities.Playlist.Adapters
                 switch (holder)
                 {
                     case AttachmentsAdapterViewHolder viewHolder:
-                        Glide.With(ActivityContext).Clear(viewHolder.Image);
+                        Glide.With(ActivityContext?.BaseContext).Clear(viewHolder.Image);
                         break;
                 }
                 base.OnViewRecycled(holder);
@@ -164,7 +164,7 @@ namespace DeepSound.Activities.Playlist.Adapters
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-        
+
         public AttachmentsObject GetItem(int position)
         {
             return AttachmentList[position];
@@ -195,7 +195,7 @@ namespace DeepSound.Activities.Playlist.Adapters
                 return 0;
             }
         }
-        
+
         private void DeleteClick(AttachmentsAdapterClickEventArgs args)
         {
             DeleteItemClick?.Invoke(this, args);
@@ -217,33 +217,33 @@ namespace DeepSound.Activities.Playlist.Adapters
         #region Variables Basic
 
         public View MainView { get; set; }
-          
+
         public ImageView Image { get; private set; }
         public CircleButton ImageDelete { get; private set; }
 
         #endregion
 
-        public AttachmentsAdapterViewHolder(View itemView, Action<AttachmentsAdapterClickEventArgs> clickDeleteListener,Action<AttachmentsAdapterClickEventArgs> clickListener,Action<AttachmentsAdapterClickEventArgs> longClickListener) : base(itemView)
+        public AttachmentsAdapterViewHolder(View itemView, Action<AttachmentsAdapterClickEventArgs> clickDeleteListener, Action<AttachmentsAdapterClickEventArgs> clickListener, Action<AttachmentsAdapterClickEventArgs> longClickListener) : base(itemView)
         {
             try
             {
                 MainView = itemView;
 
                 //Get values          
-                Image = (ImageView) MainView.FindViewById(Resource.Id.Image);
+                Image = (ImageView)MainView.FindViewById(Resource.Id.Image);
 
                 ImageDelete = MainView.FindViewById<CircleButton>(Resource.Id.ImageCircle);
 
                 //Create an Event
-                ImageDelete.Click += (sender, e) => clickDeleteListener(new AttachmentsAdapterClickEventArgs{View = itemView, Position = BindingAdapterPosition});
-                itemView.Click += (sender, e) => clickListener(new AttachmentsAdapterClickEventArgs{View = itemView, Position = BindingAdapterPosition});
-                itemView.LongClick += (sender, e) => longClickListener(new AttachmentsAdapterClickEventArgs{View = itemView, Position = BindingAdapterPosition});
+                ImageDelete.Click += (sender, e) => clickDeleteListener(new AttachmentsAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });
+                itemView.Click += (sender, e) => clickListener(new AttachmentsAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });
+                itemView.LongClick += (sender, e) => longClickListener(new AttachmentsAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
-        } 
+        }
     }
 
     public class AttachmentsAdapterClickEventArgs : EventArgs

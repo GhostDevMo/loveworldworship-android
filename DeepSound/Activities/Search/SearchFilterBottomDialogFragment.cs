@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using MaterialDialogsCore;
-using Android.Content;
+﻿using Android.Content;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -11,18 +7,22 @@ using DeepSound.Helpers.Fonts;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using Google.Android.Material.BottomSheet;
+using Google.Android.Material.Dialog;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Exception = System.Exception;
 
 namespace DeepSound.Activities.Search
 {
-    public class SearchFilterBottomDialogFragment : BottomSheetDialogFragment, MaterialDialog.ISingleButtonCallback , MaterialDialog.IListCallbackMultiChoice
+    public class SearchFilterBottomDialogFragment : BottomSheetDialogFragment
     {
         #region Variables Basic
 
-        private TextView IconPrice, IconGenres , BtnSelectAll;
+        private TextView IconPrice, IconGenres, BtnSelectAll;
         private TextView TxtTitlePage, TxtPrice, TxtGenres;
         private RelativeLayout PriceLayout, GenresLayout;
-        private AppCompatButton ButtonApply; 
+        private AppCompatButton ButtonApply;
         //private HomeActivity GlobalContext;
         private string TypeDialog, CurrencySymbol, TotalIdGenresChecked = "", TotalIdPriceChecked = "";
 
@@ -36,7 +36,7 @@ namespace DeepSound.Activities.Search
         //    // Create your fragment here
         //    //GlobalContext = (HomeActivity)Activity;
         //}
-         
+
         public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
         {
             try
@@ -47,14 +47,14 @@ namespace DeepSound.Activities.Search
                 // clone the inflater using the ContextThemeWrapper
                 LayoutInflater localInflater = inflater.CloneInContext(contextThemeWrapper);
 
-                View view = localInflater?.Inflate(Resource.Layout.ButtomSheetSearchFilter, container, false); 
+                View view = localInflater?.Inflate(Resource.Layout.ButtomSheetSearchFilter, container, false);
                 return view;
             }
             catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(e); 
-                return null!;
-            } 
+                Methods.DisplayReportResultTrack(e);
+                return null;
+            }
         }
 
         public override void OnViewCreated(View view, Bundle savedInstanceState)
@@ -64,7 +64,7 @@ namespace DeepSound.Activities.Search
                 base.OnViewCreated(view, savedInstanceState);
 
                 //Get Value And Set Toolbar
-                InitComponent(view); 
+                InitComponent(view);
                 CurrencySymbol = ListUtils.SettingsSiteList?.CurrencySymbol ?? "$";
             }
             catch (Exception e)
@@ -94,7 +94,7 @@ namespace DeepSound.Activities.Search
         {
             try
             {
-                IconPrice = view.FindViewById<TextView>(Resource.Id.IconPrice); 
+                IconPrice = view.FindViewById<TextView>(Resource.Id.IconPrice);
                 IconGenres = view.FindViewById<TextView>(Resource.Id.IconGenres);
 
                 TxtTitlePage = view.FindViewById<TextView>(Resource.Id.titlepage);
@@ -103,13 +103,13 @@ namespace DeepSound.Activities.Search
 
                 PriceLayout = view.FindViewById<RelativeLayout>(Resource.Id.LayoutPrice);
                 GenresLayout = view.FindViewById<RelativeLayout>(Resource.Id.LayoutGenres);
-                 
+
                 BtnSelectAll = view.FindViewById<TextView>(Resource.Id.SelectAllbutton);
                 ButtonApply = view.FindViewById<AppCompatButton>(Resource.Id.ApplyButton);
-                 
+
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, IconPrice, IonIconsFonts.LogoUsd);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, IconGenres, IonIconsFonts.LogoBuffer);
-                 
+
                 TxtPrice.Text = "";
                 TxtGenres.Text = "";
 
@@ -120,7 +120,7 @@ namespace DeepSound.Activities.Search
 
                 if (!AppSettings.ShowPrice)
                 {
-                    PriceLayout.Visibility = ViewStates.Gone; 
+                    PriceLayout.Visibility = ViewStates.Gone;
                 }
             }
             catch (Exception e)
@@ -140,17 +140,55 @@ namespace DeepSound.Activities.Search
             {
                 TypeDialog = "Genres";
 
-                var arrayIndexAdapter = new int[] { };
-                var dialogList = new MaterialDialog.Builder(Context).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var listItems = ListUtils.GenresList.Select(item => item.CateogryName).ToList();
 
-                var arrayAdapter = ListUtils.GenresList.Select(item => item.CateogryName).ToList();
+                var checkedItems = new bool[listItems.Count];
+                var selectedItems = new List<string>(listItems);
 
-                dialogList.Title(Context.GetText(Resource.String.Lbl_ChooseGenres))
-                    .Items(arrayAdapter)
-                    .ItemsCallbackMultiChoice(arrayIndexAdapter, this)
-                    .AlwaysCallMultiChoiceCallback()
-                    .PositiveText(Context.GetText(Resource.String.Lbl_Close)).OnPositive(this)
-                    .Build().Show();
+                var dialogList = new MaterialAlertDialogBuilder(Activity);
+
+                dialogList.SetTitle(Resource.String.Lbl_ChooseGenres);
+                dialogList.SetCancelable(false);
+                dialogList.SetMultiChoiceItems(listItems.ToArray(), checkedItems, (o, args) =>
+                {
+                    try
+                    {
+                        checkedItems[args.Which] = args.IsChecked;
+
+                        var text = selectedItems[args.Which] ?? "";
+                        Console.WriteLine(text);
+                    }
+                    catch (Exception exception)
+                    {
+                        Methods.DisplayReportResultTrack(exception);
+                    }
+                });
+                dialogList.SetPositiveButton(GetText(Resource.String.Lbl_Close), (o, args) =>
+                {
+                    try
+                    {
+                        TotalIdGenresChecked = "";
+                        for (int i = 0; i < checkedItems.Length; i++)
+                        {
+                            if (checkedItems[i])
+                            {
+                                var text = selectedItems[i];
+                                var check = ListUtils.GenresList.FirstOrDefault(a => a.CateogryName == text);
+                                if (check != null)
+                                {
+                                    TotalIdGenresChecked += check.Id + ",";
+                                }
+                            }
+                        }
+
+                        TxtGenres.Text = Context.GetText(Resource.String.Lbl_Selected);
+                    }
+                    catch (Exception exception)
+                    {
+                        Methods.DisplayReportResultTrack(exception);
+                    }
+                });
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -165,29 +203,67 @@ namespace DeepSound.Activities.Search
             {
                 TypeDialog = "Price";
 
-                var arrayAdapter = new List<string>();
-                var arrayIndexAdapter = new int[] { };
-                var dialogList = new MaterialDialog.Builder(Context).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-
+                var listItems = new List<string>();
                 foreach (var item in ListUtils.PriceList)
-                    if (item.Price == "0.00" || item.Price == "0")
-                        arrayAdapter.Add(GetText(Resource.String.Lbl_Free));
+                    if (item.Price is "0.00" or "0")
+                        listItems.Add(GetText(Resource.String.Lbl_Free));
                     else
-                        arrayAdapter.Add(CurrencySymbol + item.Price);
+                        listItems.Add(CurrencySymbol + item.Price);
 
-                dialogList.Title(Context.GetText(Resource.String.Lbl_ChoosePrice))
-                    .Items(arrayAdapter)
-                    .ItemsCallbackMultiChoice(arrayIndexAdapter, this)
-                    .AlwaysCallMultiChoiceCallback()
-                    .PositiveText(Context.GetText(Resource.String.Lbl_Close)).OnPositive(this)
-                    .Build().Show();
+                var checkedItems = new bool[listItems.Count];
+                var selectedItems = new List<string>(listItems);
+
+                var dialogList = new MaterialAlertDialogBuilder(Activity);
+
+                dialogList.SetTitle(Resource.String.Lbl_ChoosePrice);
+                dialogList.SetCancelable(false);
+                dialogList.SetMultiChoiceItems(listItems.ToArray(), checkedItems, (o, args) =>
+                {
+                    try
+                    {
+                        checkedItems[args.Which] = args.IsChecked;
+
+                        var text = selectedItems[args.Which] ?? "";
+                        Console.WriteLine(text);
+                    }
+                    catch (Exception exception)
+                    {
+                        Methods.DisplayReportResultTrack(exception);
+                    }
+                });
+                dialogList.SetPositiveButton(GetText(Resource.String.Lbl_Close), (o, args) =>
+                {
+                    try
+                    {
+                        TotalIdPriceChecked = "";
+                        for (int i = 0; i < checkedItems.Length; i++)
+                        {
+                            if (checkedItems[i])
+                            {
+                                var text = selectedItems[i];
+                                var check = ListUtils.PriceList.FirstOrDefault(a => a.Price.Contains(text));
+                                if (check != null)
+                                {
+                                    TotalIdPriceChecked += check.Id + ",";
+                                }
+                            }
+                        }
+
+                        TxtPrice.Text = Context.GetText(Resource.String.Lbl_Selected);
+                    }
+                    catch (Exception exception)
+                    {
+                        Methods.DisplayReportResultTrack(exception);
+                    }
+                });
+                dialogList.Show();
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         //Save and sent data and set new search 
         private void ButtonApplyOnClick(object sender, EventArgs e)
         {
@@ -196,14 +272,14 @@ namespace DeepSound.Activities.Search
                 UserDetails.FilterGenres = TotalIdGenresChecked.Remove(TotalIdGenresChecked.Length - 1, 1);
                 UserDetails.FilterPrice = TotalIdPriceChecked.Remove(TotalIdPriceChecked.Length - 1, 1);
 
-                Dismiss(); 
+                Dismiss();
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         //Back
         private void IconBackOnClick(object sender, EventArgs e)
         {
@@ -228,7 +304,7 @@ namespace DeepSound.Activities.Search
                     foreach (var item in ListUtils.GenresList)
                     {
                         TotalIdGenresChecked += item.Id + ",";
-                    } 
+                    }
                     UserDetails.FilterGenres = TotalIdGenresChecked.Remove(TotalIdGenresChecked.Length - 1, 1);
 
                     TxtGenres.Text = GetString(Resource.String.Lbl_SelectAll);
@@ -241,7 +317,7 @@ namespace DeepSound.Activities.Search
                     {
                         TotalIdPriceChecked += item.Id + ",";
                     }
-                   
+
                     UserDetails.FilterPrice = TotalIdPriceChecked.Remove(TotalIdPriceChecked.Length - 1, 1);
 
                     TxtPrice.Text = GetString(Resource.String.Lbl_SelectAll);
@@ -249,71 +325,11 @@ namespace DeepSound.Activities.Search
             }
             catch (Exception exception)
             {
-                Methods.DisplayReportResultTrack(exception);  
-            }
-        }
-       
-        #endregion
-         
-        #region MaterialDialog
-
-        public void OnClick(MaterialDialog p0, DialogAction p1)
-        {
-            try
-            {
-                if (p1 == DialogAction.Positive)
-                {
-                    switch (TypeDialog)
-                    {
-                        case "Genres" when TotalIdGenresChecked != "":
-                            TxtGenres.Text = Context.GetText(Resource.String.Lbl_Selected);
-                            break;
-                        case "Price" when TotalIdPriceChecked != "":
-                            TxtPrice.Text = Context.GetText(Resource.String.Lbl_Selected);
-                            break;
-                    }
-                }
-                else if (p1 == DialogAction.Negative)
-                { 
-                    p0.Dismiss();
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
+                Methods.DisplayReportResultTrack(exception);
             }
         }
 
-        public bool OnSelection(MaterialDialog dialog, int[] which, string[] text)
-        {
-            try
-            {
-                if (TypeDialog == "Genres")
-                {
-                    TotalIdGenresChecked = "";
-                    for (int i = 0; i < which.Length; i++)
-                    {
-                        TotalIdGenresChecked += ListUtils.GenresList[i].Id + ",";
-                    } 
-                }
-                else if (TypeDialog == "Price")
-                {
-                    TotalIdPriceChecked = "";
-                    for (int i = 0; i < which.Length; i++)
-                    {
-                        TotalIdPriceChecked += ListUtils.PriceList[i].Id + ",";
-                    } 
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-                return true;
-            }  
-            return true;
-        }
-         
         #endregion
-         
+
     }
 }

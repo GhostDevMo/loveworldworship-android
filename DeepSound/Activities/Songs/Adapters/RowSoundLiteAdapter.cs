@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
@@ -12,6 +9,9 @@ using DeepSound.Helpers.MediaPlayerController;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Global;
 using Java.Util;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using IList = System.Collections.IList;
 using Object = Java.Lang.Object;
 
@@ -26,14 +26,14 @@ namespace DeepSound.Activities.Songs.Adapters
         public ObservableCollection<SoundDataObject> SoundsList = new ObservableCollection<SoundDataObject>();
         private readonly SocialIoClickListeners ClickListeners;
         private readonly string NamePage;
-        public RowSoundLiteAdapter(Activity context,string namePage)
+        public RowSoundLiteAdapter(Activity context, string namePage)
         {
             try
             {
                 ActivityContext = context;
                 NamePage = namePage;
                 HasStableIds = true;
-                ClickListeners = new SocialIoClickListeners(context); 
+                ClickListeners = new SocialIoClickListeners(context);
             }
             catch (Exception e)
             {
@@ -54,7 +54,7 @@ namespace DeepSound.Activities.Songs.Adapters
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -72,15 +72,15 @@ namespace DeepSound.Activities.Songs.Adapters
 
                         holder.TxtTitle.Text = Methods.FunString.SubStringCutOf(Methods.FunString.DecodeString(item.Title), 25);
 
-                        string seconderText; 
+                        string seconderText;
                         if (item.Publisher != null)
                             seconderText = DeepSoundTools.GetNameFinal(item.Publisher);
                         else
                             seconderText = item.CategoryName + " " + ActivityContext.GetText(Resource.String.Lbl_Music);
-                         
+
                         if (item.Src == "radio")
                         {
-                          
+
                         }
                         else
                             seconderText += " |  " + item.Duration + " " + ActivityContext.GetText(Resource.String.Lbl_CutMinutes);
@@ -90,7 +90,7 @@ namespace DeepSound.Activities.Songs.Adapters
                         holder.IconHeart.Tag = item.IsLiked != null && item.IsLiked.Value ? "Like" : "Liked";
                         ClickListeners.SetLike(holder.IconHeart);
                         //SetLike(holder.IconHeart);
-                          
+
                         if (!holder.IconHeart.HasOnClickListeners)
                             holder.IconHeart.Click += (s, e) => ClickListeners.OnLikeSongsClick(new MoreClickEventArgs { Button = holder.IconHeart, SongsClass = item }, NamePage);
                     }
@@ -101,7 +101,7 @@ namespace DeepSound.Activities.Songs.Adapters
                 Methods.DisplayReportResultTrack(e);
             }
         }
-        
+
         public override int ItemCount => SoundsList?.Count ?? 0;
 
         public SoundDataObject GetItem(int position)
@@ -165,7 +165,7 @@ namespace DeepSound.Activities.Songs.Adapters
 
         public RequestBuilder GetPreloadRequestBuilder(Object p0)
         {
-            return Glide.With(ActivityContext).Load(p0.ToString())
+            return Glide.With(ActivityContext?.BaseContext).Load(p0.ToString())
                 .Apply(new RequestOptions().CenterCrop());
         }
     }
@@ -173,13 +173,13 @@ namespace DeepSound.Activities.Songs.Adapters
     public class RowSoundLiteAdapterViewHolder : RecyclerView.ViewHolder
     {
         #region Variables Basic
-         
+
         public View MainView { get; private set; }
         public ImageView Image { get; private set; }
         public TextView TxtTitle { get; private set; }
         public TextView TxtSeconderText { get; private set; }
         public ImageView IconHeart { get; private set; }
-       
+
 
 
         #endregion
@@ -192,10 +192,10 @@ namespace DeepSound.Activities.Songs.Adapters
                 Image = MainView.FindViewById<ImageView>(Resource.Id.Image);
                 TxtTitle = MainView.FindViewById<TextView>(Resource.Id.title);
                 TxtSeconderText = MainView.FindViewById<TextView>(Resource.Id.brief);
-                
+
                 IconHeart = MainView.FindViewById<ImageView>(Resource.Id.heart);
 
-               
+
 
                 //Event
                 itemView.Click += (sender, e) => clickListener(new RowSoundLiteAdapterClickEventArgs { View = itemView, Position = BindingAdapterPosition });

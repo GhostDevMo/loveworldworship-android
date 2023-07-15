@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Views;
 using Android.Widget;
@@ -14,6 +12,8 @@ using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.MediaPlayerController;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Global;
+using System;
+using System.Collections.ObjectModel;
 using Exception = System.Exception;
 using Object = Java.Lang.Object;
 
@@ -29,13 +29,20 @@ namespace DeepSound.Helpers.CacheLoaders
         private readonly RequestOptions GlideRequestOptions;
         public ImageCoursalViewPager(Activity context, ObservableCollection<SoundDataObject> playlistList)
         {
-            ActivityContext = context;
-            PlaylistList = playlistList;
-            Inflater = LayoutInflater.From(context);
-            GlideRequestOptions = new RequestOptions().Error(Resource.Drawable.ImagePlacholder).Placeholder(Resource.Drawable.ImagePlacholder).SetDiskCacheStrategy(DiskCacheStrategy.All).SetPriority(Priority.High);
-            FullGlideRequestBuilder = Glide.With(context).AsBitmap().Apply(GlideRequestOptions).Transition(new BitmapTransitionOptions().CrossFade(100));
+            try
+            {
+                ActivityContext = context;
+                PlaylistList = playlistList;
+                Inflater = LayoutInflater.From(context);
+                GlideRequestOptions = new RequestOptions().Error(Resource.Drawable.ImagePlacholder).Placeholder(Resource.Drawable.ImagePlacholder).SetDiskCacheStrategy(DiskCacheStrategy.All).SetPriority(Priority.High);
+                FullGlideRequestBuilder = Glide.With(context?.BaseContext).AsBitmap().Apply(GlideRequestOptions).Transition(new BitmapTransitionOptions().CrossFade(100));
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
         }
-         
+
         public override Object InstantiateItem(ViewGroup view, int position)
         {
             try
@@ -47,11 +54,11 @@ namespace DeepSound.Helpers.CacheLoaders
                 //var cardView = layout.FindViewById<CardView>(Resource.Id.cardview2);
 
                 if (PlaylistList[position] != null)
-                { 
+                {
                     title.Text = Methods.FunString.DecodeString(PlaylistList[position].Title);
                     seconderText.Text = PlaylistList[position].CategoryName + " " + ActivityContext.GetText(Resource.String.Lbl_Music);
-                     
-                     FullGlideRequestBuilder.Load(PlaylistList[position].Thumbnail).Into(mainFeaturedImage);
+
+                    FullGlideRequestBuilder.Load(PlaylistList[position].Thumbnail).Into(mainFeaturedImage);
                 }
 
                 if (!layout.HasOnClickListeners)
@@ -65,8 +72,8 @@ namespace DeepSound.Helpers.CacheLoaders
                         }
                         catch (Exception e)
                         {
-                            Methods.DisplayReportResultTrack(e); 
-                        } 
+                            Methods.DisplayReportResultTrack(e);
+                        }
                     };
                 }
 
@@ -77,11 +84,11 @@ namespace DeepSound.Helpers.CacheLoaders
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
-            } 
+                return null;
+            }
         }
 
-        
+
 
         public override bool IsViewFromObject(View view, Object @object)
         {
@@ -112,8 +119,8 @@ namespace DeepSound.Helpers.CacheLoaders
             {
                 Methods.DisplayReportResultTrack(e);
 
-            } 
-        } 
+            }
+        }
     }
     public class CarouselEffectTransformer : Java.Lang.Object, ViewPager.IPageTransformer
     {
@@ -127,14 +134,14 @@ namespace DeepSound.Helpers.CacheLoaders
                 view.Alpha = 0;
             }
             else if (position <= 0)
-            { 
+            {
                 view.Alpha = 1;
                 view.TranslationX = 0;
                 view.ScaleX = 1;
                 view.ScaleY = 1;
             }
             else if (position <= 1)
-            { 
+            {
                 view.Alpha = (1 - position);
                 view.TranslationX = (pageWidth * -position);
                 float scaleFactor = MIN_SCALE + (1 - MIN_SCALE) * (1 - Math.Abs(position));
@@ -142,7 +149,7 @@ namespace DeepSound.Helpers.CacheLoaders
                 view.ScaleY = scaleFactor;
             }
             else
-            { 
+            {
                 view.Alpha = 0;
             }
         }

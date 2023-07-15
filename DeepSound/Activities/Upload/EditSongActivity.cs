@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using MaterialDialogsCore;
-using Android;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Gms.Ads.DoubleClick;
@@ -12,9 +7,11 @@ using Android.OS;
 using Android.Views;
 using Android.Widget;
 using AndroidHUD;
+using AndroidX.Activity.Result;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.AppCompat.Widget;
-using AndroidX.Core.Content;
+using Bumptech.Glide;
+using Com.Canhub.Cropper;
 using DeepSound.Activities.Base;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.CacheLoaders;
@@ -24,19 +21,19 @@ using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.Tracks;
 using DeepSoundClient.Requests;
-using Java.IO;
+using Google.Android.Material.Dialog;
 using Newtonsoft.Json;
-using TheArtOfDev.Edmodo.Cropper;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Console = System.Console;
 using Exception = System.Exception;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
-using Uri = Android.Net.Uri;
-using Bumptech.Glide;
 
 namespace DeepSound.Activities.Upload
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class EditSongActivity : BaseActivity, MaterialDialog.IListCallback, MaterialDialog.ISingleButtonCallback
+    public class EditSongActivity : BaseActivity, IDialogListCallBack, IActivityResultCallback
     {
         #region Variables Basic
 
@@ -46,10 +43,10 @@ namespace DeepSound.Activities.Upload
         private TextView TxtSubTitle, IconTitle, IconDescription, IconTags, IconGenres, IconPrice, IconAvailability, IconAgeRestriction, IconLyrics, IconAllowDownloads;
         private EditText TitleEditText, DescriptionEditText, TagsEditText, GenresEditText, PriceEditText, AgeRestrictionEditText, LyricsEditText, AllowDownloadsEditText;
         private RadioButton RbPublic, RbPrivate;
-        private string NamePage ,CurrencySymbol = "$", Status = "0", PathImage = "", TypeDialog = "", IdGenres = "", IdPrice = "", IdAgeRestriction = "", IdAllowDownloads = "";
+        private string NamePage, CurrencySymbol = "$", Status = "0", PathImage = "", TypeDialog = "", IdGenres = "", IdPrice = "", IdAgeRestriction = "", IdAllowDownloads = "";
         private SoundDataObject SongsClass;
         private PublisherAdView PublisherAdView;
-
+        private DialogGalleryController GalleryController;
         #endregion
 
         #region General
@@ -69,6 +66,7 @@ namespace DeepSound.Activities.Upload
                 //Get Value And Set Toolbar
                 InitComponent();
                 InitToolbar();
+                GalleryController = new DialogGalleryController(this, this);
 
                 CurrencySymbol = ListUtils.SettingsSiteList?.CurrencySymbol ?? "$";
 
@@ -139,7 +137,7 @@ namespace DeepSound.Activities.Upload
         protected override void OnDestroy()
         {
             try
-            { 
+            {
                 PublisherAdView?.Destroy();
 
                 base.OnDestroy();
@@ -185,7 +183,7 @@ namespace DeepSound.Activities.Upload
 
                 IconLyrics = FindViewById<TextView>(Resource.Id.IconLyrics);
                 LyricsEditText = FindViewById<EditText>(Resource.Id.LyricsEditText);
-                 
+
                 IconTags = FindViewById<TextView>(Resource.Id.IconTags);
                 TagsEditText = FindViewById<EditText>(Resource.Id.TagsEditText);
 
@@ -209,7 +207,7 @@ namespace DeepSound.Activities.Upload
                 BtnSave.Text = GetText(Resource.String.Lbl_Submit);
 
                 RbPublic.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
-                RbPrivate.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.Black); 
+                RbPrivate.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
 
                 Methods.SetColorEditText(TitleEditText, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(DescriptionEditText, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
@@ -234,7 +232,7 @@ namespace DeepSound.Activities.Upload
                 Methods.SetFocusable(PriceEditText);
                 Methods.SetFocusable(AgeRestrictionEditText);
                 Methods.SetFocusable(AllowDownloadsEditText);
-                 
+
                 if (!AppSettings.ShowPrice)
                 {
                     PriceEditText.Visibility = ViewStates.Gone;
@@ -367,7 +365,7 @@ namespace DeepSound.Activities.Upload
                         Toast.MakeText(this, GetText(Resource.String.Lbl_PleaseChooseAllowDownloads), ToastLength.Short)?.Show();
                         return;
                     }
-                     
+
                     //Show a progress
                     AndHUD.Shared.Show(this, GetText(Resource.String.Lbl_Loading));
 
@@ -389,7 +387,7 @@ namespace DeepSound.Activities.Upload
                         dictionary.Add("song-thumbnail", PathImage);
                     }
 
-                    var (apiStatus, respond) = await RequestsAsync.Tracks.EditTrackAsync(SongsClass.AudioId,false, dictionary); //Sent api 
+                    var (apiStatus, respond) = await RequestsAsync.Tracks.EditTrackAsync(SongsClass.AudioId, false, dictionary); //Sent api 
                     if (apiStatus.Equals(200))
                     {
                         if (respond is EditTrackObject result)
@@ -397,12 +395,12 @@ namespace DeepSound.Activities.Upload
                             Console.WriteLine(result.Link);
                             Toast.MakeText(this, GetText(Resource.String.Lbl_UpdatedSuccessfully), ToastLength.Short)?.Show();
                             AndHUD.Shared.Dismiss(this);
- 
+
                             Finish();
                         }
                     }
-                    else  
-                    { 
+                    else
+                    {
                         Methods.DisplayAndHudErrorResult(this, respond);
                     }
 
@@ -457,32 +455,32 @@ namespace DeepSound.Activities.Upload
         {
             try
             {
-                OpenDialogGallery();
+                GalleryController?.OpenDialogGallery();
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         //Genres
         private void GenresEditTextOnClick(object sender, View.TouchEventArgs e)
         {
             try
             {
-                if (e.Event?.Action != MotionEventActions.Down) return;
+                if (e.Event?.Action != MotionEventActions.Up) return;
 
                 TypeDialog = "Genres";
 
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
                 var arrayAdapter = ListUtils.GenresList.Select(item => item.CateogryName).ToList();
 
-                dialogList.Title(GetText(Resource.String.Lbl_Genres));
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetTitle(GetText(Resource.String.Lbl_Genres));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -495,12 +493,12 @@ namespace DeepSound.Activities.Upload
         {
             try
             {
-                if (e.Event?.Action != MotionEventActions.Down) return;
+                if (e.Event?.Action != MotionEventActions.Up) return;
 
                 TypeDialog = "Price";
 
                 var arrayAdapter = new List<string>();
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
                 foreach (var item in ListUtils.PriceList)
                     if (item.Price == "0.00" || item.Price == "0.0" || item.Price == "0")
@@ -508,28 +506,28 @@ namespace DeepSound.Activities.Upload
                     else
                         arrayAdapter.Add(CurrencySymbol + item.Price);
 
-                dialogList.Title(GetText(Resource.String.Lbl_Price));
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetTitle(GetText(Resource.String.Lbl_Price));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         //AgeRestriction
         private void AgeRestrictionEditTextOnClick(object sender, View.TouchEventArgs e)
         {
             try
             {
-                if (e.Event?.Action != MotionEventActions.Down) return;
+                if (e.Event?.Action != MotionEventActions.Up) return;
 
                 TypeDialog = "AgeRestriction";
 
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
                 var arrayAdapter = new List<string>
                 {
@@ -537,11 +535,11 @@ namespace DeepSound.Activities.Upload
                     GetString(Resource.String.Lbl_AgeRestrictionText1)
                 };
 
-                dialogList.Title(GetText(Resource.String.Lbl_AgeRestriction));
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetTitle(GetText(Resource.String.Lbl_AgeRestriction));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -554,76 +552,33 @@ namespace DeepSound.Activities.Upload
         {
             try
             {
-                if (e.Event?.Action != MotionEventActions.Down) return;
+                if (e.Event?.Action != MotionEventActions.Up) return;
 
                 TypeDialog = "AllowDownloads";
 
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
                 var arrayAdapter = new List<string>
-                {                          
-                    GetString(Resource.String.Lbl_Yes), 
+                {
+                    GetString(Resource.String.Lbl_Yes),
                     GetString(Resource.String.Lbl_No),
                 };
 
-                dialogList.Title(GetText(Resource.String.Lbl_AllowDownloads));
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetTitle(GetText(Resource.String.Lbl_AllowDownloads));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
 
         #region Permissions && Result
-
-        //Result
-        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
-        {
-            try
-            {
-                base.OnActivityResult(requestCode, resultCode, data);
-                var result = CropImage.GetActivityResult(data);
-                //If its from Camera or Gallery
-                if (requestCode == CropImage.CropImageActivityRequestCode)
-                { 
-                    if (resultCode == Result.Ok)
-                    {
-                        if (result.IsSuccessful)
-                        {
-                            var resultUri = result.Uri;
-
-                            if (!string.IsNullOrEmpty(resultUri.Path))
-                            {
-                                File file2 = new File(resultUri.Path);
-                                var photoUri = FileProvider.GetUriForFile(this, PackageName + ".fileprovider", file2);
-                                Glide.With(this).Load(photoUri).Apply(GlideImageLoader.GetOptions(ImageStyle.RoundedCrop, ImagePlaceholders.Drawable)).Into(Image);
-
-                                UploadImage(file2.Path);
-                            }
-                            else
-                            {
-                                Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
-                            }
-                        } 
-                    } 
-                }
-                else if (requestCode == CropImage.CropImageActivityResultErrorCode)
-                { 
-                    Exception error = result.Error;
-                    Console.WriteLine(error);
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
 
         //Permissions
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
@@ -636,7 +591,7 @@ namespace DeepSound.Activities.Upload
                 {
                     if (grantResults.Length > 0 && grantResults[0] == Permission.Granted)
                     {
-                        OpenDialogGallery();
+                        GalleryController?.OpenDialogGallery();
                     }
                     else
                     {
@@ -652,18 +607,36 @@ namespace DeepSound.Activities.Upload
 
         #endregion
 
-        #region MaterialDialog
 
-        public void OnClick(MaterialDialog p0, DialogAction p1)
+        #region Result Gallery
+
+        public void OnActivityResult(Java.Lang.Object p0)
         {
             try
             {
-                if (p1 == DialogAction.Positive)
+                if (p0 is CropImageView.CropResult result)
                 {
-                }
-                else if (p1 == DialogAction.Negative)
-                {
-                    p0.Dismiss();
+                    if (result.IsSuccessful)
+                    {
+                        var resultUri = result.UriContent;
+                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        if (!string.IsNullOrEmpty(filepath))
+                        {
+                            //Do something with your Uri
+                            PathImage = filepath;
+                            Glide.With(this).Load(filepath).Apply(GlideImageLoader.GetOptions(ImageStyle.RoundedCrop, ImagePlaceholders.Drawable)).Into(Image);
+
+                            UploadImage(filepath);
+                        }
+                        else
+                        {
+                            Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
+                        }
+                    }
+                    else
+                    {
+                        Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
+                    }
                 }
             }
             catch (Exception e)
@@ -672,7 +645,11 @@ namespace DeepSound.Activities.Upload
             }
         }
 
-        public void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+        #endregion
+
+        #region MaterialDialog
+
+        public void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
             {
@@ -703,7 +680,7 @@ namespace DeepSound.Activities.Upload
                     {
                         IdAllowDownloads = "0";
                     }
-                    
+
                     AllowDownloadsEditText.Text = text;
                 }
             }
@@ -725,7 +702,7 @@ namespace DeepSound.Activities.Upload
                 {
                     PathImage = "";
 
-                    GlideImageLoader.LoadImage(this, SongsClass.Thumbnail, Image, ImageStyle.RoundedCrop,ImagePlaceholders.Drawable);
+                    GlideImageLoader.LoadImage(this, SongsClass.Thumbnail, Image, ImageStyle.RoundedCrop, ImagePlaceholders.Drawable);
 
                     TxtSubTitle.Text = GetText(Resource.String.Lbl_subTitleUploadSong) + " " + SongsClass.AudioLocation.Split('/').Last();
 
@@ -739,80 +716,26 @@ namespace DeepSound.Activities.Upload
                         PriceEditText.Text = GetText(Resource.String.Lbl_Free);
                     else
                         PriceEditText.Text = CurrencySymbol + SongsClass.Price;
-                     
+
                     AgeRestrictionEditText.Text = GetString(SongsClass.AgeRestriction == 0 ? Resource.String.Lbl_AgeRestrictionText0 : Resource.String.Lbl_AgeRestrictionText1);
                     AllowDownloadsEditText.Text = GetString(SongsClass.AllowDownloads == 0 ? Resource.String.Lbl_No : Resource.String.Lbl_Yes);
 
                     if (SongsClass.Availability == 0)
                     {
                         RbPublic.Checked = true;
-                        RbPrivate.Checked = false; 
+                        RbPrivate.Checked = false;
                     }
                     else
                     {
                         RbPublic.Checked = false;
                         RbPrivate.Checked = true;
                     }
-                      
+
                     Status = SongsClass.Availability.ToString();
                     IdGenres = SongsClass.CategoryId.ToString();
                     IdPrice = SongsClass.Price.ToString();
                     IdAgeRestriction = SongsClass.AgeRestriction.ToString();
-                    IdAllowDownloads = SongsClass.AllowDownloads.ToString(); 
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-        private void OpenDialogGallery()
-        {
-            try
-            {
-                if (!Methods.CheckConnectivity())
-                {
-                    Toast.MakeText(this, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
-                }
-                else
-                {
-                    // Check if we're running on Android 5.0 or higher
-                    if ((int)Build.VERSION.SdkInt < 23)
-                    {
-                        Methods.Path.Chack_MyFolder();
-
-                        //Open Image 
-                        var myUri = Uri.FromFile(new File(Methods.Path.FolderDiskImage, Methods.GetTimestamp(DateTime.Now) + ".jpeg"));
-                        CropImage.Activity()
-                            .SetInitialCropWindowPaddingRatio(0)
-                            .SetAutoZoomEnabled(true)
-                            .SetMaxZoom(4)
-                            .SetGuidelines(CropImageView.Guidelines.On)
-                            .SetCropMenuCropButtonTitle(GetText(Resource.String.Lbl_Crop))
-                            .SetOutputUri(myUri).Start(this);
-                    }
-                    else
-                    {
-                        if (!CropImage.IsExplicitCameraPermissionRequired(this) && PermissionsController.CheckPermissionStorage() && CheckSelfPermission(Manifest.Permission.Camera) == Permission.Granted)
-                        {
-                            Methods.Path.Chack_MyFolder();
-
-                            //Open Image 
-                            var myUri = Uri.FromFile(new File(Methods.Path.FolderDiskImage, Methods.GetTimestamp(DateTime.Now) + ".jpeg"));
-                            CropImage.Activity()
-                                .SetInitialCropWindowPaddingRatio(0)
-                                .SetAutoZoomEnabled(true)
-                                .SetMaxZoom(4)
-                                .SetGuidelines(CropImageView.Guidelines.On)
-                                .SetCropMenuCropButtonTitle(GetText(Resource.String.Lbl_Crop))
-                                .SetOutputUri(myUri).Start(this);
-                        }
-                        else
-                        {
-                            new PermissionsController(this).RequestPermission(108);
-                        }
-                    }
+                    IdAllowDownloads = SongsClass.AllowDownloads.ToString();
                 }
             }
             catch (Exception e)
@@ -831,13 +754,13 @@ namespace DeepSound.Activities.Upload
                 }
                 else
                 {
-                     var (apiStatus, respond) = await RequestsAsync.Tracks.UploadThumbnailAsync(path).ConfigureAwait(false);
+                    var (apiStatus, respond) = await RequestsAsync.Tracks.UploadThumbnailAsync(path).ConfigureAwait(false);
                     if (apiStatus.Equals(200))
                     {
                         if (respond is UploadThumbnailObject resultUpload)
                             PathImage = resultUpload.Thumbnail;
                     }
-                    else  
+                    else
                     {
                         Methods.DisplayAndHudErrorResult(this, respond);
                     }
@@ -847,6 +770,6 @@ namespace DeepSound.Activities.Upload
             {
                 Methods.DisplayReportResultTrack(e);
             }
-        } 
+        }
     }
 }

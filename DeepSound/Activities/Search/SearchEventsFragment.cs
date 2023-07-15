@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
-using System.Linq;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -17,6 +14,9 @@ using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Event;
 using Newtonsoft.Json;
+using System;
+using System.Collections.ObjectModel;
+using System.Linq;
 
 
 namespace DeepSound.Activities.Search
@@ -62,7 +62,7 @@ namespace DeepSound.Activities.Search
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -133,7 +133,7 @@ namespace DeepSound.Activities.Search
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSearchResult);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += ContextSearch.TryAgainButton_Click;
                 }
             }
@@ -142,7 +142,7 @@ namespace DeepSound.Activities.Search
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #endregion
 
         #region Event

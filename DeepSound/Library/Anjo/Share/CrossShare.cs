@@ -1,5 +1,5 @@
-﻿using System;
-using DeepSound.Library.Anjo.Share.Abstractions;
+﻿using DeepSound.Library.Anjo.Share.Abstractions;
+using System;
 
 namespace DeepSound.Library.Anjo.Share
 {
@@ -12,7 +12,7 @@ namespace DeepSound.Library.Anjo.Share
         /// <summary>
         /// Gets if the plugin is supported on the current platform.
         /// </summary>
-        public static bool IsSupported => implementation.Value != null!;
+        public static bool IsSupported => implementation.Value != null;
 
         /// <summary>
         /// Current plugin implementation to use
@@ -33,7 +33,7 @@ namespace DeepSound.Library.Anjo.Share
         static IShare CreateShare()
         {
 #if NETSTANDARD1_0
-            return null!;
+            return null;
 #else
             return new ShareImplementation();
 #endif
@@ -41,6 +41,6 @@ namespace DeepSound.Library.Anjo.Share
 
         internal static Exception NotImplementedInReferenceAssembly() =>
             new NotImplementedException("This functionality is not implemented in the portable version of this assembly.  You should reference the NuGet package from your main application project in order to reference the platform-specific implementation.");
-        
+
     }
 }

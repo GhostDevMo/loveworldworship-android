@@ -1,31 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using MaterialDialogsCore;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using Android.Text;
 using Android.Views;
 using Android.Widget;
-using Newtonsoft.Json;
+using AndroidX.AppCompat.App;
+using AndroidX.AppCompat.Widget;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Utils;
 using DeepSound.SQLite;
 using DeepSoundClient.Classes.WoWonder;
 using DeepSoundClient.Requests;
+using Google.Android.Material.Dialog;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Exception = System.Exception;
-using AndroidX.AppCompat.App;
-using AndroidX.AppCompat.Widget;
 
 namespace DeepSound.Activities.Default
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class WoWonderLoginActivity : AppCompatActivity, MaterialDialog.ISingleButtonCallback, MaterialDialog.IInputCallback
+    public class WoWonderLoginActivity : AppCompatActivity, IDialogInputCallBack
     {
         #region Variables Basic
-         
+
         private EditText MEditTextEmail, MEditTextPassword;
         private AppCompatButton MButtonViewSignIn, ContinueButton;
         private ProgressBar ProgressBar;
@@ -47,10 +47,10 @@ namespace DeepSound.Activities.Default
 
                 // Create your application here
                 SetContentView(Resource.Layout.LoginWowonderLayout);
-                  
+
                 //Get Value And Set Toolbar
-                InitComponent(); 
-                InitWoWonder(); 
+                InitComponent();
+                InitWoWonder();
             }
             catch (Exception e)
             {
@@ -117,7 +117,7 @@ namespace DeepSound.Activities.Default
         private void InitComponent()
         {
             try
-            { 
+            {
                 //declare layouts and editText
                 MEditTextEmail = (EditText)FindViewById(Resource.Id.editTxtEmail);
                 MEditTextPassword = (EditText)FindViewById(Resource.Id.editTxtPassword);
@@ -128,7 +128,7 @@ namespace DeepSound.Activities.Default
 
                 ProgressBar = FindViewById<ProgressBar>(Resource.Id.progressBar);
                 ProgressBar.Visibility = ViewStates.Gone;
-                MButtonViewSignIn.Visibility = ViewStates.Visible; 
+                MButtonViewSignIn.Visibility = ViewStates.Visible;
             }
             catch (Exception e)
             {
@@ -177,28 +177,39 @@ namespace DeepSound.Activities.Default
                     {
                         ProgressBar.Visibility = ViewStates.Visible;
                         MButtonViewSignIn.Visibility = ViewStates.Gone;
-                         
+
                         var (apiStatus, respond) = await RequestsAsync.WoWonder.GetAuthWoWonderAsync(MEditTextEmail.Text.Replace(" ", ""), MEditTextPassword.Text, TimeZone);
                         if (apiStatus == 200)
                         {
                             if (respond is WoWonderAuthObject auth)
                             {
                                 UserId = auth.UserId;
-                                SetDataLogin(auth.UserId, auth.AccessToken); 
+                                SetDataLogin(auth.UserId, auth.AccessToken);
                             }
                             else if (respond is WoWonderAuthMessageObject messageObject)
                             {
                                 UserId = messageObject.UserId;
 
                                 //TwoFactor
-                                var dialog = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                                dialog.Title(Resource.String.Lbl_ConfirmationEmailSent);
-                                dialog.Input(Resource.String.Lbl_ConfirmationCode, 0, false, this);
-                                dialog.InputType(InputTypes.ClassNumber);
-                                dialog.PositiveText(GetText(Resource.String.Lbl_Send)).OnPositive(this);
-                                dialog.NegativeText(GetText(Resource.String.Lbl_Cancel)).OnNegative(this);
-                                dialog.AlwaysCallSingleChoiceCallback();
-                                dialog.Build().Show(); 
+                                var dialog = new MaterialAlertDialogBuilder(this);
+                                dialog.SetTitle(Resource.String.Lbl_ConfirmationEmailSent);
+
+                                EditText input = new EditText(this);
+
+                                input.Hint = GetText(Resource.String.Lbl_ConfirmationCode);
+                                input.InputType = InputTypes.ClassNumber;
+                                LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+                                input.LayoutParameters = lp;
+
+                                dialog.SetView(input);
+
+                                dialog.SetPositiveButton(GetText(Resource.String.Lbl_Send), (o, args) =>
+                                {
+                                    SendButtonOnClick();
+                                });
+                                dialog.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+
+                                dialog.Show();
                             }
                         }
                         else if (apiStatus == 400)
@@ -264,37 +275,18 @@ namespace DeepSound.Activities.Default
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
 
         #region MaterialDialog
 
-        public void OnClick(MaterialDialog p0, DialogAction p1)
+        public void OnInput(IDialogInterface dialog, string input)
         {
             try
             {
-                if (p1 == DialogAction.Positive)
+                if (input.Length > 0)
                 {
-                    SendButtonOnClick();
-                }
-                else if (p1 == DialogAction.Negative)
-                {
-                    p0.Dismiss();
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-        public void OnInput(MaterialDialog p0, string p1)
-        {
-            try
-            {
-                if (p1.Length > 0)
-                {
-                    CodeName = p1;
+                    CodeName = input;
                 }
             }
             catch (Exception e)
@@ -320,7 +312,7 @@ namespace DeepSound.Activities.Default
                     }
                     else
                     {
-                        Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show(); 
+                        Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
                     }
                 }
             }
@@ -333,8 +325,8 @@ namespace DeepSound.Activities.Default
         private async void SendButtonOnClick()
         {
             try
-            { 
-                 var (apiStatus, respond) = await RequestsAsync.WoWonder.WoWonderTwoFactorAsync(UserId, CodeName);
+            {
+                var (apiStatus, respond) = await RequestsAsync.WoWonder.WoWonderTwoFactorAsync(UserId, CodeName);
                 if (apiStatus == 200)
                 {
                     if (respond is WoWonderAuthObject auth)
@@ -360,17 +352,17 @@ namespace DeepSound.Activities.Default
             }
         }
 
-        private async void SetDataLogin(string userId , string accessToken)  
+        private async void SetDataLogin(string userId, string accessToken)
         {
             try
             {
                 if (!Methods.CheckConnectivity()) return;
-                 var (apiStatus, respond) = await RequestsAsync.WoWonder.GetUserDataWoWonderAsync(userId, accessToken);
+                var (apiStatus, respond) = await RequestsAsync.WoWonder.GetUserDataWoWonderAsync(userId, accessToken);
                 if (apiStatus == 200)
                 {
                     if (respond is WoWonderUserDataObject result)
                     {
-                        var accessTokenWoWonder =  RequestsAsync.WoWonder.GetAccessToken(result);
+                        var accessTokenWoWonder = RequestsAsync.WoWonder.GetAccessToken(result);
                         if (!string.IsNullOrEmpty(accessTokenWoWonder))
                         {
                             ProgressBar.Visibility = ViewStates.Gone;
@@ -379,8 +371,8 @@ namespace DeepSound.Activities.Default
                             RunOnUiThread(() =>
                             {
                                 try
-                                { 
-                                    LoginActivity.Instance?.LoginWoWonder(accessTokenWoWonder); 
+                                {
+                                    LoginActivity.Instance?.LoginWoWonder(accessTokenWoWonder);
                                     Finish();
                                 }
                                 catch (Exception e)
@@ -388,7 +380,7 @@ namespace DeepSound.Activities.Default
                                     Methods.DisplayReportResultTrack(e);
                                 }
                             });
-                        } 
+                        }
                     }
                 }
                 else Methods.DisplayReportResult(this, respond);
@@ -398,7 +390,7 @@ namespace DeepSound.Activities.Default
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void SetClientWoWonder()
         {
             try
@@ -420,7 +412,7 @@ namespace DeepSound.Activities.Default
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private async Task GetTimezone()
         {
             try
@@ -454,7 +446,7 @@ namespace DeepSound.Activities.Default
                     }
                     else
                     {
-                       new PermissionsController(this).RequestPermission(100);
+                        new PermissionsController(this).RequestPermission(100);
                     }
                 }
             }
@@ -473,14 +465,14 @@ namespace DeepSound.Activities.Default
                 if (settingsData != null)
                     SetClientWoWonder();
                 else
-                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { GetTimezone ,() => ApiRequest.GetSettings_Api(this)});
+                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { GetTimezone, () => ApiRequest.GetSettings_Api(this) });
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void CheckCrossAppAuthentication()
         {
             try

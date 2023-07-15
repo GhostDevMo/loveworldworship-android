@@ -34,7 +34,7 @@
             android:layout_gravity="center"
             android:layout_width="115dp"
             android:layout_height="110dp"
-            app:cardBackgroundColor="@color/gnt_white"
+            app:cardBackgroundColor="?attr/colorFill"
             app:cardCornerRadius="9dp"
             android:layout_marginTop="1dp"
             android:layout_marginEnd="3dp"

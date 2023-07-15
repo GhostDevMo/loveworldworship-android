@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using Android.Content;
+﻿using Android.Content;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -10,16 +8,18 @@ using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using Google.Android.Material.BottomSheet;
-using MaterialDialogsCore;
+using Google.Android.Material.Dialog;
+using System;
+using System.Linq;
 
 namespace DeepSound.Activities.Product
 {
-    public class FilterProductDialogFragment : BottomSheetDialogFragment, MaterialDialog.IListCallback 
+    public class FilterProductDialogFragment : BottomSheetDialogFragment, IDialogListCallBack
     {
         #region Variables Basic
 
         private TextView IconCategory, IconPrice;
-        private EditText  TxtCategory, TxtPriceMin, TxtPriceMax;
+        private EditText TxtCategory, TxtPriceMin, TxtPriceMax;
         private AppCompatButton BtnApply;
         private string TypeDialog, CategoryId;
         private readonly ProductFragment ContextProduct;
@@ -27,7 +27,7 @@ namespace DeepSound.Activities.Product
         #endregion
 
         #region General
-         
+
         public FilterProductDialogFragment(ProductFragment productActivity)
         {
             ContextProduct = productActivity;
@@ -46,14 +46,14 @@ namespace DeepSound.Activities.Product
                 InitComponent(view);
 
                 BtnApply.Click += BtnApplyOnClick;
-                TxtCategory.Touch += TxtCategoryOnTouch; 
+                TxtCategory.Touch += TxtCategoryOnTouch;
 
                 return view;
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -153,31 +153,31 @@ namespace DeepSound.Activities.Product
         {
             try
             {
-                if (e.Event?.Action != MotionEventActions.Down) return;
+                if (e.Event?.Action != MotionEventActions.Up) return;
 
                 TypeDialog = "Category";
 
-                var dialogList = new MaterialDialog.Builder(Context).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(Context);
 
                 var arrayAdapter = CategoriesController.ListCategoriesProducts.Select(cat => cat.CategoriesName).ToList();
 
-                dialogList.Title(GetText(Resource.String.Lbl_Category));
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetTitle(GetText(Resource.String.Lbl_Category));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
 
         #region MaterialDialog
 
-        public void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+        public void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
             {
@@ -186,14 +186,14 @@ namespace DeepSound.Activities.Product
                 {
                     CategoryId = CategoriesController.ListCategoriesProducts.FirstOrDefault(a => a.CategoriesName == text)?.CategoriesId;
                     TxtCategory.Text = text;
-                } 
+                }
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #endregion
 
     }

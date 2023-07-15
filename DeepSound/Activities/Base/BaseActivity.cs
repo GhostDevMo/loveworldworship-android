@@ -1,11 +1,18 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.Res;
 using Android.Views;
 using AndroidX.AppCompat.App;
 using DeepSound.Activities.SettingsUser;
 using DeepSound.Helpers.Utils;
+using System;
+using Android.OS;
+using Android.Runtime;
+using Android.Window;
+using AndroidX.Activity;
+using AndroidX.Core.OS;
+using DeepSound.Activities.Tabbes;
+using Object = Java.Lang.Object;
 
 namespace DeepSound.Activities.Base
 {
@@ -14,11 +21,31 @@ namespace DeepSound.Activities.Base
     {
         #region General
 
+        public void InitBackPressed(string pageName = "")
+        {
+            try
+            {
+                if (BuildCompat.IsAtLeastT && Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+                {
+                    OnBackInvokedDispatcher.RegisterOnBackInvokedCallback(0, new BackCallAppBase2(this, pageName));
+                }
+                else
+                {
+                    OnBackPressedDispatcher.AddCallback(new BackCallAppBase1(this, pageName, true));
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
         public override void OnTrimMemory(TrimMemory level)
         {
             try
             {
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+                //Glide.With(this).OnTrimMemory(level);
                 base.OnTrimMemory(level);
             }
             catch (Exception e)
@@ -32,6 +59,7 @@ namespace DeepSound.Activities.Base
             try
             {
                 GC.Collect(GC.MaxGeneration);
+                // Glide.With(this).OnLowMemory();
                 base.OnLowMemory();
             }
             catch (Exception e)
@@ -85,7 +113,108 @@ namespace DeepSound.Activities.Base
             return base.OnOptionsItemSelected(item);
         }
 
-        #endregion
+        #endregion 
+    }
+
+    public class BackCallAppBase1 : OnBackPressedCallback
+    {
+        private readonly Activity Activity;
+        private readonly string PageName;
+
+        public BackCallAppBase1(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+        {
+        }
+
+        public BackCallAppBase1(bool enabled) : base(enabled)
+        {
+        }
+
+        public BackCallAppBase1(Activity activity, string pageName, bool enabled) : base(enabled)
+        {
+            Activity = activity;
+            PageName = pageName;
+        }
+
+        public override void HandleOnBackPressed()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(PageName))
+                {
+                    // Back is pressed... Finishing the activity
+                    Activity?.Finish();
+                }
+                else
+                {
+                    BackCallAppTools.OnBackPressed(Activity, PageName);
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+    }
+
+    public class BackCallAppBase2 : Object, IOnBackInvokedCallback
+    {
+        private readonly Activity Activity;
+        private readonly string PageName;
+
+        public BackCallAppBase2(Activity activity, string pageName)
+        {
+            Activity = activity;
+            PageName = pageName;
+        }
+
+        public void OnBackInvoked()
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(PageName))
+                {
+                    // Back is pressed... Finishing the activity
+                    Activity?.Finish();
+                }
+                else
+                {
+                    BackCallAppTools.OnBackPressed(Activity, PageName);
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+    }
+
+    public static class BackCallAppTools
+    {
+        public static void OnBackPressed(Activity activity, string pageName)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(pageName))
+                {
+                    // Back is pressed... Finishing the activity
+                    activity?.Finish();
+                }
+                else switch (pageName)
+                {
+                    case "HomeActivity":
+                    {
+                        var subActivity = activity as HomeActivity;
+                        subActivity?.BackPressed();
+                        break;
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
 
     }
 }

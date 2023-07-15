@@ -1,5 +1,4 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
@@ -15,6 +14,7 @@ using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Fonts;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient;
+using System;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser.Support
@@ -47,7 +47,7 @@ namespace DeepSound.Activities.SettingsUser.Support
                 //Get Value And Set Toolbar
                 InitComponent();
                 InitToolbar();
-                
+
                 AdsGoogle.Ad_Interstitial(this);
             }
             catch (Exception e)
@@ -176,7 +176,13 @@ namespace DeepSound.Activities.SettingsUser.Support
 
                 TxtAppName.Text = AppSettings.ApplicationName;
 
-                PackageInfo info = PackageManager.GetPackageInfo(PackageName, 0);
+                PackageInfo info;
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+                    info = PackageManager?.GetPackageInfo(PackageName, PackageManager.PackageInfoFlags.Of((long)PackageInfoFlags.Signatures));
+                else
+#pragma warning disable CS0618
+                    info = PackageManager?.GetPackageInfo(PackageName, PackageInfoFlags.Signatures);
+#pragma warning restore CS0618
                 //int versionNumber = info.VersionCode;
                 string versionName = info.VersionName;
 

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Globalization;
-using System.Linq;
-using System.Threading.Tasks;
-using MaterialDialogsCore;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
@@ -34,14 +27,21 @@ using DeepSoundClient.Classes.Comments;
 using DeepSoundClient.Requests;
 using Developer.SEmojis.Actions;
 using Developer.SEmojis.Helper;
+using Google.Android.Material.Dialog;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Globalization;
+using System.Linq;
+using System.Threading.Tasks;
 using Exception = System.Exception;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Blog
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class ShowArticleActivity : BaseActivity , MaterialDialog.IListCallback, MaterialDialog.ISingleButtonCallback
+    public class ShowArticleActivity : BaseActivity, IDialogListCallBack, IDialogInputCallBack
     {
         #region Variables Basic
 
@@ -49,7 +49,7 @@ namespace DeepSound.Activities.Blog
         private TextView TxtTitle, TxtDescription, TxtViews;
         private WebView TxtHtml;
         private ImageButton BtnMore;
-        private ArticleDataObject ArticleData; 
+        private ArticleDataObject ArticleData;
         private CoordinatorLayout RootView;
         private TextView CategoryName, ClockIcon, DateTimeTextView;
         private string ArticleId, DataWebHtml;
@@ -76,7 +76,7 @@ namespace DeepSound.Activities.Blog
                 base.OnCreate(savedInstanceState);
 
                 Methods.App.FullScreenApp(this);
-                 
+
                 Window?.SetSoftInputMode(SoftInput.AdjustResize);
 
                 SetTheme(DeepSoundTools.IsTabDark() ? Resource.Style.MyTheme_Dark : Resource.Style.MyTheme);
@@ -89,7 +89,7 @@ namespace DeepSound.Activities.Blog
                 InitToolbar();
                 SetRecyclerViewAdapters();
 
-                GetDataArticles(); 
+                GetDataArticles();
             }
             catch (Exception e)
             {
@@ -195,7 +195,7 @@ namespace DeepSound.Activities.Blog
                 Methods.SetColorEditText(TxtComment, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
 
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, ClockIcon, IonIconsFonts.Time);
-                  
+
                 var emojis = new EmojIconActions(this, RootView, TxtComment, EmojisIcon);
                 emojis.ShowEmojIcon();
             }
@@ -236,7 +236,7 @@ namespace DeepSound.Activities.Blog
         {
             try
             {
-                MAdapter = new CommentsAdapter(this , "Blog")
+                MAdapter = new CommentsAdapter(this, "Blog")
                 {
                     CommentList = new ObservableCollection<CommentsDataObject>()
                 };
@@ -294,19 +294,19 @@ namespace DeepSound.Activities.Blog
             try
             {
                 var arrayAdapter = new List<string>();
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
                 arrayAdapter.Add(GetString(Resource.String.Lbl_CopyLink));
                 arrayAdapter.Add(GetString(Resource.String.Lbl_Share));
 
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(this);
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
-                Methods.DisplayReportResultTrack(exception); 
+                Methods.DisplayReportResultTrack(exception);
             }
         }
 
@@ -388,7 +388,7 @@ namespace DeepSound.Activities.Blog
         private async void BtnSentCommentlOnClick(object sender, EventArgs e)
         {
             try
-            { 
+            {
                 if (!UserDetails.IsLogin)
                 {
                     PopupDialogController dialog = new PopupDialogController(this, null, "Login");
@@ -429,7 +429,7 @@ namespace DeepSound.Activities.Blog
                     }
 
                     MRecycler.Visibility = ViewStates.Visible;
-                     
+
                     var text = TxtComment.Text;
 
                     //Hide keyboard
@@ -486,7 +486,7 @@ namespace DeepSound.Activities.Blog
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-        
+
         //Report / Delete / Copy comment 
         private void MAdapterOnItemLongClick(object sender, CommentAdapterClickEventArgs e)
         {
@@ -495,11 +495,11 @@ namespace DeepSound.Activities.Blog
                 var position = e.Position;
                 if (position > -1)
                 {
-                   ItemComments = MAdapter.GetItem(position);
+                    ItemComments = MAdapter.GetItem(position);
                     if (ItemComments != null)
                     {
                         var arrayAdapter = new List<string>();
-                        var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                        var dialogList = new MaterialAlertDialogBuilder(this);
 
                         if (UserDetails.IsLogin)
                             arrayAdapter.Add(GetText(Resource.String.Lbl_Report));
@@ -509,10 +509,10 @@ namespace DeepSound.Activities.Blog
 
                         arrayAdapter.Add(GetText(Resource.String.Lbl_Copy));
 
-                        dialogList.Items(arrayAdapter);
-                        dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                        dialogList.AlwaysCallSingleChoiceCallback();
-                        dialogList.ItemsCallback(this).Build().Show();
+                        dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                        dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                        dialogList.Show();
                     }
                 }
             }
@@ -521,7 +521,7 @@ namespace DeepSound.Activities.Blog
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void MainScrollEventOnLoadMoreEvent(object sender, EventArgs e)
         {
             try
@@ -536,30 +536,12 @@ namespace DeepSound.Activities.Blog
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-        
+
         #endregion
-         
+
         #region MaterialDialog
 
-        public void OnClick(MaterialDialog p0, DialogAction p1)
-        {
-            try
-            {
-                if (p1 == DialogAction.Positive)
-                {
-                }
-                else if (p1 == DialogAction.Negative)
-                {
-                    p0.Dismiss();
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-        public async void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+        public async void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
             {
@@ -568,35 +550,21 @@ namespace DeepSound.Activities.Blog
                 {
                     if (Methods.CheckConnectivity())
                     {
-                        var dialogBuilder = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                        dialogBuilder.Title(Resource.String.Lbl_Report).TitleColorRes(Resource.Color.primary);
-                        dialogBuilder.Input(0, 0, false, (materialDialog, s) =>
-                        {
-                            try
-                            {
-                                if (s.Length <= 0) return;
-                                if (Methods.CheckConnectivity())
-                                {
-                                    Toast.MakeText(this, GetText(Resource.String.Lbl_received_your_report), ToastLength.Short)?.Show();
+                        var dialogBuilder = new MaterialAlertDialogBuilder(this);
+                        dialogBuilder.SetTitle(Resource.String.Lbl_Report);
 
-                                    //Sent Api Report
-                                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Comments.ReportUnReportCommentAsync(ItemComments?.Id.ToString(), s.ToString(), true) }); 
-                                }
-                                else
-                                {
-                                    Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                Console.WriteLine(e);
-                            }
-                        });
-                        dialogBuilder.InputType(InputTypes.TextFlagImeMultiLine);
-                        dialogBuilder.PositiveText(GetText(Resource.String.Lbl_Submit)).OnPositive(this);
-                        dialogBuilder.NegativeText(GetText(Resource.String.Lbl_Cancel)).OnNegative(new MyMaterialDialog());
-                        dialogBuilder.AlwaysCallSingleChoiceCallback();
-                        dialogBuilder.Build().Show(); 
+                        EditText input = new EditText(this);
+
+                        input.InputType = InputTypes.ClassText | InputTypes.TextFlagMultiLine;
+                        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);
+                        input.LayoutParameters = lp;
+
+                        dialogBuilder.SetView(input);
+
+                        dialogBuilder.SetPositiveButton(GetText(Resource.String.Lbl_Submit), new MaterialDialogUtils(input, this));
+                        dialogBuilder.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+
+                        dialogBuilder.Show();
                     }
                     else
                     {
@@ -630,11 +598,11 @@ namespace DeepSound.Activities.Blog
                 else if (text == GetText(Resource.String.Lbl_Copy))
                 {
                     Methods.CopyToClipboard(this, ItemComments?.Value);
-                } 
+                }
                 else if (text == GetText(Resource.String.Lbl_CopyLink))
                 {
                     Methods.CopyToClipboard(this, ArticleData?.Url);
-                } 
+                }
                 else if (text == GetText(Resource.String.Lbl_Share))
                 {
                     //Share Plugin same as Song
@@ -657,8 +625,31 @@ namespace DeepSound.Activities.Blog
             }
         }
 
+        public void OnInput(IDialogInterface dialog, string input)
+        {
+            try
+            {
+                if (input.Length <= 0) return;
+                if (Methods.CheckConnectivity())
+                {
+                    Toast.MakeText(this, GetText(Resource.String.Lbl_received_your_report), ToastLength.Short)?.Show();
+
+                    //Sent Api Report
+                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Comments.ReportUnReportCommentAsync(ItemComments?.Id.ToString(), input, true) });
+                }
+                else
+                {
+                    Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
         #endregion
-         
+
         private void GetDataArticles()
         {
             try
@@ -679,7 +670,7 @@ namespace DeepSound.Activities.Blog
                     //SharedCount.Text = ArticleData.Shared.ToString();
                     DateTimeTextView.Text = ArticleData.CreatedAt;
 
-                    CategoryName.Text = GetText(Resource.String.Lbl_Category) + " : "  + CategoriesController.Get_Translate_Categories_Communities(ArticleData.Category?.ToString(), "", "Blog");  
+                    CategoryName.Text = GetText(Resource.String.Lbl_Category) + " : " + CategoriesController.Get_Translate_Categories_Communities(ArticleData.Category?.ToString(), "", "Blog");
 
                     string style = DeepSoundTools.IsTabDark() ? "<style type='text/css'>body{color: #fff; background-color: #282828; line-height: 1.42857143;}</style>" : "<style type='text/css'>body{color: #444; background-color: #FFFEFE; line-height: 1.42857143;}</style>";
                     string imageFullWidthStyle = "<style>img{display: inline;height: auto;max-width: 100%;}</style>";
@@ -723,7 +714,7 @@ namespace DeepSound.Activities.Blog
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void StartApiService(string offset = "0")
         {
             if (!Methods.CheckConnectivity())
@@ -780,15 +771,15 @@ namespace DeepSound.Activities.Blog
         {
             try
             {
-                MainScrollEvent.IsLoading = false; 
+                MainScrollEvent.IsLoading = false;
 
                 if (MAdapter.CommentList.Count > 0)
                 {
-                    MRecycler.Visibility = ViewStates.Visible; 
+                    MRecycler.Visibility = ViewStates.Visible;
                 }
                 else
                 {
-                    MRecycler.Visibility = ViewStates.Gone; 
+                    MRecycler.Visibility = ViewStates.Gone;
                 }
             }
             catch (Exception e)
@@ -815,4 +806,4 @@ namespace DeepSound.Activities.Blog
         }
 
     }
-}   
+}

@@ -1,13 +1,13 @@
-﻿using System;
-using AndroidX.Core.Widget;
+﻿using AndroidX.Core.Widget;
+using System;
 
 namespace DeepSound.Helpers.Utils
 {
-   public class NestedScrollViewOnScroll : Java.Lang.Object, NestedScrollView.IOnScrollChangeListener
+    public class NestedScrollViewOnScroll : Java.Lang.Object, NestedScrollView.IOnScrollChangeListener
     {
         public delegate void LoadMoreEventHandler(object sender, EventArgs e);
 
-        public event LoadMoreEventHandler LoadMoreEvent; 
+        public event LoadMoreEventHandler LoadMoreEvent;
         public bool IsLoading { get; set; }
 
         public void OnScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY)
@@ -21,7 +21,7 @@ namespace DeepSound.Helpers.Utils
                         //code to fetch more data for endless scrolling 
                         if (IsLoading)
                             return;
-                         
+
                         LoadMoreEvent?.Invoke(this, null);
                     }
                 }

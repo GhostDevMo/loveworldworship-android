@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
@@ -22,6 +18,10 @@ using DeepSoundClient;
 using DeepSoundClient.Classes.Auth;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Requests;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace DeepSound.Activities.Default
 {
@@ -31,12 +31,12 @@ namespace DeepSound.Activities.Default
         #region Variables Basic
 
         private EditText EmailEditText, UsernameEditText, PasswordEditText, ConfirmPasswordEditText;
-        private AppCompatButton RegisterButton; 
+        private AppCompatButton RegisterButton;
         private ProgressBar ProgressBar;
         private TextView TermsTextView, SignInTextView;
         private ImageView BackIcon, EmailIcon, PasswordIcon, EyesIcon, EyesIcon2, ConfirmPasswordIcon, UsernameIcon;
         private RelativeLayout EmailFrameLayout, PassFrameLayout, ConfirmPasswordLayout, UsernameFrameLayout;
-
+        private string Referral;
         #endregion
 
         #region General
@@ -44,12 +44,15 @@ namespace DeepSound.Activities.Default
         protected override void OnCreate(Bundle savedInstanceState)
         {
             try
-            { 
+            {
                 base.OnCreate(savedInstanceState);
                 Methods.App.FullScreenApp(this, true);
+                SetTheme(DeepSoundTools.IsTabDark() ? Resource.Style.MyTheme_Dark : Resource.Style.MyTheme);
 
                 // Create your application here
                 SetContentView(Resource.Layout.RegisterLayout);
+
+                Referral = Intent?.GetStringExtra("Referral") ?? "";
 
                 //Get Value And Set Toolbar
                 InitComponent();
@@ -89,7 +92,7 @@ namespace DeepSound.Activities.Default
         public override void OnTrimMemory(TrimMemory level)
         {
             try
-            { 
+            {
                 GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
                 base.OnTrimMemory(level);
             }
@@ -127,11 +130,11 @@ namespace DeepSound.Activities.Default
                 UsernameFrameLayout = FindViewById<RelativeLayout>(Resource.Id.usernameframelayout);
                 UsernameEditText = FindViewById<EditText>(Resource.Id.edt_username);
                 UsernameIcon = FindViewById<ImageView>(Resource.Id.usernameicon);
-                 
+
                 EmailFrameLayout = FindViewById<RelativeLayout>(Resource.Id.emailframelayout);
                 EmailEditText = FindViewById<EditText>(Resource.Id.edt_email);
                 EmailIcon = FindViewById<ImageView>(Resource.Id.emailicon);
-                 
+
                 PassFrameLayout = FindViewById<RelativeLayout>(Resource.Id.passframelayout);
                 PasswordEditText = FindViewById<EditText>(Resource.Id.edt_password);
                 PasswordIcon = FindViewById<ImageView>(Resource.Id.passicon);
@@ -147,7 +150,7 @@ namespace DeepSound.Activities.Default
                 EyesIcon2.Tag = "hide";
 
                 RegisterButton = FindViewById<AppCompatButton>(Resource.Id.SignInButton);
-              
+
                 ProgressBar = FindViewById<ProgressBar>(Resource.Id.progress_bar);
                 ProgressBar.Visibility = ViewStates.Gone;
 
@@ -218,7 +221,7 @@ namespace DeepSound.Activities.Default
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-          
+
         //Register QuickDate
         private async void RegisterButtonOnClick(object sender, EventArgs e)
         {
@@ -246,8 +249,8 @@ namespace DeepSound.Activities.Default
                             {
                                 ProgressBar.Visibility = ViewStates.Visible;
                                 RegisterButton.Visibility = ViewStates.Gone;
-                                 
-                                var (apiStatus, respond) = await RequestsAsync.Auth.RegisterAsync(UsernameEditText.Text.Replace(" ", ""), EmailEditText.Text.Replace(" ", ""), UsernameEditText.Text.Replace(" ", ""), PasswordEditText.Text, ConfirmPasswordEditText.Text, UserDetails.DeviceId);
+
+                                var (apiStatus, respond) = await RequestsAsync.Auth.RegisterAsync(UsernameEditText.Text.Replace(" ", ""), EmailEditText.Text.Replace(" ", ""), UsernameEditText.Text.Replace(" ", ""), PasswordEditText.Text, ConfirmPasswordEditText.Text, UserDetails.DeviceId, Referral);
                                 if (apiStatus == 200)
                                 {
                                     if (respond is RegisterObject auth)
@@ -289,7 +292,7 @@ namespace DeepSound.Activities.Default
                                                 break;
                                             case "This e-mail is already taken":
                                                 Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_Security), GetText(Resource.String.Lbl_ErrorRegister5), GetText(Resource.String.Lbl_Ok));
-                                                break; 
+                                                break;
                                             case "This e-mail is invalid":
                                                 Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_Security), GetText(Resource.String.Lbl_ErrorRegister6), GetText(Resource.String.Lbl_Ok));
                                                 break;
@@ -340,7 +343,7 @@ namespace DeepSound.Activities.Default
 
             }
         }
-         
+
         private void SignInTextView_Click(object sender, EventArgs e)
         {
             try
@@ -388,12 +391,12 @@ namespace DeepSound.Activities.Default
             }
             catch (Exception exception)
             {
-                Methods.DisplayReportResultTrack(exception); 
+                Methods.DisplayReportResultTrack(exception);
             }
         }
 
         private void Eyes2Icon_Click(object sender, EventArgs e)
-        { 
+        {
             try
             {
                 if (EyesIcon2.Tag.ToString() == "hide")
@@ -413,7 +416,7 @@ namespace DeepSound.Activities.Default
             }
             catch (Exception exception)
             {
-                Methods.DisplayReportResultTrack(exception); 
+                Methods.DisplayReportResultTrack(exception);
             }
         }
 
@@ -438,10 +441,10 @@ namespace DeepSound.Activities.Default
             }
             catch (Exception exception)
             {
-                Methods.DisplayReportResultTrack(exception); 
+                Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void EmailFrameLayout_FocusChange(object sender, View.FocusChangeEventArgs e)
         {
             try
@@ -471,7 +474,7 @@ namespace DeepSound.Activities.Default
             }
             catch (Exception exception)
             {
-                Methods.DisplayReportResultTrack(exception); 
+                Methods.DisplayReportResultTrack(exception);
             }
         }
 
@@ -481,7 +484,7 @@ namespace DeepSound.Activities.Default
             {
                 if (EmailEditText.Text != "" && EmailEditText.Text.Contains("@"))
                     EmailIcon.SetColorFilter(new Color(ContextCompat.GetColor(this, DeepSoundTools.IsTabDark() ? Color.White : Resource.Color.textDark_color)));
-             
+
                 if (UsernameEditText.Text != "")
                     UsernameIcon.SetColorFilter(new Color(ContextCompat.GetColor(this, DeepSoundTools.IsTabDark() ? Color.White : Resource.Color.textDark_color)));
 
@@ -493,12 +496,12 @@ namespace DeepSound.Activities.Default
             }
             catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(e); 
+                Methods.DisplayReportResultTrack(e);
             }
         }
 
         private void ConfirmPasswordFrameLayout_FocusChange(object sender, View.FocusChangeEventArgs e)
-        {  
+        {
             try
             {
                 if (e.HasFocus)
@@ -521,12 +524,12 @@ namespace DeepSound.Activities.Default
             }
             catch (Exception exception)
             {
-                Methods.DisplayReportResultTrack(exception); 
-            } 
+                Methods.DisplayReportResultTrack(exception);
+            }
         }
 
         private void PassFrameLayout_FocusChange(object sender, View.FocusChangeEventArgs e)
-        { 
+        {
             try
             {
                 if (e.HasFocus)
@@ -548,18 +551,18 @@ namespace DeepSound.Activities.Default
             }
             catch (Exception exception)
             {
-                Console.WriteLine(exception); 
-            } 
+                Console.WriteLine(exception);
+            }
         }
-          
+
         #endregion
 
         private void SetDataLogin(RegisterObject auth)
         {
             try
             {
-                UserDetails.Username = EmailEditText.Text;
-                UserDetails.FullName = EmailEditText.Text;
+                UserDetails.Username = UsernameEditText.Text;
+                UserDetails.FullName = UsernameEditText.Text;
                 UserDetails.Password = PasswordEditText.Text;
                 UserDetails.AccessToken = auth.AccessToken;
                 UserDetails.UserId = auth.Data.Id;
@@ -575,7 +578,7 @@ namespace DeepSound.Activities.Default
                     UserId = UserDetails.UserId.ToString(),
                     AccessToken = UserDetails.AccessToken,
                     Cookie = UserDetails.Cookie,
-                    Username = EmailEditText.Text,
+                    Username = UsernameEditText.Text,
                     Password = PasswordEditText.Text,
                     Status = "Active",
                     Lang = "",
@@ -599,6 +602,6 @@ namespace DeepSound.Activities.Default
                 Methods.DisplayReportResultTrack(e);
             }
         }
-          
+
     }
 }

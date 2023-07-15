@@ -6,8 +6,6 @@
 // Follow me on facebook >> https://www.facebook.com/Elindoughous
 //=========================================================
 
-using System;
-using System.IO;
 using Android.App;
 using Android.Content;
 using Android.Database;
@@ -19,6 +17,8 @@ using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Utils;
 using DeepSound.SQLite;
 using DeepSoundClient.Classes.Global;
+using System;
+using System.IO;
 using Environment = Android.OS.Environment;
 
 namespace DeepSound.Helpers.MediaPlayerController
@@ -27,7 +27,7 @@ namespace DeepSound.Helpers.MediaPlayerController
     {
         private readonly DownloadManager Downloadmanager;
         private readonly DownloadManager.Request Request;
-        private readonly string FilePath = Android.OS.Environment.DirectoryDownloads + "/" + AppSettings.ApplicationName;
+        public static string FilePath = Android.OS.Environment.DirectoryDownloads + "/" + AppSettings.ApplicationName;
         private readonly string Filename;
         private long DownloadId;
         private string FromActivity;
@@ -112,7 +112,16 @@ namespace DeepSound.Helpers.MediaPlayerController
         {
             try
             {
-                string path = new Java.IO.File(Environment.DirectoryDownloads + "/"+  AppSettings.ApplicationName + "/" + filename + ".mp3").Path;
+                string path;
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.R)
+                {
+                    var directories = Application.Context.GetExternalFilesDir(Android.OS.Environment.DirectoryDownloads + "/" + AppSettings.ApplicationName);
+                    path = new Java.IO.File(directories, filename + ".mp3").Path;
+                }
+                else
+                {
+                    path = new Java.IO.File(Methods.Path.GetDirectoryDcim() + "/" + Environment.DirectoryDownloads + "/" + AppSettings.ApplicationName, filename + ".mp3").Path;
+                }
 
                 if (File.Exists(path))
                 {
@@ -228,7 +237,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                                     }
                                 }
                                 else
-                                { 
+                                {
                                     sqlEntity.Update_LatestDownloadsSound(Sound.Id, downloadedPath);
                                 }
                             }

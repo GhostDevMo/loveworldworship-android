@@ -1,16 +1,16 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using Android.Graphics;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using System;
 
 namespace DeepSound.Helpers.Utils
 {
-   public class EmptyStateInflater
-   {
+    public class EmptyStateInflater
+    {
         public AppCompatButton EmptyStateButton;
-       // public TextView EmptyStateIcon;
+        // public TextView EmptyStateIcon;
         public TextView DescriptionText;
         public TextView TitleText;
 
@@ -32,7 +32,7 @@ namespace DeepSound.Helpers.Utils
             NoSound,
             NoComments,
             NoPurchases,
-            NoActivity,  
+            NoActivity,
             NoStations,
             NoSessions,
             NoArticle,
@@ -48,29 +48,29 @@ namespace DeepSound.Helpers.Utils
             try
             {
                 //EmptyStateIcon = (TextView) inflated.FindViewById(Resource.Id.emtyicon);
-                TitleText = (TextView) inflated.FindViewById(Resource.Id.headText);
-                DescriptionText = (TextView) inflated.FindViewById(Resource.Id.seconderyText);
-                EmptyStateButton = (AppCompatButton) inflated.FindViewById(Resource.Id.button);
+                TitleText = (TextView)inflated.FindViewById(Resource.Id.headText);
+                DescriptionText = (TextView)inflated.FindViewById(Resource.Id.seconderyText);
+                EmptyStateButton = (AppCompatButton)inflated.FindViewById(Resource.Id.button);
 
                 if (type == Type.NoConnection)
                 {
                     //FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, EmptyStateIcon,IonIconsFonts.IosThunderstorm);
                     TitleText.Text = Application.Context.GetText(Resource.String.Lbl_NoConnection_TitleText);
-                    DescriptionText.Text =Application.Context.GetText(Resource.String.Lbl_NoConnection_DescriptionText);
+                    DescriptionText.Text = Application.Context.GetText(Resource.String.Lbl_NoConnection_DescriptionText);
                     EmptyStateButton.Text = Application.Context.GetText(Resource.String.Lbl_NoConnection_Button);
                 }
                 else if (type == Type.NoSearchResult)
                 {
                     //FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, EmptyStateIcon, IonIconsFonts.Search);
                     TitleText.Text = Application.Context.GetText(Resource.String.Lbl_NoSearchResult_TitleText);
-                    DescriptionText.Text =Application.Context.GetText(Resource.String.Lbl_NoSearchResult_DescriptionText);
+                    DescriptionText.Text = Application.Context.GetText(Resource.String.Lbl_NoSearchResult_DescriptionText);
                     EmptyStateButton.Text = Application.Context.GetText(Resource.String.Lbl_NoSearchResult_Button);
                 }
                 else if (type == Type.SomeThingWentWrong)
                 {
                     //FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, EmptyStateIcon, IonIconsFonts.Close);
                     TitleText.Text = Application.Context.GetText(Resource.String.Lbl_SomThingWentWrong_TitleText);
-                    DescriptionText.Text =Application.Context.GetText(Resource.String.Lbl_SomThingWentWrong_DescriptionText);
+                    DescriptionText.Text = Application.Context.GetText(Resource.String.Lbl_SomThingWentWrong_DescriptionText);
                     EmptyStateButton.Text = Application.Context.GetText(Resource.String.Lbl_SomThingWentWrong_Button);
                 }
                 else if (type == Type.NoUsers)
@@ -84,7 +84,7 @@ namespace DeepSound.Helpers.Utils
                 {
                     //FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, EmptyStateIcon,IonIconsFonts.Notifications);
                     TitleText.Text = Application.Context.GetText(Resource.String.Lbl_NoNotification_TitleText);
-                    DescriptionText.Text =Application.Context.GetText(Resource.String.Lbl_NoNotification_DescriptionText);
+                    DescriptionText.Text = Application.Context.GetText(Resource.String.Lbl_NoNotification_DescriptionText);
                     EmptyStateButton.Visibility = ViewStates.Gone;
                 }
                 else if (type == Type.NoMessage)
@@ -102,14 +102,14 @@ namespace DeepSound.Helpers.Utils
                     EmptyStateButton.Visibility = ViewStates.Gone;
                 }
                 else if (type == Type.NoPlaylist)
-                { 
+                {
                     //FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, EmptyStateIcon, IonIconsFonts.List);
                     TitleText.Text = Application.Context.GetText(Resource.String.Lbl_NoPlaylist_TitleText);
                     DescriptionText.Text = " ";
                     EmptyStateButton.Visibility = ViewStates.Gone;
                 }
                 else if (type == Type.NoAlbums)
-                { 
+                {
                     //FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, EmptyStateIcon, IonIconsFonts.Albums);
                     TitleText.Text = Application.Context.GetText(Resource.String.Lbl_NoAlbums_TitleText);
                     DescriptionText.Text = " ";
@@ -149,7 +149,7 @@ namespace DeepSound.Helpers.Utils
                     TitleText.Text = Application.Context.GetText(Resource.String.Lbl_NoArtists_TitleText);
                     DescriptionText.Text = " ";
                     EmptyStateButton.Visibility = ViewStates.Gone;
-                } 
+                }
                 else if (type == Type.NoComments)
                 {
                     //FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, EmptyStateIcon, IonIconsFonts.Chatbubbles);
@@ -224,7 +224,7 @@ namespace DeepSound.Helpers.Utils
                 {
                     //FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, EmptyStateIcon, IonIconsFonts.Cart);
                     //EmptyStateIcon.SetTextSize(ComplexUnitType.Dip, 45f);
-                    TitleText.Text = Application.Context.GetText(Resource.String.Lbl_Empty_Carts); 
+                    TitleText.Text = Application.Context.GetText(Resource.String.Lbl_Empty_Carts);
                     DescriptionText.Text = " ";
                     EmptyStateButton.Visibility = ViewStates.Gone;
                 }
@@ -232,7 +232,7 @@ namespace DeepSound.Helpers.Utils
                 {
                     //FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, EmptyStateIcon, IonIconsFonts.Pin);
                     //EmptyStateIcon.SetTextSize(ComplexUnitType.Dip, 45f);
-                    TitleText.Text = Application.Context.GetText(Resource.String.Lbl_Empty_Address); 
+                    TitleText.Text = Application.Context.GetText(Resource.String.Lbl_Empty_Address);
                     DescriptionText.Text = " ";
                     EmptyStateButton.Visibility = ViewStates.Gone;
                 }
@@ -243,5 +243,5 @@ namespace DeepSound.Helpers.Utils
             }
 
         }
-   }
+    }
 }

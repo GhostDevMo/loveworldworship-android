@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Gms.Ads.DoubleClick;
@@ -18,6 +14,10 @@ using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSound.SQLite;
 using DeepSoundClient.Requests;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Exception = System.Exception;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
@@ -28,10 +28,11 @@ namespace DeepSound.Activities.SettingsUser.General
     {
         #region Variables Basic
 
-        private LinearLayout FollowUserLayout, LikedTrackLayout, LikedCommentLayout, ArtistStatusChangedLayout, ReceiptStatusChangedLayout, NewTrackLayout, CommentMentionLayout, CommentReplayMentionLayout;
-        private Switch SwitchFollowUser, SwitchLikedTrack, SwitchLikedComment, SwitchArtistStatusChanged, SwitchReceiptStatusChanged, SwitchNewTrack, SwitchCommentMention, SwitchCommentReplayMention;
-    
-        private Toolbar Toolbar; 
+        private LinearLayout FollowUserLayout, LikedTrackLayout, ReviewedTrackLayout, LikedCommentLayout, ArtistStatusChangedLayout, ReceiptStatusChangedLayout, NewTrackLayout, CommentMentionLayout, CommentReplayMentionLayout;
+        private Switch SwitchFollowUser, SwitchLikedTrack, SwitchReviewedTrack, SwitchLikedComment, SwitchArtistStatusChanged, SwitchReceiptStatusChanged, SwitchNewTrack, SwitchCommentMention, SwitchCommentReplayMention;
+        private string EmailOnFollowUserPref, EmailOnLikedTrackPref, EmailOnReviewedTrackPref, EmailOnLikedCommentPref, EmailOnArtistStatusChangedPref, EmailOnReceiptStatusChangedPref, EmailOnNewTrackPref, EmailOnCommentMentionPref, EmailOnCommentReplayMentionPref;
+
+        private Toolbar Toolbar;
         private PublisherAdView PublisherAdView;
 
         #endregion
@@ -159,6 +160,9 @@ namespace DeepSound.Activities.SettingsUser.General
                 LikedTrackLayout = FindViewById<LinearLayout>(Resource.Id.liked_trackLayout);
                 SwitchLikedTrack = FindViewById<Switch>(Resource.Id.Switch_liked_track);
 
+                ReviewedTrackLayout = FindViewById<LinearLayout>(Resource.Id.reviewed_trackLayout);
+                SwitchReviewedTrack = FindViewById<Switch>(Resource.Id.Switch_reviewed_track);
+
                 LikedCommentLayout = FindViewById<LinearLayout>(Resource.Id.liked_commentLayout);
                 SwitchLikedComment = FindViewById<Switch>(Resource.Id.Switch_liked_comment);
 
@@ -176,7 +180,7 @@ namespace DeepSound.Activities.SettingsUser.General
 
                 CommentReplayMentionLayout = FindViewById<LinearLayout>(Resource.Id.comment_replay_mentionLayout);
                 SwitchCommentReplayMention = FindViewById<Switch>(Resource.Id.Switch_comment_replay_mention);
-                  
+
             }
             catch (Exception e)
             {
@@ -221,6 +225,7 @@ namespace DeepSound.Activities.SettingsUser.General
                     SwitchFollowUser.CheckedChange += SwitchFollowUserOnCheckedChange;
                     SwitchLikedTrack.CheckedChange += SwitchLikedTrackOnCheckedChange;
                     SwitchLikedComment.CheckedChange += SwitchLikedCommentOnCheckedChange;
+                    SwitchReviewedTrack.CheckedChange += SwitchReviewedTrackOnCheckedChange;
                     SwitchArtistStatusChanged.CheckedChange += SwitchArtistStatusChangedOnCheckedChange;
                     SwitchReceiptStatusChanged.CheckedChange += SwitchReceiptStatusChangedOnCheckedChange;
                     SwitchNewTrack.CheckedChange += SwitchNewTrackOnCheckedChange;
@@ -232,6 +237,7 @@ namespace DeepSound.Activities.SettingsUser.General
                     SwitchFollowUser.CheckedChange -= SwitchFollowUserOnCheckedChange;
                     SwitchLikedTrack.CheckedChange -= SwitchLikedTrackOnCheckedChange;
                     SwitchLikedComment.CheckedChange -= SwitchLikedCommentOnCheckedChange;
+                    SwitchReviewedTrack.CheckedChange -= SwitchReviewedTrackOnCheckedChange;
                     SwitchArtistStatusChanged.CheckedChange -= SwitchArtistStatusChangedOnCheckedChange;
                     SwitchReceiptStatusChanged.CheckedChange -= SwitchReceiptStatusChangedOnCheckedChange;
                     SwitchNewTrack.CheckedChange -= SwitchNewTrackOnCheckedChange;
@@ -249,12 +255,11 @@ namespace DeepSound.Activities.SettingsUser.General
 
         #region Events
 
-        private string EmailOnFollowUserPref, EmailOnLikedTrackPref, EmailOnLikedCommentPref, EmailOnArtistStatusChangedPref, EmailOnReceiptStatusChangedPref, EmailOnNewTrackPref, EmailOnCommentMentionPref, EmailOnCommentReplayMentionPref;
         private void SwitchFollowUserOnCheckedChange(object sender, CompoundButton.CheckedChangeEventArgs e)
         {
             try
             {
-                var dataUser = ListUtils.MyUserInfoList?.FirstOrDefault(); 
+                var dataUser = ListUtils.MyUserInfoList?.FirstOrDefault();
                 switch (e.IsChecked)
                 {
                     //Yes >> value = 1
@@ -278,7 +283,7 @@ namespace DeepSound.Activities.SettingsUser.General
                             {
                                 dataUser.EmailOnFollowUser = 0;
                                 var sqLiteDatabase = new SqLiteDatabase();
-                                sqLiteDatabase.InsertOrUpdate_DataMyInfo(dataUser); 
+                                sqLiteDatabase.InsertOrUpdate_DataMyInfo(dataUser);
                             }
 
                             EmailOnFollowUserPref = "0";
@@ -291,14 +296,23 @@ namespace DeepSound.Activities.SettingsUser.General
                     var dataNotification = new Dictionary<string, string>
                     {
                         {"email_on_follow_user", EmailOnFollowUserPref},
+
+                        {"email_on_liked_track", EmailOnLikedTrackPref},
+                        {"email_on_liked_comment", EmailOnLikedCommentPref},
+                        {"email_on_artist_status_changed", EmailOnArtistStatusChangedPref},
+                        {"email_on_receipt_status_changed",EmailOnReceiptStatusChangedPref },
+                        {"email_on_new_track",EmailOnNewTrackPref },
+                        {"email_on_reviewed_track",EmailOnReviewedTrackPref },
+                        {"email_on_comment_replay_mention",EmailOnCommentReplayMentionPref },
+                        {"email_on_comment_mention",EmailOnCommentMentionPref },
                     };
 
-                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.UpdateNotificationSettingAsync(UserDetails.UserId.ToString() , dataNotification) });
+                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.UpdateNotificationSettingAsync(UserDetails.UserId.ToString(), dataNotification) });
                 }
                 else
                 {
-                    Toast.MakeText(this,GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
-                } 
+                    Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
+                }
             }
             catch (Exception exception)
             {
@@ -315,31 +329,31 @@ namespace DeepSound.Activities.SettingsUser.General
                 {
                     //Yes >> value = 1
                     case true:
-                    {
-                        if (dataUser != null)
                         {
-                            dataUser.EmailOnLikedTrack = 1;
-                            var sqLiteDatabase = new SqLiteDatabase();
-                            sqLiteDatabase.InsertOrUpdate_DataMyInfo(dataUser);
+                            if (dataUser != null)
+                            {
+                                dataUser.EmailOnLikedTrack = 1;
+                                var sqLiteDatabase = new SqLiteDatabase();
+                                sqLiteDatabase.InsertOrUpdate_DataMyInfo(dataUser);
 
+                            }
+
+                            EmailOnLikedTrackPref = "1";
+                            break;
                         }
-
-                        EmailOnLikedTrackPref = "1";
-                        break;
-                    }
                     //No >> value = 0
                     default:
-                    {
-                        if (dataUser != null)
                         {
-                            dataUser.EmailOnLikedTrack = 0;
-                            var sqLiteDatabase = new SqLiteDatabase();
-                            sqLiteDatabase.InsertOrUpdate_DataMyInfo(dataUser);
-                        }
+                            if (dataUser != null)
+                            {
+                                dataUser.EmailOnLikedTrack = 0;
+                                var sqLiteDatabase = new SqLiteDatabase();
+                                sqLiteDatabase.InsertOrUpdate_DataMyInfo(dataUser);
+                            }
 
-                        EmailOnLikedTrackPref = "0";
-                        break;
-                    }
+                            EmailOnLikedTrackPref = "0";
+                            break;
+                        }
                 }
 
                 if (Methods.CheckConnectivity())
@@ -347,6 +361,15 @@ namespace DeepSound.Activities.SettingsUser.General
                     var dataNotification = new Dictionary<string, string>
                     {
                         {"email_on_liked_track", EmailOnLikedTrackPref},
+
+                        {"email_on_follow_user", EmailOnFollowUserPref},
+                        {"email_on_liked_comment", EmailOnLikedCommentPref},
+                        {"email_on_artist_status_changed", EmailOnArtistStatusChangedPref},
+                        {"email_on_receipt_status_changed",EmailOnReceiptStatusChangedPref },
+                        {"email_on_new_track",EmailOnNewTrackPref },
+                        {"email_on_reviewed_track",EmailOnReviewedTrackPref },
+                        {"email_on_comment_replay_mention",EmailOnCommentReplayMentionPref },
+                        {"email_on_comment_mention",EmailOnCommentMentionPref },
                     };
 
                     PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.UpdateNotificationSettingAsync(UserDetails.UserId.ToString(), dataNotification) });
@@ -358,7 +381,72 @@ namespace DeepSound.Activities.SettingsUser.General
             }
             catch (Exception exception)
             {
-                Methods.DisplayReportResultTrack(exception); 
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
+        private void SwitchReviewedTrackOnCheckedChange(object sender, CompoundButton.CheckedChangeEventArgs e)
+        {
+            try
+            {
+                var dataUser = ListUtils.MyUserInfoList?.FirstOrDefault();
+                switch (e.IsChecked)
+                {
+                    //Yes >> value = 1
+                    case true:
+                        {
+                            if (dataUser != null)
+                            {
+                                dataUser.EmailOnReviewedTrack = 1;
+                                var sqLiteDatabase = new SqLiteDatabase();
+                                sqLiteDatabase.InsertOrUpdate_DataMyInfo(dataUser);
+
+                            }
+
+                            EmailOnReviewedTrackPref = "1";
+                            break;
+                        }
+                    //No >> value = 0
+                    default:
+                        {
+                            if (dataUser != null)
+                            {
+                                dataUser.EmailOnReviewedTrack = 0;
+                                var sqLiteDatabase = new SqLiteDatabase();
+                                sqLiteDatabase.InsertOrUpdate_DataMyInfo(dataUser);
+                            }
+
+                            EmailOnReviewedTrackPref = "0";
+                            break;
+                        }
+                }
+
+                if (Methods.CheckConnectivity())
+                {
+                    var dataNotification = new Dictionary<string, string>
+                    {
+                        {"email_on_reviewed_track",EmailOnReviewedTrackPref },
+
+                        {"email_on_follow_user", EmailOnFollowUserPref},
+                        {"email_on_liked_track", EmailOnLikedTrackPref},
+                        {"email_on_liked_comment", EmailOnLikedCommentPref},
+                        {"email_on_artist_status_changed", EmailOnArtistStatusChangedPref},
+                        {"email_on_receipt_status_changed",EmailOnReceiptStatusChangedPref },
+                        {"email_on_new_track",EmailOnNewTrackPref },
+                        {"email_on_comment_replay_mention",EmailOnCommentReplayMentionPref },
+                        {"email_on_comment_mention",EmailOnCommentMentionPref },
+                    };
+
+                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.UpdateNotificationSettingAsync(UserDetails.UserId.ToString(), dataNotification) });
+                }
+                else
+                {
+                    Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
+                }
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
             }
         }
 
@@ -403,6 +491,15 @@ namespace DeepSound.Activities.SettingsUser.General
                     var dataNotification = new Dictionary<string, string>
                     {
                         {"email_on_liked_comment", EmailOnLikedCommentPref},
+
+                        {"email_on_follow_user", EmailOnFollowUserPref},
+                        {"email_on_liked_track", EmailOnLikedTrackPref},
+                        {"email_on_artist_status_changed", EmailOnArtistStatusChangedPref},
+                        {"email_on_receipt_status_changed",EmailOnReceiptStatusChangedPref },
+                        {"email_on_new_track",EmailOnNewTrackPref },
+                        {"email_on_reviewed_track",EmailOnReviewedTrackPref },
+                        {"email_on_comment_replay_mention",EmailOnCommentReplayMentionPref },
+                        {"email_on_comment_mention",EmailOnCommentMentionPref },
                     };
 
                     PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.UpdateNotificationSettingAsync(UserDetails.UserId.ToString(), dataNotification) });
@@ -459,6 +556,15 @@ namespace DeepSound.Activities.SettingsUser.General
                     var dataNotification = new Dictionary<string, string>
                     {
                         {"email_on_artist_status_changed", EmailOnArtistStatusChangedPref},
+
+                        {"email_on_follow_user", EmailOnFollowUserPref},
+                        {"email_on_liked_track", EmailOnLikedTrackPref},
+                        {"email_on_liked_comment", EmailOnLikedCommentPref},
+                        {"email_on_receipt_status_changed",EmailOnReceiptStatusChangedPref },
+                        {"email_on_new_track",EmailOnNewTrackPref },
+                        {"email_on_reviewed_track",EmailOnReviewedTrackPref },
+                        {"email_on_comment_replay_mention",EmailOnCommentReplayMentionPref },
+                        {"email_on_comment_mention",EmailOnCommentMentionPref },
                     };
 
                     PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.UpdateNotificationSettingAsync(UserDetails.UserId.ToString(), dataNotification) });
@@ -515,6 +621,16 @@ namespace DeepSound.Activities.SettingsUser.General
                     var dataNotification = new Dictionary<string, string>
                     {
                         {"email_on_receipt_status_changed", EmailOnReceiptStatusChangedPref},
+
+                        {"email_on_follow_user", EmailOnFollowUserPref},
+                        {"email_on_liked_track", EmailOnLikedTrackPref},
+                        {"email_on_liked_comment", EmailOnLikedCommentPref},
+                        {"email_on_artist_status_changed", EmailOnArtistStatusChangedPref},
+                        {"email_on_new_track",EmailOnNewTrackPref },
+                        {"email_on_reviewed_track",EmailOnReviewedTrackPref },
+                        {"email_on_comment_replay_mention",EmailOnCommentReplayMentionPref },
+                        {"email_on_comment_mention",EmailOnCommentMentionPref },
+
                     };
 
                     PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.UpdateNotificationSettingAsync(UserDetails.UserId.ToString(), dataNotification) });
@@ -571,6 +687,15 @@ namespace DeepSound.Activities.SettingsUser.General
                     var dataNotification = new Dictionary<string, string>
                     {
                         {"email_on_new_track", EmailOnNewTrackPref},
+
+                        {"email_on_follow_user", EmailOnFollowUserPref},
+                        {"email_on_liked_track", EmailOnLikedTrackPref},
+                        {"email_on_liked_comment", EmailOnLikedCommentPref},
+                        {"email_on_artist_status_changed", EmailOnArtistStatusChangedPref},
+                        {"email_on_receipt_status_changed",EmailOnReceiptStatusChangedPref },
+                        {"email_on_reviewed_track",EmailOnReviewedTrackPref },
+                        {"email_on_comment_replay_mention",EmailOnCommentReplayMentionPref },
+                        {"email_on_comment_mention",EmailOnCommentMentionPref },
                     };
 
                     PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.UpdateNotificationSettingAsync(UserDetails.UserId.ToString(), dataNotification) });
@@ -627,6 +752,15 @@ namespace DeepSound.Activities.SettingsUser.General
                     var dataNotification = new Dictionary<string, string>
                     {
                         {"email_on_comment_mention", EmailOnCommentMentionPref},
+
+                        {"email_on_follow_user", EmailOnFollowUserPref},
+                        {"email_on_liked_track", EmailOnLikedTrackPref},
+                        {"email_on_liked_comment", EmailOnLikedCommentPref},
+                        {"email_on_artist_status_changed", EmailOnArtistStatusChangedPref},
+                        {"email_on_receipt_status_changed",EmailOnReceiptStatusChangedPref },
+                        {"email_on_new_track",EmailOnNewTrackPref },
+                        {"email_on_reviewed_track",EmailOnReviewedTrackPref },
+                        {"email_on_comment_replay_mention",EmailOnCommentReplayMentionPref },
                     };
 
                     PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.UpdateNotificationSettingAsync(UserDetails.UserId.ToString(), dataNotification) });
@@ -683,6 +817,16 @@ namespace DeepSound.Activities.SettingsUser.General
                     var dataNotification = new Dictionary<string, string>
                     {
                         {"email_on_comment_replay_mention", EmailOnCommentReplayMentionPref},
+
+
+                        {"email_on_follow_user", EmailOnFollowUserPref},
+                        {"email_on_liked_track", EmailOnLikedTrackPref},
+                        {"email_on_liked_comment", EmailOnLikedCommentPref},
+                        {"email_on_artist_status_changed", EmailOnArtistStatusChangedPref},
+                        {"email_on_receipt_status_changed",EmailOnReceiptStatusChangedPref },
+                        {"email_on_new_track",EmailOnNewTrackPref },
+                        {"email_on_reviewed_track",EmailOnReviewedTrackPref },
+                        {"email_on_comment_mention",EmailOnCommentMentionPref },
                     };
 
                     PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.UpdateNotificationSettingAsync(UserDetails.UserId.ToString(), dataNotification) });
@@ -712,21 +856,129 @@ namespace DeepSound.Activities.SettingsUser.General
 
                 var dataUser = ListUtils.MyUserInfoList?.FirstOrDefault();
                 if (dataUser != null)
-                {  
-                    SwitchFollowUser.Checked = dataUser.EmailOnFollowUser == 1;
-                    SwitchLikedTrack.Checked = dataUser.EmailOnLikedTrack == 1;
-                    SwitchLikedComment.Checked = dataUser.EmailOnLikedComment == 1;
-                    SwitchArtistStatusChanged.Checked = dataUser.EmailOnArtistStatusChanged == 1;
-                    SwitchReceiptStatusChanged.Checked = dataUser.EmailOnReceiptStatusChanged == 1;
-                    SwitchNewTrack.Checked = dataUser.EmailOnNewTrack == 1;
-                    SwitchCommentMention.Checked = dataUser.EmailOnCommentMention == 1;
-                    SwitchCommentReplayMention.Checked = dataUser.EmailOnCommentReplayMention == 1; 
+                {
+                    //====================
+                    if (dataUser.EmailOnFollowUser == 1)
+                    {
+                        SwitchFollowUser.Checked = true;
+                        EmailOnFollowUserPref = "1";
+                    }
+                    else
+                    {
+                        SwitchFollowUser.Checked = false;
+                        EmailOnFollowUserPref = "0";
+                    }
+                    //====================
+
+                    //====================
+                    if (dataUser.EmailOnLikedTrack == 1)
+                    {
+                        SwitchLikedTrack.Checked = true;
+                        EmailOnLikedTrackPref = "1";
+                    }
+                    else
+                    {
+                        SwitchLikedTrack.Checked = false;
+                        EmailOnLikedTrackPref = "0";
+                    }
+                    //====================
+
+                    //====================
+                    if (dataUser.EmailOnReviewedTrack == 1)
+                    {
+                        SwitchReviewedTrack.Checked = true;
+                        EmailOnReviewedTrackPref = "1";
+                    }
+                    else
+                    {
+                        SwitchReviewedTrack.Checked = false;
+                        EmailOnReviewedTrackPref = "0";
+                    }
+                    //====================
+
+                    //====================
+                    if (dataUser.EmailOnLikedComment == 1)
+                    {
+                        SwitchLikedComment.Checked = true;
+                        EmailOnLikedCommentPref = "1";
+                    }
+                    else
+                    {
+                        SwitchLikedComment.Checked = false;
+                        EmailOnLikedCommentPref = "0";
+                    }
+                    //====================
+
+                    //====================
+                    if (dataUser.EmailOnArtistStatusChanged == 1)
+                    {
+                        SwitchArtistStatusChanged.Checked = true;
+                        EmailOnArtistStatusChangedPref = "1";
+                    }
+                    else
+                    {
+                        SwitchArtistStatusChanged.Checked = false;
+                        EmailOnArtistStatusChangedPref = "0";
+                    }
+                    //====================
+
+                    //====================
+                    if (dataUser.EmailOnReceiptStatusChanged == 1)
+                    {
+                        SwitchReceiptStatusChanged.Checked = true;
+                        EmailOnReceiptStatusChangedPref = "1";
+                    }
+                    else
+                    {
+                        SwitchReceiptStatusChanged.Checked = false;
+                        EmailOnReceiptStatusChangedPref = "0";
+                    }
+                    //====================
+
+                    //====================
+                    if (dataUser.EmailOnNewTrack == 1)
+                    {
+                        SwitchNewTrack.Checked = true;
+                        EmailOnNewTrackPref = "1";
+                    }
+                    else
+                    {
+                        SwitchNewTrack.Checked = false;
+                        EmailOnNewTrackPref = "0";
+                    }
+                    //====================
+
+                    //====================
+                    if (dataUser.EmailOnCommentMention == 1)
+                    {
+                        SwitchCommentMention.Checked = true;
+                        EmailOnCommentMentionPref = "1";
+                    }
+                    else
+                    {
+                        SwitchCommentMention.Checked = false;
+                        EmailOnCommentMentionPref = "0";
+                    }
+                    //====================
+
+                    //====================
+                    if (dataUser.EmailOnCommentReplayMention == 1)
+                    {
+                        SwitchCommentReplayMention.Checked = true;
+                        EmailOnCommentReplayMentionPref = "1";
+                    }
+                    else
+                    {
+                        SwitchCommentReplayMention.Checked = false;
+                        EmailOnCommentReplayMentionPref = "0";
+                    }
+                    //==================== 
                 }
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
-        } 
+        }
     }
 }

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Gms.Ads;
@@ -28,12 +23,17 @@ using DeepSound.SQLite;
 using DeepSoundClient.Classes.Chat;
 using DeepSoundClient.Requests;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Chat
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class LastChatActivity : BaseActivity 
+    public class LastChatActivity : BaseActivity
     {
         #region Variables Basic
 
@@ -70,7 +70,7 @@ namespace DeepSound.Activities.Chat
                 InitComponent();
                 InitToolbar();
                 SetRecyclerViewAdapters();
-                 
+
                 GetLastChatLocal();
 
                 AdsGoogle.Ad_Interstitial(this);
@@ -153,7 +153,7 @@ namespace DeepSound.Activities.Chat
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         #endregion
 
         #region Menu
@@ -214,7 +214,7 @@ namespace DeepSound.Activities.Chat
                 var preLoader = new RecyclerViewPreloader<DataConversation>(this, MAdapter, sizeProvider, 10);
                 MRecycler.AddOnScrollListener(preLoader);
                 MRecycler.SetAdapter(MAdapter);
-                  
+
                 RecyclerViewOnScrollListener xamarinRecyclerViewOnScrollListener = new RecyclerViewOnScrollListener(LayoutManager);
                 MainScrollEvent = xamarinRecyclerViewOnScrollListener;
                 MainScrollEvent.LoadMoreEvent += MainScrollEventOnLoadMoreEvent;
@@ -253,7 +253,7 @@ namespace DeepSound.Activities.Chat
                 Methods.DisplayReportResultTrack(e);
             }
         }
-  
+
         private void AddOrRemoveEvent(bool addEvent)
         {
             try
@@ -285,7 +285,7 @@ namespace DeepSound.Activities.Chat
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
 
@@ -311,7 +311,7 @@ namespace DeepSound.Activities.Chat
         }
 
         #endregion
-           
+
         #region Events
 
         //Refresh
@@ -336,7 +336,7 @@ namespace DeepSound.Activities.Chat
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private void MAdapterItemClick(object sender, LastChatAdapterClickEventArgs e)
         {
             try
@@ -349,14 +349,14 @@ namespace DeepSound.Activities.Chat
                 // read the item which removes bold from the row >> event click open ChatBox by user id
                 var item = MAdapter.GetItem(e.Position);
                 if (item != null)
-                { 
+                {
                     item.GetCountSeen = 0;
                     if (item.GetLastMessage != null) item.GetLastMessage.Value.GetLastMessageClass.Seen = 1;
                     Intent intent = new Intent(this, typeof(MessagesBoxActivity));
                     intent.PutExtra("UserId", item.User.Id.ToString());
                     intent.PutExtra("TypeChat", "LastChat");
                     intent.PutExtra("UserItem", JsonConvert.SerializeObject(item.User));
-                     
+
                     StartActivity(intent);
                     MAdapter.NotifyItemChanged(e.Position);
                 }
@@ -454,7 +454,7 @@ namespace DeepSound.Activities.Chat
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -482,12 +482,12 @@ namespace DeepSound.Activities.Chat
 
                                 //checkUser.Id = user.Id;
                                 //if (checkUser.Owner != user.Owner) checkUser.Owner = user.Owner;
-                               
+
                                 if (checkUser.GetLastMessage?.GetLastMessageClass.Time != user.GetLastMessage?.GetLastMessageClass.Time)
                                     if (checkUser.GetLastMessage != null) if (user.GetLastMessage != null) checkUser.GetLastMessage.Value.GetLastMessageClass.Time = user.GetLastMessage.Value.GetLastMessageClass.Time;
                                 if (checkUser.GetLastMessage?.GetLastMessageClass.Seen != user.GetLastMessage?.GetLastMessageClass.Seen)
                                     if (checkUser.GetLastMessage != null) if (user.GetLastMessage != null) checkUser.GetLastMessage.Value.GetLastMessageClass.Seen = user.GetLastMessage.Value.GetLastMessageClass.Seen;
-                              
+
                                 if (checkUser.GetCountSeen != user.GetCountSeen) checkUser.GetCountSeen = user.GetCountSeen;
                                 if (checkUser.User != user.User) checkUser.User = user.User;
 
@@ -546,7 +546,7 @@ namespace DeepSound.Activities.Chat
                                     catch (Exception e)
                                     {
                                         Methods.DisplayReportResultTrack(e);
-                                    } 
+                                    }
                                 });
                             }
                         }
@@ -591,7 +591,7 @@ namespace DeepSound.Activities.Chat
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoMessage);
                     if (!x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }
@@ -618,4 +618,4 @@ namespace DeepSound.Activities.Chat
 
         #endregion 
     }
-} 
+}

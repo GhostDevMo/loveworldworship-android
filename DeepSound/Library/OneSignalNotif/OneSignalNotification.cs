@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Widget;
 using Com.Onesignal;
@@ -10,6 +8,8 @@ using DeepSound.Helpers.Utils;
 using DeepSound.Library.OneSignalNotif.Models;
 using DeepSoundClient.Classes.Global;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
 
 namespace DeepSound.Library.OneSignalNotif
 {
@@ -19,7 +19,7 @@ namespace DeepSound.Library.OneSignalNotif
 
         public static string Type;
         public static string Userid, TrackId, TypeText = "User";
-        public static UserDataObject UserData; 
+        public static UserDataObject UserData;
 
         private static volatile OneSignalNotification InstanceRenamed;
         public static OneSignalNotification Instance
@@ -100,7 +100,7 @@ namespace DeepSound.Library.OneSignalNotif
                 OneSignal.DisablePush(true);
                 OneSignal.UnsubscribeWhenNotificationsAreDisabled(false);
                 OneSignal.RemoveExternalUserId();
-                
+
                 AppSettings.ShowNotification = false;
             }
             catch (Exception ex)
@@ -172,7 +172,7 @@ namespace DeepSound.Library.OneSignalNotif
                 string title = notification.Notification.Title;
                 string message = notification.Notification.Body;
                 Dictionary<string, object> additionalData = notification.Notification.AdditionalData;
-                  
+
                 if (additionalData?.Count > 0)
                 {
                     TypeText = "User";
@@ -184,21 +184,21 @@ namespace DeepSound.Library.OneSignalNotif
                                 Userid = item.Value.ToString();
                                 break;
                             case "track":
-                            {
-                                TrackId = item.Value.ToString();
-                                if (!string.IsNullOrEmpty(TrackId))
-                                    TypeText = "Track";
-                                break;
-                            }
+                                {
+                                    TrackId = item.Value.ToString();
+                                    if (!string.IsNullOrEmpty(TrackId))
+                                        TypeText = "Track";
+                                    break;
+                                }
                             case "user_data":
                                 UserData = JsonConvert.DeserializeObject<UserDataObject>(item.Value.ToString());
                                 break;
                             case "url":
-                            {
-                                string url = item.Value.ToString();
-                                Console.WriteLine(url);
-                                break;
-                            }
+                                {
+                                    string url = item.Value.ToString();
+                                    Console.WriteLine(url);
+                                    break;
+                                }
                         }
                     }
                 }
@@ -235,6 +235,6 @@ namespace DeepSound.Library.OneSignalNotif
             {
                 Methods.DisplayReportResultTrack(ex);
             }
-        } 
+        }
     }
 }

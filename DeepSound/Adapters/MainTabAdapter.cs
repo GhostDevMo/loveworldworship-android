@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using AndroidX.Fragment.App;
+﻿using AndroidX.Fragment.App;
 using AndroidX.Lifecycle;
 using AndroidX.ViewPager2.Adapter;
 using DeepSound.Helpers.Utils;
+using System.Collections.Generic;
 using Exception = System.Exception;
 using FragmentManager = AndroidX.Fragment.App.FragmentManager;
- 
+
 namespace DeepSound.Adapters
 {
     public class MainTabAdapter : FragmentStateAdapter

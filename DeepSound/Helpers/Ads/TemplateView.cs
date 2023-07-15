@@ -1,5 +1,4 @@
-﻿using System;
-using Android.Content;
+﻿using Android.Content;
 using Android.Content.Res;
 using Android.Gms.Ads;
 using Android.Gms.Ads.Formats;
@@ -12,6 +11,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using DeepSound.Helpers.Utils;
+using System;
 
 namespace DeepSound.Helpers.Ads
 {
@@ -35,9 +35,9 @@ namespace DeepSound.Helpers.Ads
 
         private new LinearLayout Background;
 
-        public static readonly string MediumTemplate = "medium_template"; 
+        public static readonly string MediumTemplate = "medium_template";
         public static readonly string NativeContentAd = "NativeContentAd";
-      
+
 
         protected TemplateView(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
         {
@@ -200,8 +200,8 @@ namespace DeepSound.Helpers.Ads
             }
             catch (Exception e)
             {
-               Methods.DisplayReportResultTrack(e);
-            } 
+                Methods.DisplayReportResultTrack(e);
+            }
         }
 
         private bool AdHasOnlyStore(UnifiedNativeAd nativeAd)
@@ -298,7 +298,7 @@ namespace DeepSound.Helpers.Ads
             }
             catch (Exception e)
             {
-               Methods.DisplayReportResultTrack(e);
+                Methods.DisplayReportResultTrack(e);
             }
         }
 
@@ -341,7 +341,7 @@ namespace DeepSound.Helpers.Ads
             }
             catch (Exception e)
             {
-               Methods.DisplayReportResultTrack(e);
+                Methods.DisplayReportResultTrack(e);
             }
         }
 
@@ -374,7 +374,7 @@ namespace DeepSound.Helpers.Ads
             }
             catch (Exception e)
             {
-               Methods.DisplayReportResultTrack(e);
+                Methods.DisplayReportResultTrack(e);
             }
         }
 
@@ -475,9 +475,9 @@ namespace DeepSound.Helpers.Ads
             }
             catch (Exception e)
             {
-               Methods.DisplayReportResultTrack(e);
+                Methods.DisplayReportResultTrack(e);
             }
         }
-          
+
     }
 }

@@ -1,6 +1,0 @@
-style StripeDefaultTheme
-style StripeToolBarStyle
-attr cardHintText
-attr cardTextErrorColor
-attr cardTint
-attr shouldShowPostalCode

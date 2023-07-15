@@ -1,14 +1,11 @@
 ﻿using Android.App;
 using Android.Content;
-using Android.OS;
-using Android.Views;
-using Android.Widget;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Android.Content.PM;
 using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
+using Android.OS;
+using Android.Views;
+using Android.Widget;
 using AndroidHUD;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.RecyclerView.Widget;
@@ -20,15 +17,18 @@ using DeepSound.SQLite;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.Product;
 using DeepSoundClient.Requests;
-using MaterialDialogsCore;
+using Google.Android.Material.Dialog;
 using Newtonsoft.Json;
-using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Console = System.Console;
+using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Product
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
-    public class EditProductActivity : BaseActivity, MaterialDialog.IListCallback
+    public class EditProductActivity : BaseActivity, IDialogListCallBack
     {
         #region Variables Basic
 
@@ -59,7 +59,7 @@ namespace DeepSound.Activities.Product
 
                 //Get Value And Set Toolbar
                 InitComponent();
-                InitToolbar();  
+                InitToolbar();
                 GetDataProduct();
             }
             catch (Exception e)
@@ -218,7 +218,7 @@ namespace DeepSound.Activities.Product
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
 
         private void AddOrRemoveEvent(bool addEvent)
         {
@@ -249,13 +249,13 @@ namespace DeepSound.Activities.Product
             {
                 PublisherAdView?.Destroy();
 
-                TxtSave = null!;
-                TxtTitle = null!;
-                TxtPrice = null!;
-                TxtCategory = null!;
+                TxtSave = null;
+                TxtTitle = null;
+                TxtPrice = null;
+                TxtCategory = null;
 
-                MRecycler = null!;
-                PublisherAdView = null!;
+                MRecycler = null;
+                PublisherAdView = null;
                 CategoryId = "";
                 TypeDialog = "";
             }
@@ -267,7 +267,7 @@ namespace DeepSound.Activities.Product
         #endregion
 
         #region Events
-        
+
         private void TxtRelatedToSongOnTouch(object sender, View.TouchEventArgs e)
         {
             try
@@ -278,15 +278,15 @@ namespace DeepSound.Activities.Product
                 {
                     TypeDialog = "RelatedToSong";
 
-                    var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                    var dialogList = new MaterialAlertDialogBuilder(this);
 
                     var arrayAdapter = LatestSongsList.Select(item => Methods.FunString.DecodeString(item.Title)).ToList();
 
-                    dialogList.Title(GetText(Resource.String.Lbl_RelatedToSong)).TitleColorRes(Resource.Color.primary);
-                    dialogList.Items(arrayAdapter);
-                    dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                    dialogList.AlwaysCallSingleChoiceCallback();
-                    dialogList.ItemsCallback(this).Build().Show();
+                    dialogList.SetTitle(GetText(Resource.String.Lbl_RelatedToSong));
+                    dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                    dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                    dialogList.Show();
                 }
                 else
                 {
@@ -309,15 +309,15 @@ namespace DeepSound.Activities.Product
                 {
                     TypeDialog = "Categories";
 
-                    var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                    var dialogList = new MaterialAlertDialogBuilder(this);
 
                     var arrayAdapter = CategoriesController.ListCategoriesProducts.Select(item => item.CategoriesName).ToList();
 
-                    dialogList.Title(GetText(Resource.String.Lbl_SelectCategories)).TitleColorRes(Resource.Color.primary);
-                    dialogList.Items(arrayAdapter);
-                    dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                    dialogList.AlwaysCallSingleChoiceCallback();
-                    dialogList.ItemsCallback(this).Build().Show();
+                    dialogList.SetTitle(GetText(Resource.String.Lbl_SelectCategories));
+                    dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                    dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                    dialogList.Show();
                 }
                 else
                 {
@@ -391,7 +391,7 @@ namespace DeepSound.Activities.Product
                 //Show a progress
                 AndHUD.Shared.Show(this, GetText(Resource.String.Lbl_Loading) + "...");
 
-                var (apiStatus, respond) = await RequestsAsync.Product.EditProductAsync(ProductId,TxtTitle.Text, TxtDescription.Text, TxtTags.Text, TxtPrice.Text, TxtTotalItem.Text, SongId, CategoryId);
+                var (apiStatus, respond) = await RequestsAsync.Product.EditProductAsync(ProductId, TxtTitle.Text, TxtDescription.Text, TxtTags.Text, TxtPrice.Text, TxtTotalItem.Text, SongId, CategoryId);
                 if (apiStatus == 200)
                 {
                     if (respond is GetProductDataObject result)
@@ -419,10 +419,10 @@ namespace DeepSound.Activities.Product
         }
 
         #endregion
-         
+
         #region MaterialDialog
 
-        public void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+        public void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
             {
@@ -444,7 +444,7 @@ namespace DeepSound.Activities.Product
         }
 
         #endregion
-          
+
         private void GetDataProduct()
         {
             try
@@ -455,19 +455,19 @@ namespace DeepSound.Activities.Product
                     sqlEntity.GetDataMyInfo();
                 }
 
-                LatestSongsList = ListUtils.MyUserInfoList?.FirstOrDefault()?.Latestsongs;
-                 
+                LatestSongsList = ListUtils.MyUserInfoList?.FirstOrDefault()?.Latestsongs?.FirstOrDefault();
+
                 ProductData = JsonConvert.DeserializeObject<ProductDataObject>(Intent?.GetStringExtra("ProductView") ?? "");
                 if (ProductData != null)
                 {
                     ProductId = ProductData.Id.ToString();
-                      
+
                     TxtTitle.Text = Methods.FunString.DecodeString(ProductData.Title);
                     TxtDescription.Text = Methods.FunString.DecodeString(ProductData.Desc);
                     TxtTags.Text = ProductData.Tags;
                     TxtPrice.Text = ProductData.Price.ToString();
                     TxtTotalItem.Text = ProductData.Units.ToString();
-                     
+
                     SongId = ProductData.RelatedSong?.SongClass?.Id.ToString();
                     TxtRelatedToSong.Text = Methods.FunString.DecodeString(ProductData.RelatedSong?.SongClass?.Title);
 

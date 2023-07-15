@@ -1,38 +1,38 @@
-﻿using Android.App;
+﻿using Android;
+using Android.App;
 using Android.Content;
-using Android.OS;
-using Android.Views;
-using Android.Widget;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Android;
 using Android.Content.PM;
 using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
+using Android.OS;
+using Android.Views;
+using Android.Widget;
 using AndroidHUD;
+using AndroidX.Activity.Result;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.Core.Content;
 using Bumptech.Glide;
 using Bumptech.Glide.Request;
+using Com.Canhub.Cropper;
 using DeepSound.Activities.Base;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Event;
 using DeepSoundClient.Requests;
+using Google.Android.Material.Dialog;
 using Java.IO;
-using MaterialDialogsCore;
 using Newtonsoft.Json;
-using TheArtOfDev.Edmodo.Cropper;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Console = System.Console;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
-using Uri = Android.Net.Uri;
 
 namespace DeepSound.Activities.Event
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
-    public class CreateEventActivity : BaseActivity, View.IOnClickListener, MaterialDialog.IListCallback
+    public class CreateEventActivity : BaseActivity, View.IOnClickListener, IDialogListCallBack, IActivityResultCallback
     {
         #region Variables Basic
 
@@ -44,6 +44,7 @@ namespace DeepSound.Activities.Event
         private string Timezone, Location, SellTicket = "no", EventPathImage, EventPathVideo, ImageType, TypeDialog = "";
         private PublisherAdView PublisherAdView;
         private Dictionary<string, string> TimezonesList;
+        private DialogGalleryController GalleryController;
 
         #endregion
 
@@ -64,6 +65,7 @@ namespace DeepSound.Activities.Event
                 //Get Value And Set Toolbar
                 InitComponent();
                 InitToolbar();
+                GalleryController = new DialogGalleryController(this, this);
 
                 TimezonesList = DeepSoundTools.GetTimezonesList();
             }
@@ -169,16 +171,16 @@ namespace DeepSound.Activities.Event
 
                 LayoutEventVideoTrailer = FindViewById<RelativeLayout>(Resource.Id.LayoutEventVideoTrailer);
                 ImageVideoTrailer = FindViewById<ImageView>(Resource.Id.imageVideoTrailer);
-                  
+
                 TxtName = FindViewById<EditText>(Resource.Id.NameEditText);
                 TxtDescription = FindViewById<EditText>(Resource.Id.DescriptionEditText);
 
                 TxtLocation = FindViewById<EditText>(Resource.Id.LocationText);
                 TxtLocationData = FindViewById<EditText>(Resource.Id.LocationDataText);
-               
+
                 TxtStartDate = FindViewById<EditText>(Resource.Id.StartDateEditText);
                 TxtStartTime = FindViewById<EditText>(Resource.Id.StartTimeEditText);
-                 
+
                 TxtEndDate = FindViewById<EditText>(Resource.Id.EndDateEditText);
                 TxtEndTime = FindViewById<EditText>(Resource.Id.EndTimeEditText);
 
@@ -188,7 +190,7 @@ namespace DeepSound.Activities.Event
                 LayoutTicketsData = FindViewById<LinearLayout>(Resource.Id.LayoutTicketsData);
                 TxtTicketsAvailable = FindViewById<EditText>(Resource.Id.TicketsAvailableEditText);
                 TxtTicketPrice = FindViewById<EditText>(Resource.Id.TicketPriceEditText);
-                 
+
                 Methods.SetColorEditText(TxtName, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(TxtDescription, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(TxtLocation, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
@@ -256,7 +258,7 @@ namespace DeepSound.Activities.Event
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void AddOrRemoveEvent(bool addEvent)
         {
             try
@@ -268,7 +270,7 @@ namespace DeepSound.Activities.Event
                     TxtLocation.Touch += TxtLocationOnTouch;
                     TxtTimezone.Touch += TxtTimezoneOnTouch;
                     TxtSellTickets.Touch += TxtSellTicketsOnTouch;
-                    TxtSave.Click += TxtSaveOnClick; 
+                    TxtSave.Click += TxtSaveOnClick;
                 }
                 else
                 {
@@ -291,8 +293,8 @@ namespace DeepSound.Activities.Event
             {
                 PublisherAdView?.Destroy();
 
-                TxtSave = null!; 
-                PublisherAdView = null!;
+                TxtSave = null;
+                PublisherAdView = null;
                 TypeDialog = "";
             }
             catch (Exception e)
@@ -304,7 +306,7 @@ namespace DeepSound.Activities.Event
         #endregion
 
         #region Events
-         
+
         private void LayoutEventVideoTrailerOnClick(object sender, EventArgs e)
         {
             try
@@ -321,7 +323,8 @@ namespace DeepSound.Activities.Event
         {
             try
             {
-                OpenDialogGallery("Image");
+                ImageType = "Image";
+                GalleryController?.OpenDialogGallery("Image");
             }
             catch (Exception exception)
             {
@@ -337,15 +340,15 @@ namespace DeepSound.Activities.Event
 
                 TypeDialog = "Timezone";
 
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
                 var arrayAdapter = TimezonesList.Select(item => item.Value).ToList();
 
-                dialogList.Title(GetText(Resource.String.Lbl_Timezone)).TitleColorRes(Resource.Color.primary);
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetTitle(GetText(Resource.String.Lbl_Timezone));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
@@ -362,22 +365,22 @@ namespace DeepSound.Activities.Event
                 TypeDialog = "Location";
 
                 var arrayAdapter = new List<string>();
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
                 arrayAdapter.Add(GetText(Resource.String.Lbl_Online));
                 arrayAdapter.Add(GetText(Resource.String.Lbl_RealLocation));
 
-                dialogList.Title(GetText(Resource.String.Lbl_Location)).TitleColorRes(Resource.Color.primary);
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetTitle(GetText(Resource.String.Lbl_Location));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
-        } 
+        }
 
         private void TxtSellTicketsOnTouch(object sender, View.TouchEventArgs e)
         {
@@ -388,23 +391,23 @@ namespace DeepSound.Activities.Event
                 TypeDialog = "SellTicket";
 
                 var arrayAdapter = new List<string>();
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
                 arrayAdapter.Add(GetText(Resource.String.Lbl_Yes));
                 arrayAdapter.Add(GetText(Resource.String.Lbl_No));
 
-                dialogList.Title(GetText(Resource.String.Lbl_SellTickets)).TitleColorRes(Resource.Color.primary);
-                dialogList.Items(arrayAdapter);
-                dialogList.NegativeText(GetText(Resource.String.Lbl_Close)).OnNegative(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetTitle(GetText(Resource.String.Lbl_SellTickets));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-         
+
         private async void TxtSaveOnClick(object sender, EventArgs e)
         {
             try
@@ -432,7 +435,7 @@ namespace DeepSound.Activities.Event
                     Toast.MakeText(this, GetText(Resource.String.Lbl_DescriptionIsShort), ToastLength.Short)?.Show();
                     return;
                 }
-                 
+
                 if (string.IsNullOrEmpty(TxtDescription.Text))
                 {
                     Toast.MakeText(this, GetText(Resource.String.Lbl_PleaseEnterDescription), ToastLength.Short)?.Show();
@@ -468,17 +471,17 @@ namespace DeepSound.Activities.Event
                     Toast.MakeText(this, GetText(Resource.String.Lbl_PleaseSelectEndTime), ToastLength.Short)?.Show();
                     return;
                 }
-                 
+
                 if (string.IsNullOrEmpty(EventPathImage))
                 {
                     Toast.MakeText(this, GetText(Resource.String.Lbl_PleaseSelectImage), ToastLength.Short)?.Show();
                     return;
-                } 
+                }
                 else
                 {
                     //Show a progress
                     AndHUD.Shared.Show(this, GetText(Resource.String.Lbl_Loading) + "...");
-                     
+
                     var keyValues = new Dictionary<string, string>
                     {
                         {"name", TxtName.Text},
@@ -488,8 +491,8 @@ namespace DeepSound.Activities.Event
                         {"start_time", TxtStartTime.Text},
                         {"end_date", TxtEndDate.Text},
                         {"end_time", TxtEndTime.Text},
-                        {"timezone", Timezone}, 
-                        {"sell_tickets", SellTicket}, 
+                        {"timezone", Timezone},
+                        {"sell_tickets", SellTicket},
                     };
 
                     switch (Location)
@@ -506,9 +509,9 @@ namespace DeepSound.Activities.Event
                     {
                         keyValues.Add("available_tickets", TxtTicketsAvailable.Text);
                         keyValues.Add("ticket_price", TxtTicketPrice.Text);
-                    } 
+                    }
 
-                    var (apiStatus, respond) = await RequestsAsync.Event.CreateEventAsync(keyValues , EventPathImage , EventPathVideo);
+                    var (apiStatus, respond) = await RequestsAsync.Event.CreateEventAsync(keyValues, EventPathImage, EventPathVideo);
                     if (apiStatus == 200)
                     {
                         if (respond is CreateEventObject result)
@@ -523,7 +526,7 @@ namespace DeepSound.Activities.Event
                             Toast.MakeText(this, GetString(Resource.String.Lbl_EventSuccessfullyCreated), ToastLength.Short)?.Show();
 
                             Finish();
-                        } 
+                        }
                     }
                     else
                         Methods.DisplayAndHudErrorResult(this, respond);
@@ -547,28 +550,7 @@ namespace DeepSound.Activities.Event
             {
                 base.OnActivityResult(requestCode, resultCode, data);
 
-                if (requestCode == CropImage.CropImageActivityRequestCode && resultCode == Result.Ok)
-                {
-                    var result = CropImage.GetActivityResult(data);
-                    if (result.IsSuccessful)
-                    {
-                        var resultUri = result.Uri;
-
-                        if (!string.IsNullOrEmpty(resultUri.Path))
-                        {
-                            EventPathImage = resultUri.Path;
-
-                            File file2 = new File(resultUri.Path);
-                            var photoUri = FileProvider.GetUriForFile(this, PackageName + ".fileprovider", file2);
-                            Glide.With(this).Load(photoUri).Apply(new RequestOptions()).Into(ImageCover);
-                        }
-                        else
-                        {
-                            Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
-                        }
-                    }
-                }
-                else if (requestCode == 501 && resultCode == Result.Ok)
+                if (requestCode == 501 && resultCode == Result.Ok)
                 {
                     var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, data.Data);
                     if (filepath != null)
@@ -596,10 +578,10 @@ namespace DeepSound.Activities.Event
                             //"Thumbnail" >> fullPathFile.Path
 
                             EventPathVideo = filepath;
-                             
+
                             var photoUri = FileProvider.GetUriForFile(this, PackageName + ".fileprovider", fullPathFile);
                             Glide.With(this).Load(photoUri).Apply(new RequestOptions()).Into(ImageVideoTrailer);
-                             
+
                         }
                     }
                 }
@@ -636,7 +618,7 @@ namespace DeepSound.Activities.Event
                             Glide.With(this).Load(photoUri).Apply(new RequestOptions()).Into(ImageVideoTrailer);
 
                         }
-                    } 
+                    }
                 }
             }
             catch (Exception e)
@@ -659,7 +641,7 @@ namespace DeepSound.Activities.Event
                         {
                             //requestCode >> 500 => Image Gallery
                             case "Image":
-                                OpenDialogGallery("Image");
+                                GalleryController?.OpenDialogGallery("Image");
                                 break;
                             case "Video":
                                 //requestCode >> 501 => video Gallery
@@ -687,7 +669,7 @@ namespace DeepSound.Activities.Event
 
         #region MaterialDialog
 
-        public void OnSelection(MaterialDialog dialog, View itemView, int position, string itemString)
+        public void OnSelection(IDialogInterface dialog, int position, string itemString)
         {
             try
             {
@@ -720,7 +702,7 @@ namespace DeepSound.Activities.Event
                     }
                     else if (itemString == GetText(Resource.String.Lbl_No))
                     {
-                        SellTicket = "no"; 
+                        SellTicket = "no";
                         LayoutTicketsData.Visibility = ViewStates.Gone;
                     }
                 }
@@ -739,7 +721,7 @@ namespace DeepSound.Activities.Event
                                 break;
                             default:
                                 {
-                                    if (CheckSelfPermission(Manifest.Permission.Camera) == Permission.Granted && PermissionsController.CheckPermissionStorage())
+                                    if (ContextCompat.CheckSelfPermission(this, Manifest.Permission.Camera) == Permission.Granted && PermissionsController.CheckPermissionStorage())
                                     {
                                         //requestCode >> 501 => video Gallery
                                         new IntentController(this).OpenIntentVideoGallery();
@@ -766,7 +748,7 @@ namespace DeepSound.Activities.Event
                                 break;
                             default:
                                 {
-                                    if (CheckSelfPermission(Manifest.Permission.Camera) == Permission.Granted && PermissionsController.CheckPermissionStorage())
+                                    if (ContextCompat.CheckSelfPermission(this, Manifest.Permission.Camera) == Permission.Granted && PermissionsController.CheckPermissionStorage())
                                     {
                                         //requestCode >> 513 => video Camera
                                         new IntentController(this).OpenIntentVideoCamera();
@@ -795,63 +777,51 @@ namespace DeepSound.Activities.Event
                 TypeDialog = "DialogVideo";
 
                 var arrayAdapter = new List<string>();
-                var dialogList = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
+                var dialogList = new MaterialAlertDialogBuilder(this);
 
                 arrayAdapter.Add(GetText(Resource.String.Lbl_VideoGallery));
                 arrayAdapter.Add(GetText(Resource.String.Lbl_RecordVideoFromCamera));
 
-                dialogList.Title(GetText(Resource.String.Lbl_SelectVideoFrom)).TitleColorRes(Resource.Color.primary);
-                dialogList.Items(arrayAdapter);
-                dialogList.PositiveText(GetText(Resource.String.Lbl_Close)).OnPositive(new MyMaterialDialog());
-                dialogList.AlwaysCallSingleChoiceCallback();
-                dialogList.ItemsCallback(this).Build().Show();
+                dialogList.SetTitle(GetText(Resource.String.Lbl_SelectVideoFrom));
+                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
+                dialogList.SetPositiveButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+
+                dialogList.Show();
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         #endregion
 
-        private void OpenDialogGallery(string imageType)
+        #region Result Gallery
+
+        public void OnActivityResult(Java.Lang.Object p0)
         {
             try
             {
-                ImageType = imageType;
-                if ((int)Build.VERSION.SdkInt < 23)
+                if (p0 is CropImageView.CropResult result)
                 {
-                    Methods.Path.Chack_MyFolder();
-
-                    //Open Image 
-                    var myUri = Uri.FromFile(new File(Methods.Path.FolderDiskImage, Methods.GetTimestamp(DateTime.Now) + ".jpg"));
-                    CropImage.Activity()
-                        .SetInitialCropWindowPaddingRatio(0)
-                        .SetAutoZoomEnabled(true)
-                        .SetMaxZoom(4)
-                        .SetGuidelines(CropImageView.Guidelines.On)
-                        .SetCropMenuCropButtonTitle(GetText(Resource.String.Lbl_Crop))
-                        .SetOutputUri(myUri).Start(this);
-                }
-                else
-                {
-                    if (!CropImage.IsExplicitCameraPermissionRequired(this) && PermissionsController.CheckPermissionStorage() && CheckSelfPermission(Manifest.Permission.Camera) == Permission.Granted)
+                    if (result.IsSuccessful)
                     {
-                        Methods.Path.Chack_MyFolder();
-
-                        //Open Image 
-                        var myUri = Uri.FromFile(new File(Methods.Path.FolderDiskImage, Methods.GetTimestamp(DateTime.Now) + ".jpg"));
-                        CropImage.Activity()
-                            .SetInitialCropWindowPaddingRatio(0)
-                            .SetAutoZoomEnabled(true)
-                            .SetMaxZoom(4)
-                            .SetGuidelines(CropImageView.Guidelines.On)
-                            .SetCropMenuCropButtonTitle(GetText(Resource.String.Lbl_Crop))
-                            .SetOutputUri(myUri).Start(this);
+                        var resultUri = result.UriContent;
+                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        if (!string.IsNullOrEmpty(filepath))
+                        {
+                            //Do something with your Uri
+                            EventPathImage = filepath;
+                            Glide.With(this).Load(filepath).Apply(new RequestOptions()).Into(ImageCover);
+                        }
+                        else
+                        {
+                            Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
+                        }
                     }
                     else
                     {
-                        new PermissionsController(this).RequestPermission(108);
+                        Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
                     }
                 }
             }
@@ -860,6 +830,9 @@ namespace DeepSound.Activities.Event
                 Methods.DisplayReportResultTrack(e);
             }
         }
+
+        #endregion
+
 
         public void OnClick(View v)
         {

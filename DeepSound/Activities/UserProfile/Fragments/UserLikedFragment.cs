@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -24,6 +19,11 @@ using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.User;
 using DeepSoundClient.Requests;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Xamarin.Facebook.Ads;
 
 namespace DeepSound.Activities.UserProfile.Fragments
@@ -74,10 +74,10 @@ namespace DeepSound.Activities.UserProfile.Fragments
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                return null!;
+                return null;
             }
         }
-         
+
         public override void OnDestroy()
         {
             try
@@ -174,13 +174,13 @@ namespace DeepSound.Activities.UserProfile.Fragments
         {
             try
             {
-                   var item = MAdapter.GetItem(e.Position);
+                var item = MAdapter.GetItem(e.Position);
                 if (item != null)
                 {
                     if (item.IsPlay)
                     {
                         item.IsPlay = false;
-                        
+
                         var index = MAdapter.SoundsList.IndexOf(item);
                         MAdapter.NotifyItemChanged(index, "playerAction");
 
@@ -236,7 +236,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
         }
 
         #endregion
-         
+
         #region Load Data 
 
         public void PopulateData(List<SoundDataObject> list)
@@ -261,7 +261,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 Methods.DisplayReportResultTrack(e);
             }
         }
-          
+
         public void StartApiServiceWithOffset()
         {
             try
@@ -275,14 +275,14 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 else
                 {
                     StartApiService();
-                } 
+                }
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void StartApiService(string offset = "0")
         {
             if (!Methods.CheckConnectivity())
@@ -301,7 +301,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 MainScrollEvent.IsLoading = true;
 
                 int countList = MAdapter.SoundsList.Count;
-                 var (apiStatus, respond) = await RequestsAsync.User.GetLikedAsync(UserId, "15", offset);
+                var (apiStatus, respond) = await RequestsAsync.User.GetLikedAsync(UserId, "15", offset);
                 if (apiStatus == 200)
                 {
                     if (respond is GetSoundObject result)
@@ -350,7 +350,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -386,7 +386,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoLiked);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }

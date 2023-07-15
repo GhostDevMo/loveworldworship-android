@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using MaterialDialogsCore;
-using Android.App;
+﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Gms.Ads;
@@ -26,12 +20,18 @@ using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.User;
 using DeepSoundClient.Requests;
+using Google.Android.Material.Dialog;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Threading.Tasks;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser.General
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    public class BlockedUsersActivity : BaseActivity, MaterialDialog.ISingleButtonCallback
+    public class BlockedUsersActivity : BaseActivity
     {
         #region Variables Basic
 
@@ -43,7 +43,7 @@ namespace DeepSound.Activities.SettingsUser.General
         private View Inflated;
         private RecyclerViewOnScrollListener MainScrollEvent;
         private int Position;
-        
+
         private AdView MAdView;
 
         #endregion
@@ -79,7 +79,7 @@ namespace DeepSound.Activities.SettingsUser.General
             {
                 base.OnResume();
                 AddOrRemoveEvent(true);
-                
+
                 MAdView?.Resume();
             }
             catch (Exception e)
@@ -94,7 +94,7 @@ namespace DeepSound.Activities.SettingsUser.General
             {
                 base.OnPause();
                 AddOrRemoveEvent(false);
-                
+
                 MAdView?.Pause();
             }
             catch (Exception e)
@@ -133,7 +133,7 @@ namespace DeepSound.Activities.SettingsUser.General
         {
             try
             {
-                
+
                 MAdView?.Destroy();
                 base.OnDestroy();
             }
@@ -217,7 +217,7 @@ namespace DeepSound.Activities.SettingsUser.General
         {
             try
             {
-                MAdapter = new BlockedUsersAdapter(this) { BlockedUsersList =new ObservableCollection<UserDataObject>()}; 
+                MAdapter = new BlockedUsersAdapter(this) { BlockedUsersList = new ObservableCollection<UserDataObject>() };
                 LayoutManager = new LinearLayoutManager(this);
                 MRecycler.SetLayoutManager(LayoutManager);
                 MRecycler.HasFixedSize = true;
@@ -242,7 +242,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void AddOrRemoveEvent(bool addEvent)
         {
             try
@@ -277,7 +277,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 MAdapter.BlockedUsersList.Clear();
                 MAdapter.NotifyDataSetChanged();
 
-                StartApiService(); 
+                StartApiService();
             }
             catch (Exception exception)
             {
@@ -291,13 +291,58 @@ namespace DeepSound.Activities.SettingsUser.General
             try
             {
                 Position = e.Position;
-                var dialog = new MaterialDialog.Builder(this).Theme(DeepSoundTools.IsTabDark() ? MaterialDialogsTheme.Dark : MaterialDialogsTheme.Light);
-                dialog.Title(Resource.String.Lbl_Warning);
-                dialog.Content(GetText(Resource.String.Lbl_DoYouWantUnblock));
-                dialog.PositiveText(GetText(Resource.String.Lbl_Yes)).OnPositive(this);
-                dialog.NegativeText(GetText(Resource.String.Lbl_No)).OnNegative(this);
-                dialog.AlwaysCallSingleChoiceCallback();
-                dialog.Build().Show();
+                var dialog = new MaterialAlertDialogBuilder(this);
+                dialog.SetTitle(Resource.String.Lbl_Warning);
+                dialog.SetMessage(GetText(Resource.String.Lbl_DoYouWantUnblock));
+                dialog.SetPositiveButton(GetText(Resource.String.Lbl_Yes), (o, args) =>
+                {
+                    try
+                    {
+                        if (Methods.CheckConnectivity())
+                        {
+                            var itemUser = MAdapter.GetItem(Position);
+                            if (itemUser != null)
+                            {
+                                var index = MAdapter.BlockedUsersList.IndexOf(itemUser);
+                                if (index != -1)
+                                {
+                                    MAdapter.BlockedUsersList.Remove(itemUser);
+                                    MAdapter.NotifyItemRemoved(index);
+                                }
+
+                                Toast.MakeText(this, GetText(Resource.String.Lbl_Unblock_successfully), ToastLength.Short)?.Show();
+
+                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.BlockUnBlockUserAsync(itemUser.Id.ToString(), false) });
+                            }
+                        }
+                        else
+                        {
+                            Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
+                        }
+
+                        if (MAdapter.BlockedUsersList.Count == 0)
+                        {
+                            MRecycler.Visibility = ViewStates.Gone;
+
+                            Inflated ??= EmptyStateLayout.Inflate();
+
+                            EmptyStateInflater x = new EmptyStateInflater();
+                            x.InflateLayout(Inflated, EmptyStateInflater.Type.NoBlock);
+                            if (x.EmptyStateButton.HasOnClickListeners)
+                            {
+                                x.EmptyStateButton.Click += null;
+                            }
+                            EmptyStateLayout.Visibility = ViewStates.Visible;
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        Methods.DisplayReportResultTrack(exception);
+                    }
+                });
+                dialog.SetNegativeButton(GetText(Resource.String.Lbl_No), new MaterialDialogUtils());
+
+                dialog.Show();
             }
             catch (Exception exception)
             {
@@ -313,7 +358,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 //Code get last id where LoadMore >>
                 var item = MAdapter.BlockedUsersList.LastOrDefault();
                 if (item != null && !string.IsNullOrEmpty(item.Id.ToString()) && !MainScrollEvent.IsLoading)
-                    StartApiService(item.Id.ToString()); 
+                    StartApiService(item.Id.ToString());
             }
             catch (Exception exception)
             {
@@ -343,7 +388,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 MainScrollEvent.IsLoading = true;
 
                 int countList = MAdapter.BlockedUsersList.Count;
-                 var (apiStatus, respond) = await RequestsAsync.User.GetBlocksAsync(UserDetails.UserId.ToString(), "15", offset);
+                var (apiStatus, respond) = await RequestsAsync.User.GetBlocksAsync(UserDetails.UserId.ToString(), "15", offset);
                 if (apiStatus == 200)
                 {
                     if (respond is GetUserObject result)
@@ -388,7 +433,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 x.InflateLayout(Inflated, EmptyStateInflater.Type.NoConnection);
                 if (!x.EmptyStateButton.HasOnClickListeners)
                 {
-                    x.EmptyStateButton.Click += null!;
+                    x.EmptyStateButton.Click += null;
                     x.EmptyStateButton.Click += EmptyStateButtonOnClick;
                 }
 
@@ -408,7 +453,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 if (MAdapter.BlockedUsersList.Count > 0)
                 {
                     MRecycler.Visibility = ViewStates.Visible;
-                    EmptyStateLayout.Visibility = ViewStates.Gone; 
+                    EmptyStateLayout.Visibility = ViewStates.Gone;
                 }
                 else
                 {
@@ -421,7 +466,7 @@ namespace DeepSound.Activities.SettingsUser.General
                     x.InflateLayout(Inflated, EmptyStateInflater.Type.NoBlock);
                     if (x.EmptyStateButton.HasOnClickListeners)
                     {
-                        x.EmptyStateButton.Click += null!;
+                        x.EmptyStateButton.Click += null;
                     }
                     EmptyStateLayout.Visibility = ViewStates.Visible;
                 }
@@ -449,63 +494,5 @@ namespace DeepSound.Activities.SettingsUser.General
 
         #endregion
 
-        #region MaterialDialog
-
-        public void OnClick(MaterialDialog p0, DialogAction p1)
-        {
-            try
-            {
-                if (p1 == DialogAction.Positive)
-                {
-                    if (Methods.CheckConnectivity())
-                    {
-                        var itemUser = MAdapter.GetItem(Position);
-                        if (itemUser != null)
-                        {
-                            var index = MAdapter.BlockedUsersList.IndexOf(itemUser);
-                            if (index != -1)
-                            {
-                                MAdapter.BlockedUsersList.Remove(itemUser);
-                                MAdapter.NotifyItemRemoved(index);
-                            }
-
-                            Toast.MakeText(this, GetText(Resource.String.Lbl_Unblock_successfully), ToastLength.Short)?.Show();
-
-                            PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.BlockUnBlockUserAsync(itemUser.Id.ToString(), false) });
-                        }
-                    }
-                    else
-                    {
-                        Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
-                    }
-                     
-                    if (MAdapter.BlockedUsersList.Count == 0)
-                    {
-                        MRecycler.Visibility = ViewStates.Gone;
-
-                        Inflated ??= EmptyStateLayout.Inflate();
-
-                        EmptyStateInflater x = new EmptyStateInflater();
-                        x.InflateLayout(Inflated, EmptyStateInflater.Type.NoBlock);
-                        if (x.EmptyStateButton.HasOnClickListeners)
-                        {
-                            x.EmptyStateButton.Click += null!;
-                        }
-                        EmptyStateLayout.Visibility = ViewStates.Visible;
-                    }
-
-                }
-                else if (p1 == DialogAction.Negative)
-                {
-                    p0.Dismiss();
-                } 
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-        #endregion
     }
 }

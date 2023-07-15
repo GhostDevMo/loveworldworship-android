@@ -39,7 +39,7 @@ namespace DeepSound.Helpers.Utils
             {
                 return SpanCnt2;
             }
-            
+
         }
     }
 }

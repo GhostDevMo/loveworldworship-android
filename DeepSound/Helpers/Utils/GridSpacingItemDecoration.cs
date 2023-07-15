@@ -1,7 +1,7 @@
-﻿using System;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.Views;
 using AndroidX.RecyclerView.Widget;
+using System;
 
 namespace DeepSound.Helpers.Utils
 {
@@ -21,7 +21,7 @@ namespace DeepSound.Helpers.Utils
             }
             catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(e); 
+                Methods.DisplayReportResultTrack(e);
             }
         }
 
@@ -58,7 +58,7 @@ namespace DeepSound.Helpers.Utils
             }
             catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(e); 
+                Methods.DisplayReportResultTrack(e);
             }
         }
     }

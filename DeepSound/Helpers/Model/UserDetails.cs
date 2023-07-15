@@ -1,8 +1,8 @@
-﻿using System;
-using Android.App;
+﻿using Android.App;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient;
 using Newtonsoft.Json;
+using System;
 
 namespace DeepSound.Helpers.Model
 {
@@ -21,11 +21,11 @@ namespace DeepSound.Helpers.Model
         public static string DeviceId = string.Empty;
         public static string Lang = string.Empty;
         public static string IsPro = string.Empty;
-        public static string Url = string.Empty; 
+        public static string Url = string.Empty;
         public static string Lat = string.Empty;
         public static string Lng = string.Empty;
         public static string LangName = string.Empty;
-        public static bool IsLogin = false; 
+        public static bool IsLogin = false;
         public static string FilterGenres = "1", FilterPrice = "1";
 
         public static string ProductCategory = "", ProductPriceMin = "", ProductPriceMax = "";
@@ -35,7 +35,7 @@ namespace DeepSound.Helpers.Model
         public static string Time = UnixTimestamp.ToString();
 
         public static string AndroidId = Android.Provider.Settings.Secure.GetString(Application.Context.ContentResolver, Android.Provider.Settings.Secure.AndroidId);
-        public static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore, PreserveReferencesHandling = PreserveReferencesHandling.Objects, MetadataPropertyHandling = MetadataPropertyHandling.Ignore, DateParseHandling = DateParseHandling.None,};
+        public static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore, PreserveReferencesHandling = PreserveReferencesHandling.Objects, MetadataPropertyHandling = MetadataPropertyHandling.Ignore, DateParseHandling = DateParseHandling.None, };
 
         public static bool IsOptimizationApp = false;
 
