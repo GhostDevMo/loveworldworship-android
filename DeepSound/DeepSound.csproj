@@ -24,7 +24,7 @@
 		<Optimize>True</Optimize>
 		<AndroidUseAapt2>True</AndroidUseAapt2>
 		<AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
-		<AndroidPackageFormat>aab</AndroidPackageFormat>
+		<AndroidPackageFormat>apk</AndroidPackageFormat>
 		<AndroidEnableMultiDex>False</AndroidEnableMultiDex>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -33,7 +33,7 @@
 		<AndroidSigningKeyAlias>loveworld_worship</AndroidSigningKeyAlias>
 		<AndroidSigningStorePass>karthatizo500</AndroidSigningStorePass>
 		<AndroidSigningKeyPass>karthatizo500</AndroidSigningKeyPass>
-		<AndroidPackageFormat>aab</AndroidPackageFormat>
+		<AndroidPackageFormat>apk</AndroidPackageFormat>
 		<NoWarn>1701;1702;CA1416;CA1422;CS0618;SYSLIB0039</NoWarn>
 		<PublishTrimmed>True</PublishTrimmed>
 		<RunAOTCompilation>True</RunAOTCompilation>
