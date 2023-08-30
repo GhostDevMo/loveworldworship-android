@@ -1,7 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -9,6 +8,7 @@ using Android.Widget;
 using AndroidHUD;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.AppCompat.Widget;
+using Com.Google.Android.Gms.Ads.Admanager;
 using DeepSound.Activities.Base;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Fonts;
@@ -25,15 +25,15 @@ using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.MyProfile
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class EditProfileInfoActivity : BaseActivity
     {
         #region Variables Basic
 
-        private TextView NameIcon, AboutIcon, WebsiteIcon;
-        private EditText EdtFullName, EdtAbout, EdtWebsite;
+        private TextView NameIcon, AboutIcon, FacebookIcon, WebsiteIcon;
+        private EditText EdtFullName, EdtAbout, EdtFacebook, EdtWebsite;
         private AppCompatButton BtnSave;
-        private PublisherAdView PublisherAdView;
+        private AdManagerAdView AdManagerAdView;
 
 
         #endregion
@@ -56,8 +56,8 @@ namespace DeepSound.Activities.MyProfile
                 InitComponent();
                 InitToolbar();
 
-                PublisherAdView = FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
-                AdsGoogle.InitPublisherAdView(PublisherAdView);
+                AdManagerAdView = FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
 
                 GetMyInfoData();
 
@@ -75,7 +75,7 @@ namespace DeepSound.Activities.MyProfile
             {
                 base.OnResume();
                 AddOrRemoveEvent(true);
-                PublisherAdView?.Resume();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Resume");
 
             }
             catch (Exception e)
@@ -90,7 +90,7 @@ namespace DeepSound.Activities.MyProfile
             {
                 base.OnPause();
                 AddOrRemoveEvent(false);
-                PublisherAdView?.Pause();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Pause");
 
             }
             catch (Exception e)
@@ -131,7 +131,7 @@ namespace DeepSound.Activities.MyProfile
             try
             {
 
-                PublisherAdView?.Destroy();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Destroy");
 
                 base.OnDestroy();
             }
@@ -172,6 +172,9 @@ namespace DeepSound.Activities.MyProfile
                 AboutIcon = FindViewById<TextView>(Resource.Id.IconAbout);
                 EdtAbout = FindViewById<EditText>(Resource.Id.AboutEditText);
 
+                FacebookIcon = FindViewById<TextView>(Resource.Id.IconFacebook);
+                EdtFacebook = FindViewById<EditText>(Resource.Id.FacebookEditText);
+
                 WebsiteIcon = FindViewById<TextView>(Resource.Id.IconWebsite);
                 EdtWebsite = FindViewById<EditText>(Resource.Id.WebsiteEditText);
 
@@ -179,10 +182,12 @@ namespace DeepSound.Activities.MyProfile
 
                 Methods.SetColorEditText(EdtFullName, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(EdtAbout, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
+                Methods.SetColorEditText(EdtFacebook, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(EdtWebsite, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
 
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeLight, NameIcon, FontAwesomeIcon.User);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeLight, AboutIcon, FontAwesomeIcon.InfoCircle);
+                FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, FacebookIcon, IonIconsFonts.LogoFacebook);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeLight, WebsiteIcon, FontAwesomeIcon.GlobeAmericas);
             }
             catch (Exception e)
@@ -257,6 +262,7 @@ namespace DeepSound.Activities.MyProfile
                     {
                         {"name", EdtFullName.Text},
                         {"about_me", EdtAbout.Text},
+                        {"facebook", EdtFacebook.Text},
                         {"website", EdtWebsite.Text},
                     };
 
@@ -274,6 +280,7 @@ namespace DeepSound.Activities.MyProfile
                             {
                                 local.Name = EdtFullName.Text;
                                 local.About = EdtAbout.Text;
+                                local.Facebook = EdtFacebook.Text;
                                 local.Website = EdtWebsite.Text;
 
                                 //TextSanitizer aboutSanitizer = new TextSanitizer(HomeActivity.GetInstance()?.ProfileFragment.TxtAbout, this);
@@ -291,6 +298,7 @@ namespace DeepSound.Activities.MyProfile
 
                             returnIntent.PutExtra("name", dictionary["name"]);
                             returnIntent.PutExtra("about_me", dictionary["about_me"]);
+                            returnIntent.PutExtra("facebook", dictionary["facebook"]);
                             returnIntent.PutExtra("website", dictionary["website"]);
 
                             SetResult(Result.Ok, returnIntent);
@@ -332,6 +340,7 @@ namespace DeepSound.Activities.MyProfile
                 {
                     EdtFullName.Text = dataUser.Name;
                     EdtAbout.Text = Methods.FunString.DecodeString(dataUser.About);
+                    EdtFacebook.Text = dataUser.Facebook;
                     EdtWebsite.Text = dataUser.Website;
                 }
             }

@@ -7,7 +7,6 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.CardView.Widget;
-using Com.Adcolony.Sdk;
 using DeepSound.Activities.Base;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
@@ -19,7 +18,7 @@ using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser.Support
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class AboutAppActivity : BaseActivity
     {
         #region Variables Basic
@@ -194,8 +193,8 @@ namespace DeepSound.Activities.SettingsUser.Support
 
                 if (AppSettings.ShowFbNativeAds)
                     AdsFacebook.InitNative(this, nativeAdLayout, null);
-                else
-                    AdsColony.InitBannerAd(this, nativeAdLayout, AdColonyAdSize.MediumRectangle, null);
+                else if (AppSettings.ShowAppLovinBannerAds)
+                    AdsAppLovin.InitBannerAd(this, nativeAdLayout, null);
             }
             catch (Exception e)
             {

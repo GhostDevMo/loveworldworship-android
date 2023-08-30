@@ -19,13 +19,14 @@ using DeepSound.SQLite;
 using DeepSoundClient.Classes.Global;
 using System;
 using System.IO;
+using System.Linq;
 using Environment = Android.OS.Environment;
 
 namespace DeepSound.Helpers.MediaPlayerController
 {
     public class SoundDownloadAsyncController
     {
-        private readonly DownloadManager Downloadmanager;
+        private readonly DownloadManager DownloadManager;
         private readonly DownloadManager.Request Request;
         public static string FilePath = Android.OS.Environment.DirectoryDownloads + "/" + AppSettings.ApplicationName;
         private readonly string Filename;
@@ -45,7 +46,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                 else
                     Filename = filename;
 
-                Downloadmanager = (DownloadManager)ActivityContext.GetSystemService(Context.DownloadService);
+                DownloadManager = (DownloadManager)ActivityContext.GetSystemService(Context.DownloadService);
                 Request = new DownloadManager.Request(Android.Net.Uri.Parse(url));
             }
             catch (Exception exception)
@@ -58,6 +59,8 @@ namespace DeepSound.Helpers.MediaPlayerController
         {
             try
             {
+                Methods.Path.Chack_MyFolder();
+
                 if (sound != null && !string.IsNullOrEmpty(title))
                 {
                     SoundData = sound;
@@ -66,18 +69,19 @@ namespace DeepSound.Helpers.MediaPlayerController
                     var sqlEntity = new SqLiteDatabase();
                     sqlEntity.Insert_LatestDownloadsSound(sound);
 
+                    var folder = GetDownloadedFolder();
+ 
                     Request.SetTitle(title);
                     Request.SetAllowedNetworkTypes(DownloadNetwork.Mobile | DownloadNetwork.Wifi);
 
-                    Request.SetDestinationInExternalPublicDir(Environment.DirectoryDownloads + "/" + AppSettings.ApplicationName, Filename);
+                    Request.SetDestinationInExternalPublicDir(Environment.DirectoryDownloads, "/" + AppSettings.ApplicationName + "/" + Filename);
 
                     Request.SetNotificationVisibility(DownloadVisibility.Visible);
                     Request.SetAllowedOverRoaming(true);
-                    DownloadId = Downloadmanager.Enqueue(Request);
+                    DownloadId = DownloadManager.Enqueue(Request);
 
                     var onDownloadComplete = new OnDownloadComplete
                     {
-                        ActivityContext = ActivityContext,
                         TypeActivity = fromActivity,
                         Sound = sound
                     };
@@ -99,7 +103,7 @@ namespace DeepSound.Helpers.MediaPlayerController
         {
             try
             {
-                Downloadmanager.Remove(DownloadId);
+                DownloadManager.Remove(DownloadId);
                 RemoveDiskSoundFile(Filename, SoundData.Id);
             }
             catch (Exception exception)
@@ -111,18 +115,10 @@ namespace DeepSound.Helpers.MediaPlayerController
         public bool RemoveDiskSoundFile(string filename, long id)
         {
             try
-            {
-                string path;
-                if (Build.VERSION.SdkInt >= BuildVersionCodes.R)
-                {
-                    var directories = Application.Context.GetExternalFilesDir(Android.OS.Environment.DirectoryDownloads + "/" + AppSettings.ApplicationName);
-                    path = new Java.IO.File(directories, filename + ".mp3").Path;
-                }
-                else
-                {
-                    path = new Java.IO.File(Methods.Path.GetDirectoryDcim() + "/" + Environment.DirectoryDownloads + "/" + AppSettings.ApplicationName, filename + ".mp3").Path;
-                }
-
+            { 
+                var directories = GetDownloadedFolder();
+                string path = new Java.IO.File(directories, filename + ".mp3").Path;
+                 
                 if (File.Exists(path))
                 {
                     var sqlEntity = new SqLiteDatabase();
@@ -156,22 +152,44 @@ namespace DeepSound.Helpers.MediaPlayerController
             }
         }
 
+        public static string GetDownloadedFolder()
+        {
+            try
+            {
+                string directories;
+
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.R)
+                {
+                    var directories1 = Application.Context.GetExternalFilesDir(""); //storage/emulated/0/Android/data/****
+                    var pathDefault = directories1.AbsolutePath.Split("/Android/")?.FirstOrDefault();
+                    directories = pathDefault + "/" + Environment.DirectoryDownloads + "/" + AppSettings.ApplicationName;
+                      
+                    //var directories = Application.Context.GetExternalFilesDir(Android.OS.Environment.DirectoryDownloads + "/" + AppSettings.ApplicationName);
+                }
+                else
+                {
+                    directories = Methods.Path.GetDirectoryDcim() + "/" + Environment.DirectoryDownloads + "/" + AppSettings.ApplicationName;
+                }
+                 
+                if (!Directory.Exists(directories))
+                    Directory.CreateDirectory(directories);
+
+                return directories;
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+                return "";
+            }
+        }
+
         public static string GetDownloadedDiskVideoUri(string filename)
         {
             try
             {
-                Java.IO.File file;
-
-                if (Build.VERSION.SdkInt >= BuildVersionCodes.R)
-                {
-                    var directories = Application.Context.GetExternalFilesDir(Android.OS.Environment.DirectoryDownloads + "/" + AppSettings.ApplicationName);
-                    file = new Java.IO.File(directories, filename + ".mp3");
-                }
-                else
-                {
-                    file = new Java.IO.File(Methods.Path.GetDirectoryDcim() + "/" + Environment.DirectoryDownloads + "/" + AppSettings.ApplicationName, filename + ".mp3");
-                }
-
+                var directories = GetDownloadedFolder(); 
+                Java.IO.File file = new Java.IO.File(directories, filename + ".mp3");
+               
                 //Hbh14ktZ3i4frTd  
                 if (file.Exists())
                 {
@@ -191,7 +209,6 @@ namespace DeepSound.Helpers.MediaPlayerController
         [IntentFilter(new[] { DownloadManager.ActionDownloadComplete })]
         public class OnDownloadComplete : BroadcastReceiver
         {
-            public Context ActivityContext;
             public string TypeActivity;
             public SoundDataObject Sound;
 
@@ -201,10 +218,10 @@ namespace DeepSound.Helpers.MediaPlayerController
                 {
                     if (intent.Action == DownloadManager.ActionDownloadComplete)
                     {
-                        if (ActivityContext == null)
+                        if (context == null)
                             return;
 
-                        DownloadManager downloadManagerExcuter = (DownloadManager)ActivityContext.GetSystemService(Context.DownloadService);
+                        DownloadManager downloadManagerExcuter = (DownloadManager)context.GetSystemService(Context.DownloadService);
                         long downloadId = intent.GetLongExtra(DownloadManager.ExtraDownloadId, -1);
                         DownloadManager.Query query = new DownloadManager.Query();
                         query.SetFilterById(downloadId);

@@ -8,6 +8,7 @@ using DeepSoundClient.Classes.Albums;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.Playlist;
 using Newtonsoft.Json;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Exception = System.Exception;
 
@@ -73,17 +74,16 @@ namespace DeepSound.Activities.Library.Listeners
             }
         }
 
-        public void AlbumsOnMoreClick(DataAlbumsObject albumsClass)
+        public void AlbumsOnMoreClick(DataAlbumsObject albumsClass, ObservableCollection<SoundDataObject> list)
         {
             try
             {
                 Bundle bundle = new Bundle();
                 bundle.PutString("ItemData", JsonConvert.SerializeObject(albumsClass));
+                bundle.PutString("ListSong", JsonConvert.SerializeObject(list));
 
-                OptionsAlbumBottomSheet optionsAlbumBottomSheet = new OptionsAlbumBottomSheet()
-                {
-                    Arguments = bundle
-                };
+                OptionsAlbumBottomSheet optionsAlbumBottomSheet = new OptionsAlbumBottomSheet();
+                optionsAlbumBottomSheet.Arguments = bundle;
                 optionsAlbumBottomSheet.Show(GlobalContext.SupportFragmentManager, optionsAlbumBottomSheet.Tag);
             }
             catch (Exception e)

@@ -1,7 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -9,6 +8,7 @@ using Android.Widget;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
+using Com.Google.Android.Gms.Ads;
 using DeepSound.Activities.Address.Adapters;
 using DeepSound.Activities.Base;
 using DeepSound.Helpers.Ads;
@@ -29,7 +29,7 @@ using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Address
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class AddressActivity : BaseActivity
     {
         #region Variables Basic
@@ -78,7 +78,7 @@ namespace DeepSound.Activities.Address
                 base.OnResume();
                 AddOrRemoveEvent(true);
 
-                MAdView?.Resume();
+                AdsGoogle.LifecycleAdView(MAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -93,7 +93,7 @@ namespace DeepSound.Activities.Address
                 base.OnPause();
                 AddOrRemoveEvent(false);
 
-                MAdView?.Pause();
+                AdsGoogle.LifecycleAdView(MAdView, "Pause");
             }
             catch (Exception e)
             {

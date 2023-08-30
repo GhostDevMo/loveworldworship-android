@@ -47,4 +47,10 @@
         Theme2,
     }
 
+    public enum ShareSystem
+    {
+        WebsiteUrl,
+        ApplicationShortUrl,
+    }
+
 }

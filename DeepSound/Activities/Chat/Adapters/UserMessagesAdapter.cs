@@ -1,7 +1,7 @@
-﻿using Android.App;
-using Android.Content;
+﻿using Android.Content;
 using Android.Views;
 using Android.Widget;
+using AndroidX.AppCompat.App;
 using AndroidX.Core.Content;
 using AndroidX.RecyclerView.Widget;
 using DeepSound.Helpers.CacheLoaders;
@@ -229,7 +229,7 @@ namespace DeepSound.Activities.Chat.Adapters
 
         #endregion
 
-        public TextViewHolder(View itemView, Activity activity) : base(itemView)
+        public TextViewHolder(View itemView, AppCompatActivity activity) : base(itemView)
         {
             try
             {

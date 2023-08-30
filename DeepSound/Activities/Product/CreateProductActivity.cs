@@ -1,7 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -11,6 +10,7 @@ using AndroidX.Activity.Result;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.RecyclerView.Widget;
 using Com.Canhub.Cropper;
+using Com.Google.Android.Gms.Ads.Admanager;
 using DeepSound.Activities.Base;
 using DeepSound.Activities.Playlist.Adapters;
 using DeepSound.Helpers.Ads;
@@ -39,7 +39,7 @@ namespace DeepSound.Activities.Product
         private TextView TxtSave;
         private EditText TxtTitle, TxtDescription, TxtTags, TxtPrice, TxtTotalItem, TxtRelatedToSong, TxtCategory;
         private string CategoryId = "", SongId = "", TypeDialog = "";
-        private PublisherAdView PublisherAdView;
+        private AdManagerAdView AdManagerAdView;
         private AttachmentsAdapter MAdapter;
         private RecyclerView MRecycler;
         private LinearLayoutManager LayoutManager;
@@ -81,7 +81,7 @@ namespace DeepSound.Activities.Product
             {
                 base.OnResume();
                 AddOrRemoveEvent(true);
-                PublisherAdView?.Resume();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -95,7 +95,7 @@ namespace DeepSound.Activities.Product
             {
                 base.OnPause();
                 AddOrRemoveEvent(false);
-                PublisherAdView?.Pause();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -187,8 +187,8 @@ namespace DeepSound.Activities.Product
                 Methods.SetFocusable(TxtRelatedToSong);
                 Methods.SetFocusable(TxtCategory);
 
-                PublisherAdView = FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
-                AdsGoogle.InitPublisherAdView(PublisherAdView);
+                AdManagerAdView = FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
             }
             catch (Exception e)
             {
@@ -282,7 +282,7 @@ namespace DeepSound.Activities.Product
         {
             try
             {
-                PublisherAdView?.Destroy();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Destroy");
 
                 TxtSave = null;
                 TxtTitle = null;
@@ -292,7 +292,7 @@ namespace DeepSound.Activities.Product
                 MAdapter = null;
                 MRecycler = null;
                 LayoutManager = null;
-                PublisherAdView = null;
+                AdManagerAdView = null;
                 CategoryId = "";
                 TypeDialog = "";
             }

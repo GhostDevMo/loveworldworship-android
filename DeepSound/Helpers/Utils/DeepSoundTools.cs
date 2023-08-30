@@ -1,10 +1,16 @@
 ﻿using Android.App;
+using Android.Media;
+using Android.OS;
 using DeepSound.Helpers.Model;
 using DeepSoundClient;
 using DeepSoundClient.Classes.Global;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Security.Authentication;
+using System.Threading.Tasks;
 
 namespace DeepSound.Helpers.Utils
 {
@@ -699,5 +705,134 @@ namespace DeepSound.Helpers.Utils
             }
         }
 
+        // Functions Save Images
+        public static async void SaveFile(string id, string folder, string fileName, string url)
+        {
+            try
+            {
+                if (url.Contains("http"))
+                {
+                    string folderDestination = folder + id + "/";
+
+                    string filePath = Path.Combine(folderDestination);
+                    string mediaFile = filePath + "/" + fileName;
+
+                    if (File.Exists(mediaFile)) return;
+
+                    HttpClient client;
+                    if (AppSettings.TurnSecurityProtocolType3072On)
+                    {
+                        HttpClientHandler clientHandler = new HttpClientHandler();
+                        clientHandler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
+                        clientHandler.SslProtocols = SslProtocols.Tls | SslProtocols.Ssl2 | SslProtocols.Ssl3 | SslProtocols.Tls11 | SslProtocols.Tls12 | SslProtocols.Tls13 | SslProtocols.Default;
+
+                        // Pass the handler to httpClient(from you are calling api)
+                        client = new HttpClient(clientHandler);
+                    }
+                    else
+                    {
+                        client = new HttpClient();
+                    }
+
+                    var s = await client.GetStreamAsync(new Uri(url));
+                    if (s.CanRead)
+                    {
+                        if (File.Exists(mediaFile)) return;
+                        await using FileStream fs = new FileStream(mediaFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
+                        await s.CopyToAsync(fs);
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        // Functions file from folder
+        public static string GetFile(string id, string folder, string filename, string url)
+        {
+            try
+            {
+                string folderDestination = folder + id + "/";
+
+                if (!Directory.Exists(folderDestination))
+                {
+                    if (Directory.Exists(Methods.Path.FolderDiskStory))
+                        Directory.Delete(Methods.Path.FolderDiskStory, true);
+
+                    Directory.CreateDirectory(folderDestination);
+                }
+
+                string imageFile = Methods.MultiMedia.GetMediaFrom_Gallery(folderDestination, filename);
+                switch (imageFile)
+                {
+                    case "File Dont Exists":
+                        //This code runs on a new thread, control is returned to the caller on the UI thread.
+                        Task.Factory.StartNew(() => { SaveFile(id, folder, filename, url); });
+                        return url;
+                    default:
+                        return imageFile;
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+                return url;
+            }
+        }
+
+        public static long GetDuration(string mediaFile)
+        {
+            if (string.IsNullOrEmpty(mediaFile))
+                return 0;
+
+            try
+            {
+                var type = Methods.AttachmentFiles.Check_FileExtension(mediaFile);
+                if (type == "Audio")
+                {
+                    long duration;
+                    MediaMetadataRetriever retriever;
+                    if (mediaFile.Contains("http"))
+                    {
+                        retriever = new MediaMetadataRetriever();
+                        switch ((int)Build.VERSION.SdkInt)
+                        {
+                            case >= 14:
+                                retriever.SetDataSource(mediaFile, new Dictionary<string, string>());
+                                break;
+                            default:
+                                retriever.SetDataSource(mediaFile);
+                                break;
+                        }
+
+                        duration = long.Parse(retriever.ExtractMetadata(MetadataKey.Duration) ?? "0"); //time In Millisec 
+                        retriever.Release();
+                    }
+                    else
+                    {
+                        var file = Android.Net.Uri.FromFile(new Java.IO.File(mediaFile));
+                        retriever = new MediaMetadataRetriever();
+                        //if ((int)Build.VERSION.SdkInt >= 14)
+                        //    retriever.SetDataSource(file.Path, new Dictionary<string, string>());
+                        //else
+                        retriever.SetDataSource(file?.Path);
+
+                        duration = long.Parse(retriever.ExtractMetadata(MetadataKey.Duration) ?? "0");//time In Millisec 
+                        retriever.Release();
+                    }
+                    return duration;
+                }
+
+                return 0;
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+                return 0;
+            }
+        }
     }
 }

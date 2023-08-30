@@ -1,7 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -11,6 +10,7 @@ using AndroidX.CoordinatorLayout.Widget;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
 using Bumptech.Glide.Util;
+using Com.Google.Android.Gms.Ads;
 using DeepSound.Activities.Base;
 using DeepSound.Activities.Chat.Adapters;
 using DeepSound.Activities.Tabbes;
@@ -32,7 +32,7 @@ using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Chat
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class LastChatActivity : BaseActivity
     {
         #region Variables Basic
@@ -85,7 +85,7 @@ namespace DeepSound.Activities.Chat
         {
             try
             {
-                MAdView?.Resume();
+                AdsGoogle.LifecycleAdView(MAdView, "Resume");
                 base.OnResume();
                 AddOrRemoveEvent(true);
             }
@@ -99,7 +99,7 @@ namespace DeepSound.Activities.Chat
         {
             try
             {
-                MAdView?.Pause();
+                AdsGoogle.LifecycleAdView(MAdView, "Pause");
                 base.OnPause();
                 AddOrRemoveEvent(false);
             }
@@ -144,7 +144,7 @@ namespace DeepSound.Activities.Chat
                 MAdapter?.UserList.Clear();
                 MAdapter?.NotifyDataSetChanged();
 
-                MAdView?.Destroy();
+                AdsGoogle.LifecycleAdView(MAdView, "Destroy");
 
                 base.OnDestroy();
             }

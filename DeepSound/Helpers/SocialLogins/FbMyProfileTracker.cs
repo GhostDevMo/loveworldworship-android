@@ -1,6 +1,6 @@
-﻿using DeepSound.Helpers.Utils;
+﻿using Com.Facebook;
+using DeepSound.Helpers.Utils;
 using System;
-using Xamarin.Facebook;
 using Exception = System.Exception;
 
 
@@ -25,7 +25,7 @@ namespace DeepSound.Helpers.SocialLogins
 
     public class ProfileChangedEventArgs : EventArgs
     {
-        public Profile MProfile;
+        public readonly Profile MProfile;
         public ProfileChangedEventArgs(Profile profile)
         {
             try

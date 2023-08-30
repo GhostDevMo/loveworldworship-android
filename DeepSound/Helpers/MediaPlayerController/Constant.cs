@@ -1,7 +1,7 @@
-﻿using System;
-using Android.Content;
+﻿using Android.Content;
 using Com.Google.Android.Exoplayer2;
 using DeepSoundClient.Classes.Global;
+using System;
 using System.Collections.ObjectModel;
 
 namespace DeepSound.Helpers.MediaPlayerController
@@ -22,12 +22,12 @@ namespace DeepSound.Helpers.MediaPlayerController
         public static ObservableCollection<SoundDataObject> ArrayPlayingQueue = new ObservableCollection<SoundDataObject>();
         public static int PlayPos { get; set; } = 0;
         public static Context Context { get; set; }
-         
+
         public static bool ShouldShowMusicPurchaseDialog()
         {
             try
             {
-               var item = ArrayListPlay[PlayPos];
+                var item = ArrayListPlay[PlayPos];
                 if (item == null)
                     return false;
 
@@ -47,6 +47,6 @@ namespace DeepSound.Helpers.MediaPlayerController
                 Console.WriteLine(e);
                 return false;
             }
-        } 
+        }
     }
 }

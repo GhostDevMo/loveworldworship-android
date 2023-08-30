@@ -11,7 +11,9 @@ using AndroidX.Core.App;
 using AndroidX.Core.Content;
 using AndroidX.Media.Session;
 using Com.Google.Android.Exoplayer2;
+using Com.Google.Android.Exoplayer2.Source;
 using Com.Google.Android.Exoplayer2.Trackselection;
+using Com.Google.Android.Exoplayer2.Upstream;
 using DeepSound.Activities;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Model;
@@ -21,19 +23,17 @@ using DeepSoundClient;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.Tracks;
 using DeepSoundClient.Requests;
+using Java.Lang;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Com.Google.Android.Exoplayer2.Source;
-using Com.Google.Android.Exoplayer2.Upstream;
-using Java.Lang;
 using AudioAttributes = Com.Google.Android.Exoplayer2.Audio.AudioAttributes;
 using Exception = System.Exception;
 using Uri = Android.Net.Uri;
 
 namespace DeepSound.Helpers.MediaPlayerController
 {
-    [Service(Exported = false)]
+    [Service(Exported = true)]
     public class PlayerService : Android.App.Service
     {
         #region Variables Basic
@@ -337,7 +337,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                     AudioManager.UnregisterMediaButtonEventReceiver(ComponentName);
 #pragma warning restore 618
                 }
-                 
+
                 try { UnregisterReceiver(OnCallIncome); } catch { }
                 try { UnregisterReceiver(OnHeadPhoneDetect); } catch { }
 
@@ -673,7 +673,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                             BigViews.SetTextViewText(Resource.Id.textView_noti_artist, genresName);
                             SmallViews.SetTextViewText(Resource.Id.status_bar_artist_name, genresName);
                             SmallViews.SetTextViewText(Resource.Id.status_bar_track_name, songName);
-                        } 
+                        }
                     }
                     catch (Exception e)
                     {
@@ -1014,12 +1014,12 @@ namespace DeepSound.Helpers.MediaPlayerController
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private IMediaSource GetMediaSourceFromUrl(Uri uri, string tag)
         {
             try
-            { 
-                IMediaSource src; 
+            {
+                IMediaSource src;
                 if (!string.IsNullOrEmpty(uri.Path) && (uri.Path.Contains("file://") || uri.Path.Contains("content://") || uri.Path.Contains("storage") || uri.Path.Contains("/data/user/0/")))
                 {
                     var defaultDataSourceFactory = new FileDataSource.Factory();
@@ -1226,6 +1226,6 @@ namespace DeepSound.Helpers.MediaPlayerController
                     Methods.DisplayReportResultTrack(e);
                 }
             }
-        } 
+        }
     }
 }

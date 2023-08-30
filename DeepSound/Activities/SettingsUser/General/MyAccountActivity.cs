@@ -1,7 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -9,6 +8,7 @@ using Android.Widget;
 using AndroidHUD;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.AppCompat.Widget;
+using Com.Google.Android.Gms.Ads.Admanager;
 using DeepSound.Activities.Base;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Fonts;
@@ -26,18 +26,18 @@ using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser.General
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class MyAccountActivity : BaseActivity, IDialogListCallBack
     {
         #region Variables Basic
 
-        private TextView UsernameIcon, EmailIcon, GenderIcon, AgeIcon, CountryIcon;
-        private EditText EdtUsername, EdtEmail, EdtAge, EdtCountry;
+        private TextView UsernameIcon, EmailIcon, GenderIcon, AgeIcon, CountryIcon, PaypalEmailIcon;
+        private EditText EdtUsername, EdtEmail, EdtAge, EdtCountry, EdtPaypalEmail;
         private RadioButton RadioMale, RadioFemale;
         private AppCompatButton BtnSave;
         private Toolbar Toolbar;
         private string Country, IdGender;
-        private PublisherAdView PublisherAdView;
+        private AdManagerAdView AdManagerAdView;
 
         #endregion
 
@@ -57,8 +57,8 @@ namespace DeepSound.Activities.SettingsUser.General
                 InitComponent();
                 InitToolbar();
 
-                PublisherAdView = FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
-                AdsGoogle.InitPublisherAdView(PublisherAdView);
+                AdManagerAdView = FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
 
                 GetMyInfoData();
             }
@@ -74,7 +74,7 @@ namespace DeepSound.Activities.SettingsUser.General
             {
                 base.OnResume();
                 AddOrRemoveEvent(true);
-                PublisherAdView?.Resume();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -88,7 +88,7 @@ namespace DeepSound.Activities.SettingsUser.General
             {
                 base.OnPause();
                 AddOrRemoveEvent(false);
-                PublisherAdView?.Pause();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -126,7 +126,7 @@ namespace DeepSound.Activities.SettingsUser.General
         {
             try
             {
-                PublisherAdView?.Destroy();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Destroy");
                 base.OnDestroy();
             }
             catch (Exception exception)
@@ -174,12 +174,16 @@ namespace DeepSound.Activities.SettingsUser.General
                 CountryIcon = FindViewById<TextView>(Resource.Id.IconCountry);
                 EdtCountry = FindViewById<EditText>(Resource.Id.CountryEditText);
 
+                PaypalEmailIcon = FindViewById<TextView>(Resource.Id.IconPaypalEmail);
+                EdtPaypalEmail = FindViewById<EditText>(Resource.Id.PaypalEmailEditText);
+
                 BtnSave = FindViewById<AppCompatButton>(Resource.Id.ApplyButton);
 
                 Methods.SetColorEditText(EdtUsername, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(EdtEmail, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(EdtAge, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(EdtCountry, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
+                Methods.SetColorEditText(EdtPaypalEmail, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
 
                 RadioMale.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 RadioFemale.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
@@ -189,6 +193,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeRegular, EmailIcon, FontAwesomeIcon.At);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeRegular, AgeIcon, FontAwesomeIcon.BirthdayCake);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeLight, CountryIcon, FontAwesomeIcon.Flag);
+                FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeLight, PaypalEmailIcon, FontAwesomeIcon.Paypal);
 
                 Methods.SetFocusable(EdtCountry);
             }
@@ -308,6 +313,7 @@ namespace DeepSound.Activities.SettingsUser.General
                         {"gender",IdGender},
                         {"country",Country},
                         {"age", EdtAge.Text},
+                        {"paypal_email", EdtPaypalEmail.Text},
                     };
 
                     var (apiStatus, respond) = await RequestsAsync.User.UpdateGeneralAsync(UserDetails.UserId.ToString(), dictionary);
@@ -397,6 +403,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 {
                     EdtUsername.Text = dataUser.Username;
                     EdtEmail.Text = dataUser.Email;
+                    EdtPaypalEmail.Text = dataUser.PaypalEmail;
 
                     if (dataUser.Age != 0)
                         EdtAge.Text = dataUser.Age.ToString();

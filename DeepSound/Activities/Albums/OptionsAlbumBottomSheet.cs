@@ -2,16 +2,20 @@
 using Android.OS;
 using Android.Views;
 using Android.Widget;
+using AndroidHUD;
 using AndroidX.RecyclerView.Widget;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Adapters;
 using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.Controller;
+using DeepSound.Helpers.MediaPlayerController;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.Share;
 using DeepSound.Library.Anjo.Share.Abstractions;
 using DeepSoundClient.Classes.Albums;
+using DeepSoundClient.Classes.Global;
+using DeepSoundClient.Classes.Playlist;
 using DeepSoundClient.Requests;
 using Google.Android.Material.BottomSheet;
 using Google.Android.Material.Dialog;
@@ -19,6 +23,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Exception = System.Exception;
@@ -27,6 +32,8 @@ namespace DeepSound.Activities.Albums
 {
     public class OptionsAlbumBottomSheet : BottomSheetDialogFragment
     {
+        public static OptionsAlbumBottomSheet Instance;
+
         #region Variables Basic
 
         private HomeActivity GlobalContext;
@@ -38,6 +45,7 @@ namespace DeepSound.Activities.Albums
         private ItemOptionAdapter MAdapter;
 
         private DataAlbumsObject AlbumsObject;
+        private ObservableCollection<SoundDataObject> ListSong;
 
         #endregion
 
@@ -72,10 +80,13 @@ namespace DeepSound.Activities.Albums
             try
             {
                 base.OnViewCreated(view, savedInstanceState);
+
+                Instance = this;
+
                 InitComponent(view);
                 SetRecyclerViewAdapters(view);
 
-                LoadDataChat();
+                LoadDataAlbum();
             }
             catch (Exception exception)
             {
@@ -168,10 +179,123 @@ namespace DeepSound.Activities.Albums
                         ShareAlbum();
                         Dismiss();
                     }
+                    else if (item?.Id == "4") //Add to Playlist
+                    {
+                        AlbumToPlaylist();
+                        Dismiss();
+                    }
+                    else if (item?.Id == "5") //download Album
+                    {
+                        if (PermissionsController.CheckPermissionStorage(Context))
+                        {
+                            SoundDownloadAlbum();
+                        }
+                        else
+                        {
+                            GlobalContext.PermissionsType = "DownloadAlbum";
+                            new PermissionsController(Activity).RequestPermission(100);
+                        }
+                    }
                 }
             }
             catch (Exception exception)
             {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
+        public void SoundDownloadAlbum()
+        {
+            try
+            {
+                var isPro = ListUtils.MyUserInfoList?.FirstOrDefault()?.IsPro ?? 0;
+                if (isPro == 0)
+                {
+                    PopupDialogController dialog = new PopupDialogController(Activity, null, "GoPro");
+                    dialog.ShowNormalDialog(GetText(Resource.String.Lbl_Warning), GetText(Resource.String.Lbl_ActivateWithUpgraded), GetText(Resource.String.Lbl_Ok), GetText(Resource.String.Lbl_Cancel));
+                    return;
+                }
+
+                if (!Methods.CheckConnectivity())
+                {
+                    Toast.MakeText(Activity, Activity.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
+                    return;
+                }
+
+                AndHUD.Shared.Show(Context, GetText(Resource.String.Lbl_Downloading));
+
+                Methods.Path.Chack_MyFolder();
+                 
+                foreach (var item in ListSong)
+                {
+                    var SoundDownload = new SoundDownloadAsyncController(item.AudioLocation, item.Title, Activity);
+                    if (!SoundDownload.CheckDownloadLinkIfExits())
+                    {
+                        SoundDownload.StartDownloadManager(AlbumsObject.Title, item, "Album");
+                    }
+                }
+
+                AndHUD.Shared.Dismiss(Context);
+                Dismiss(); 
+            }
+            catch (Exception exception)
+            {
+                AndHUD.Shared.Dismiss(Context);
+                Dismiss();
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
+        private async void AlbumToPlaylist()
+        {
+            try
+            {
+                if (!UserDetails.IsLogin)
+                {
+                    PopupDialogController dialog = new PopupDialogController(Activity, null, "Login");
+                    dialog.ShowNormalDialog(Context.GetText(Resource.String.Lbl_Login), Context.GetText(Resource.String.Lbl_Message_Sorry_signin), Context.GetText(Resource.String.Lbl_Yes), Context.GetText(Resource.String.Lbl_No));
+                    return;
+                }
+
+                if (!Methods.CheckConnectivity())
+                {
+                    Toast.MakeText(Activity, Activity.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
+                    return;
+                }
+
+                var fileName = AlbumsObject.Thumbnail.Split('/').Last();
+                var image = DeepSoundTools.GetFile(DateTime.Now.Day.ToString(), Methods.Path.FolderDiskImage, fileName, AlbumsObject.Thumbnail);
+
+                AndHUD.Shared.Show(Context, GetText(Resource.String.Lbl_Loading));
+                var (apiStatus, respond) = await RequestsAsync.Playlist.CreatePlaylistAsync(AlbumsObject.Title, "1", image); //Sent api 
+                if (apiStatus.Equals(200))
+                {
+                    if (respond is CreatePlaylistObject result)
+                    {
+                        foreach (var song in ListSong)
+                        {
+                            if (song != null)
+                            {
+                                //Sent Api
+                                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Playlist.AddToPlaylistAsync(song.Id.ToString(), result.Data.Id.ToString()) });
+                            }
+                        }
+
+                        result.Data.Songs = ListSong.Count;
+                        ListUtils.PlaylistList.Add(result.Data);
+
+                        AndHUD.Shared.Dismiss(Context);
+                        Dismiss();
+                    }
+                }
+                else
+                {
+                    Methods.DisplayAndHudErrorResult(Activity, respond);
+                }
+            }
+            catch (Exception exception)
+            {
+                AndHUD.Shared.Dismiss(Context);
                 Methods.DisplayReportResultTrack(exception);
             }
         }
@@ -319,7 +443,7 @@ namespace DeepSound.Activities.Albums
 
         #endregion
 
-        private void LoadDataChat()
+        private void LoadDataAlbum()
         {
             try
             {
@@ -360,6 +484,29 @@ namespace DeepSound.Activities.Albums
                         Text = GetText(Resource.String.Lbl_Share),
                         Icon = Resource.Drawable.icon_send_vector,
                     });
+
+                    ListSong = JsonConvert.DeserializeObject<ObservableCollection<SoundDataObject>>(Arguments?.GetString("ListSong") ?? "");
+                    if (ListSong?.Count > 0 && (Math.Abs(AlbumsObject.Price) <= 0 || AlbumsObject.IsPurchased == 1))
+                    {
+                        MAdapter.ItemOptionList.Add(new Classes.ItemOptionObject()
+                        {
+                            Id = "4",
+                            Text = GetText(Resource.String.Lbl_Add_To_Playlist),
+                            Icon = Resource.Drawable.icon_add_vector,
+                        });
+
+                        var fileName = AlbumsObject.Thumbnail.Split('/').Last();
+                        DeepSoundTools.GetFile(DateTime.Now.Day.ToString(), Methods.Path.FolderDiskImage, fileName, AlbumsObject.Thumbnail);
+
+
+                        MAdapter.ItemOptionList.Add(new Classes.ItemOptionObject()
+                        {
+                            Id = "5",
+                            Text = GetText(Resource.String.Lbl_Downloads),
+                            Icon = Resource.Drawable.icon_player_download,
+                        });
+
+                    }
                 }
             }
             catch (Exception exception)

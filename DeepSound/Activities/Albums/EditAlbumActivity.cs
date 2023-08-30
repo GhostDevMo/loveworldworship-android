@@ -1,7 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -12,6 +11,7 @@ using AndroidX.AppCompat.Content.Res;
 using AndroidX.AppCompat.Widget;
 using Bumptech.Glide;
 using Com.Canhub.Cropper;
+using Com.Google.Android.Gms.Ads.Admanager;
 using DeepSound.Activities.Base;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.CacheLoaders;
@@ -32,7 +32,7 @@ using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Albums
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class EditAlbumActivity : BaseActivity, IDialogListCallBack, IActivityResultCallback
     {
         #region Variables Basic
@@ -44,7 +44,7 @@ namespace DeepSound.Activities.Albums
         private EditText TitleEditText, DescriptionEditText, GenresEditText, PriceEditText;
         private string CurrencySymbol = "$", PathImage = "", TypeDialog = "", IdGenres = "", IdPrice = "";
         private DataAlbumsObject AlbumObject;
-        private PublisherAdView PublisherAdView;
+        private AdManagerAdView AdManagerAdView;
         private DialogGalleryController GalleryController;
 
         #endregion
@@ -83,7 +83,7 @@ namespace DeepSound.Activities.Albums
             {
                 base.OnResume();
                 AddOrRemoveEvent(true);
-                PublisherAdView?.Resume();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -97,7 +97,7 @@ namespace DeepSound.Activities.Albums
             {
                 base.OnPause();
                 AddOrRemoveEvent(false);
-                PublisherAdView?.Pause();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -135,7 +135,7 @@ namespace DeepSound.Activities.Albums
         {
             try
             {
-                PublisherAdView?.Destroy();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Destroy");
 
                 base.OnDestroy();
             }
@@ -202,8 +202,8 @@ namespace DeepSound.Activities.Albums
                 Methods.SetFocusable(GenresEditText);
                 Methods.SetFocusable(PriceEditText);
 
-                PublisherAdView = FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
-                AdsGoogle.InitPublisherAdView(PublisherAdView);
+                AdManagerAdView = FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
             }
             catch (Exception e)
             {

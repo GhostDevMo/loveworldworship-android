@@ -5,6 +5,9 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.SwipeRefreshLayout.Widget;
+using Bumptech.Glide;
+using Bumptech.Glide.Load.Engine;
+using Bumptech.Glide.Request;
 using DeepSound.Activities.Albums;
 using DeepSound.Activities.Albums.Adapters;
 using DeepSound.Activities.Artists.Adapters;
@@ -12,6 +15,9 @@ using DeepSound.Activities.Default;
 using DeepSound.Activities.Genres.Adapters;
 using DeepSound.Activities.Songs;
 using DeepSound.Activities.Songs.Adapters;
+using DeepSound.Activities.Story;
+using DeepSound.Activities.Story.Adapters;
+using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.MediaPlayerController;
 using DeepSound.Helpers.Model;
@@ -19,6 +25,7 @@ using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Albums;
 using DeepSoundClient.Classes.Common;
 using DeepSoundClient.Classes.Global;
+using DeepSoundClient.Classes.Story;
 using DeepSoundClient.Classes.User;
 using DeepSoundClient.Requests;
 using Newtonsoft.Json;
@@ -35,14 +42,15 @@ namespace DeepSound.Activities.Tabbes.HomePages
         #region Variables Basic
 
         public ArtistsAdapter ArtistsAdapter;
+        public StoryAdapter StoryAdapter;
         private GenresAdapter GenresAdapter;
         public HSoundAdapter NewReleasesSoundAdapter, RecentlyPlayedSoundAdapter, PopularSoundAdapter, TopSongsSoundAdapter;
         public AlbumsAdapter AlbumsAdapter;
 
         private HomeActivity GlobalContext;
         private SwipeRefreshLayout SwipeRefreshLayout;
-        private ViewStub EmptyStateLayout, GenresViewStub, NewReleasesViewStub, RecentlyPlayedViewStub, PopularViewStub, ArtistsViewStub, TopSongsViewStub, TopAlbumsViewStub;
-        private View Inflated, GenresInflated, NewReleasesInflated, RecentlyPlayedInflated, PopularInflated, ArtistsInflated, TopSongsInflated, TopAlbumsInflated;
+        private ViewStub EmptyStateLayout, GenresViewStub, NewReleasesViewStub, RecentlyPlayedViewStub, PopularViewStub, ArtistsViewStub, TopSongsViewStub, TopAlbumsViewStub, StoryViewStub;
+        private View Inflated, GenresInflated, NewReleasesInflated, RecentlyPlayedInflated, PopularInflated, ArtistsInflated, TopSongsInflated, TopAlbumsInflated, StoryInflated;
 
         private ObservableCollection<SoundDataObject> RecommendedList;
         public SongsByGenresFragment SongsByGenresFragment;
@@ -84,6 +92,8 @@ namespace DeepSound.Activities.Tabbes.HomePages
 
                 InitComponent(view);
                 SetRecyclerViewAdapters();
+
+                AdsGoogle.Ad_Interstitial(Activity, true);
 
                 Task.Factory.StartNew(StartApiService);
             }
@@ -156,15 +166,15 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 NewReleasesSoundAdapter = new HSoundAdapter(Activity) { SoundsList = new ObservableCollection<SoundDataObject>() };
                 NewReleasesSoundAdapter.ItemClick += NewReleasesSoundAdapterOnItemClick;
 
-                // Recently Played RecyclerView >> LinearLayoutManager.Horizontal
+                //Recently Played RecyclerView >> LinearLayoutManager.Horizontal
                 RecentlyPlayedSoundAdapter = new HSoundAdapter(Activity) { SoundsList = new ObservableCollection<SoundDataObject>() };
                 RecentlyPlayedSoundAdapter.ItemClick += RecentlyPlayedSoundAdapterOnItemClick;
 
-                // Popular RecyclerView >> LinearLayoutManager.Horizontal
+                //Popular RecyclerView >> LinearLayoutManager.Horizontal
                 PopularSoundAdapter = new HSoundAdapter(Activity) { SoundsList = new ObservableCollection<SoundDataObject>() };
                 PopularSoundAdapter.ItemClick += PopularSoundAdapterOnItemClick;
 
-
+                //Artists RecyclerView >> LinearLayoutManager.Horizontal
                 ArtistsAdapter = new ArtistsAdapter(Activity);
                 ArtistsAdapter.ItemClick += ArtistsAdapterOnItemClick;
 
@@ -172,9 +182,10 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 TopSongsSoundAdapter = new HSoundAdapter(Activity) { SoundsList = new ObservableCollection<SoundDataObject>() };
                 TopSongsSoundAdapter.ItemClick += TopSongsSoundAdapterOnItemClick;
 
-                // Top Albums RecyclerView >> LinearLayoutManager.Horizontal
+                //Top Albums RecyclerView >> LinearLayoutManager.Horizontal
                 AlbumsAdapter = new AlbumsAdapter(Activity);
                 AlbumsAdapter.ItemClick += AlbumsAdapterItemClick;
+
             }
             catch (Exception e)
             {
@@ -190,7 +201,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
         {
             try
             {
-                Activity.StartActivity(new Intent(Activity, typeof(LoginActivity)));
+                StartActivity(new Intent(Activity, typeof(LoginActivity)));
             }
             catch (Exception exception)
             {
@@ -291,6 +302,49 @@ namespace DeepSound.Activities.Tabbes.HomePages
             {
                 var item = ArtistsAdapter.GetItem(e.Position);
                 if (item?.Id != null) GlobalContext.OpenProfile(item.Id, item);
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
+        private void StoryAdapterOnItemClick(object sender, StoryAdapterClickEventArgs e)
+        {
+            try
+            {
+                var item = StoryAdapter.GetItem(e.Position);
+                if (item != null)
+                {
+                    if (item.Type == "Your")
+                    {
+                        StartActivity(new Intent(Activity, typeof(CreateStoryActivity)));
+                    }
+                    else
+                    {
+                        if (item.Active == 1)
+                        {
+                            if (Constant.Player.PlayWhenReady)
+                                GlobalContext?.SoundController.StartOrPausePlayer();
+
+                            List<StoryDataObject> storyList = new List<StoryDataObject>(StoryAdapter.StoryList);
+                            storyList.RemoveAll(o => o.Type == "Your");
+
+                            var indexItem = storyList.IndexOf(item);
+
+                            Intent intent = new Intent(Activity, typeof(StoryDetailsActivity));
+                            intent.PutExtra("UserId", item.UserId);
+                            intent.PutExtra("IndexItem", indexItem);
+                            intent.PutExtra("StoriesCount", storyList.Count);
+                            intent.PutExtra("DataItem", JsonConvert.SerializeObject(new ObservableCollection<StoryDataObject>(storyList)));
+                            StartActivity(intent);
+                        }
+                        else
+                        {
+                            GlobalContext?.OpenDialogPurchaseStory(item);
+                        }
+                    }
+                }
             }
             catch (Exception exception)
             {
@@ -464,6 +518,9 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 AlbumsAdapter.AlbumsList.Clear();
                 AlbumsAdapter.NotifyDataSetChanged();
 
+                StoryAdapter.StoryList.Clear();
+                StoryAdapter.NotifyDataSetChanged();
+
                 RecommendedList.Clear();
 
                 EmptyStateLayout.Visibility = ViewStates.Gone;
@@ -484,7 +541,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
         {
             if (Methods.CheckConnectivity())
             {
-                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { LoadDiscover, LoadBrowse, ApiRequest.GetGenres_Api, LoadArtists });
+                PollyController.RunRetryPolicyFunction(new List<Func<Task>> { LoadDiscover, LoadBrowse, ApiRequest.GetGenres_Api, LoadArtists, LoadStory });
             }
             else
             {
@@ -579,6 +636,80 @@ namespace DeepSound.Activities.Tabbes.HomePages
             {
                 Methods.DisplayReportResultTrack(exception);
             }
+        }
+
+        private async Task LoadStory()
+        {
+            if (!UserDetails.IsLogin || !AppSettings.ShowStory)
+                return;
+
+            var (apiStatus, respond) = await RequestsAsync.Story.GetStoryAsync();
+            if (apiStatus == 200)
+            {
+                if (respond is GetStoryObject result)
+                {
+                    try
+                    {
+                        bool add = false;
+                        var respondList = result.Data?.Count;
+                        if (respondList > 0)
+                        {
+                            await Task.Factory.StartNew(() =>
+                            {
+                                foreach (var item in from item in result.Data let check = StoryAdapter.StoryList.FirstOrDefault(a => a.UserId == item.UserId) where check == null select item)
+                                {
+                                    try
+                                    {
+                                        add = true;
+
+                                        item.Audio = DeepSoundClient.InitializeDeepSound.WebsiteUrl + "/" + item.OrgAudio;
+
+                                        var fileName = item.Audio.Split('/').Last();
+                                        var mediaFile = DeepSoundTools.GetFile(DateTime.Now.Day.ToString(), Methods.Path.FolderDiskStory, fileName, item.Audio);
+                                        item.PathAudio = mediaFile;
+
+                                        item.DurationsList ??= new List<long>();
+                                        item.IsOwner = item.UserId == UserDetails.UserId;
+
+                                        Glide.With(Context).Load(item.Image).Apply(new RequestOptions().SetDiskCacheStrategy(DiskCacheStrategy.All).CenterCrop()).Preload();
+
+                                        var duration = DeepSoundTools.GetDuration(mediaFile);
+                                        item.DurationsList.Add(duration);
+
+                                        StoryAdapter.StoryList.Add(item);
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        Methods.DisplayReportResultTrack(e);
+                                    }
+                                }
+
+                                var dataOwner = StoryAdapter.StoryList.FirstOrDefault(a => a.Type == "Your");
+                                if (dataOwner == null)
+                                {
+                                    var dataUser = ListUtils.MyUserInfoList?.FirstOrDefault();
+                                    StoryAdapter.StoryList.Insert(0, new StoryDataObject
+                                    {
+                                        Type = "Your",
+                                        UserData = dataUser
+                                    });
+                                }
+
+                                if (add)
+                                    Activity?.RunOnUiThread(() => { StoryAdapter.NotifyDataSetChanged(); });
+
+                            }).ConfigureAwait(false);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Methods.DisplayReportResultTrack(e);
+                    }
+                }
+            }
+            else Methods.DisplayReportResult(Activity, respond);
+
+            //Activity?.RunOnUiThread(ShowEmptyPage);
         }
 
         private async Task LoadArtists()
@@ -824,5 +955,6 @@ namespace DeepSound.Activities.Tabbes.HomePages
         }
 
         #endregion
+
     }
 }

@@ -1,7 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -9,6 +8,7 @@ using Android.Webkit;
 using Android.Widget;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.SwipeRefreshLayout.Widget;
+using Com.Google.Android.Gms.Ads;
 using DeepSound.Activities.Base;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Utils;
@@ -18,7 +18,7 @@ using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class LocalWebViewActivity : BaseActivity
     {
         #region Variables Basic
@@ -77,7 +77,7 @@ namespace DeepSound.Activities
                 base.OnResume();
                 AddOrRemoveEvent(true);
 
-                MAdView?.Resume();
+                AdsGoogle.LifecycleAdView(MAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -92,7 +92,7 @@ namespace DeepSound.Activities
                 base.OnPause();
                 AddOrRemoveEvent(false);
 
-                MAdView?.Pause();
+                AdsGoogle.LifecycleAdView(MAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -130,7 +130,7 @@ namespace DeepSound.Activities
         {
             try
             {
-                MAdView?.Destroy();
+                AdsGoogle.LifecycleAdView(MAdView, "Destroy");
                 base.OnDestroy();
             }
             catch (Exception exception)

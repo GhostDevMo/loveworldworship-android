@@ -1,14 +1,18 @@
 ﻿using Android.App;
 using Android.Content;
-using Android.Gms.Maps;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.RecyclerView.Widget;
+using Com.Facebook.Ads;
+using DeepSound.Helpers.Controller;
+using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
+using DeepSoundClient.Requests;
+using Java.Util;
 using System;
 using System.Collections.Generic;
-using Xamarin.Facebook.Ads;
+using System.Threading.Tasks;
 
 namespace DeepSound.Helpers.Ads
 {
@@ -25,15 +29,15 @@ namespace DeepSound.Helpers.Ads
             {
                 if (DeepSoundTools.GetStatusAds() && AppSettings.ShowFbBannerAds)
                 {
-                    InitializeFacebook.Initialize(activity);
-
                     AdView adView = new AdView(activity, AppSettings.AdsFbBannerKey, AdSize.BannerHeight50);
                     // Add the ad view to your activity layout
                     adContainer.AddView(adView);
 
-                    // Request an ad 
-                    //var ss = adView.BuildLoadAdConfig().WithAdListener(new BannerAdListener(recyclerView)).Build();
-                    adView.LoadAd();
+                    // Request an ad
+                    var build = adView.BuildLoadAdConfig()
+                        ?.WithAdListener(new BannerAdListener(recyclerView))
+                        ?.Build();
+                    adView.LoadAd(build);
 
                     return adView;
                 }
@@ -113,26 +117,34 @@ namespace DeepSound.Helpers.Ads
         {
             try
             {
-                switch (DeepSoundTools.GetStatusAds() && AppSettings.ShowFbInterstitialAds)
+                if (DeepSoundTools.GetStatusAds() && AppSettings.ShowFbInterstitialAds)
                 {
-                    case true when CountInterstitial == AppSettings.ShowAdInterstitialCount:
-                        {
-                            InitializeFacebook.Initialize(activity);
+                    if (CountInterstitial == AppSettings.ShowAdInterstitialCount)
+                    {
+                        CountInterstitial = 0;
+                        var interstitialAd = new InterstitialAd(activity, AppSettings.AdsFbInterstitialKey);
 
-                            CountInterstitial = 0;
-                            var interstitialAd = new InterstitialAd(activity, AppSettings.AdsFbInterstitialKey);
+                        var build = interstitialAd.BuildLoadAdConfig()
+                            .WithAdListener(new MyInterstitialAdListener(activity, interstitialAd))
+                            .WithCacheFlags(EnumSet.Of(CacheFlag.Video))
+                            .Build();
+                        interstitialAd.LoadAd(build);
 
-                            // Request an ad
-                            //var ss = interstitialAd.BuildLoadAdConfig()(new MyInterstitialAdListener(activity, interstitialAd)).Build();
-                            interstitialAd.LoadAd();
+                        return interstitialAd;
+                    }
+                    else
+                    {
+                        if (AppSettings.ShowAppLovinInterstitialAds)
+                            AdsAppLovin.Ad_Interstitial(activity);
+                    }
 
-                            return interstitialAd;
-                        }
-                    case true:
-                        CountInterstitial++;
-                        break;
+                    CountInterstitial++;
                 }
-
+                else
+                {
+                    if (AppSettings.ShowAppLovinInterstitialAds)
+                        AdsAppLovin.Ad_Interstitial(activity);
+                }
                 return null;
             }
             catch (Exception e)
@@ -142,7 +154,7 @@ namespace DeepSound.Helpers.Ads
             }
         }
 
-        private class MyInterstitialAdListener : Java.Lang.Object, IInterstitialAdListener
+        private class MyInterstitialAdListener : Java.Lang.Object, IInterstitialAdListener, InterstitialAd.IInterstitialLoadAdConfig
         {
             private readonly InterstitialAd InterstitialAd;
             private readonly Activity Activity;
@@ -233,25 +245,38 @@ namespace DeepSound.Helpers.Ads
         {
             try
             {
-                switch (DeepSoundTools.GetStatusAds() && AppSettings.ShowFbRewardVideoAds)
+                if (DeepSoundTools.GetStatusAds())
                 {
-                    case true when CountRewarded == AppSettings.ShowAdRewardedVideoCount:
-                        {
-                            InitializeFacebook.Initialize(activity);
+                    if (AppSettings.ShowFbRewardVideoAds && CountRewarded == AppSettings.ShowAdRewardedVideoCount)
+                    {
+                        CountRewarded = 0;
 
-                            CountRewarded = 0;
+                        var rewardVideoAd = new RewardedVideoAd(activity, AppSettings.AdsFbRewardVideoKey);
 
-                            var rewardVideoAd = new RewardedVideoAd(activity, AppSettings.AdsFbRewardVideoKey);
+                        // Create the rewarded ad data
+                        RewardData rewardData = new RewardData(UserDetails.UserId.ToString(), "200");
 
-                            //rewardVideoAd.SetAdListener(new MyRRewardVideoAdListener(activity, rewardVideoAd));
-                            rewardVideoAd.LoadAd();
-                            //RewardVideoAd.SetRewardData(new RewardData("YOUR_USER_ID", "YOUR_REWARD"));
+                        var build = rewardVideoAd.BuildLoadAdConfig()
+                            ?.WithAdListener(new MyRRewardVideoAdListener(activity, rewardVideoAd))
+                            ?.WithRewardData(rewardData)
+                            ?.WithFailOnCacheFailureEnabled(true)
+                            ?.Build();
+                        rewardVideoAd.LoadAd(build);
 
-                            return rewardVideoAd;
-                        }
-                    case true:
-                        CountRewarded++;
-                        break;
+                        //rewardVideoAd.SetRewardData(new RewardData("YOUR_USER_ID", "YOUR_REWARD"));
+                        return rewardVideoAd;
+                    }
+                    else
+                    {
+                        if (AppSettings.ShowAppLovinRewardAds)
+                            AdsAppLovin.Ad_Rewarded(activity);
+                    }
+                    CountRewarded++;
+                }
+                else
+                {
+                    if (AppSettings.ShowAppLovinRewardAds)
+                        AdsAppLovin.Ad_Rewarded(activity);
                 }
 
                 return null;
@@ -340,7 +365,23 @@ namespace DeepSound.Helpers.Ads
             /// </summary>
             public void OnRewardedVideoCompleted()
             {
+                try
+                {
+                    if (!AppSettings.RewardedAdvertisingSystem)
+                        return;
 
+                    if (!Methods.CheckConnectivity())
+                        Toast.MakeText(Activity, Activity.GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
+                    else
+                    {
+                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { RequestsAsync.Advertise.AddAdMobPointAsync });
+                        Toast.MakeText(Activity, Activity.GetString(Resource.String.Lbl_PointsAdded), ToastLength.Short)?.Show();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Methods.DisplayReportResultTrack(e);
+                }
             }
 
             /// <summary>
@@ -372,17 +413,17 @@ namespace DeepSound.Helpers.Ads
                 {
                     case true:
                         {
-                            InitializeFacebook.Initialize(activity);
-
                             switch (ad)
                             {
                                 case null:
                                     {
                                         var nativeAd = new NativeAd(activity, AppSettings.AdsFbNativeKey);
-                                        //nativeAd.SetAdListener(new NativeAdListener(activity, nativeAd, nativeAdLayout));
 
-                                        // Initiate a request to load an ad.
-                                        nativeAd.LoadAd();
+                                        // Initiate a request to load an ad. 
+                                        var build = nativeAd.BuildLoadAdConfig()
+                                            .WithAdListener(new NativeAdListener(activity, nativeAd, nativeAdLayout))
+                                            .Build();
+                                        nativeAd.LoadAd(build);
                                         break;
                                     }
                                 default:
@@ -671,11 +712,10 @@ namespace DeepSound.Helpers.Ads
 
         #endregion
     }
-
     //public class MyNativeAdsManagerListener : Java.Lang.Object, NativeAdsManager.IListener
     //{
-    //    private readonly NativePostAdapter NativePostAdapter2;
-    //    public MyNativeAdsManagerListener(NativePostAdapter nativePostAdapter)
+    //    private readonly PostsAdapter NativePostAdapter2;
+    //    public MyNativeAdsManagerListener(PostsAdapter nativePostAdapter)
     //    {
     //        try
     //        {
@@ -715,8 +755,10 @@ namespace DeepSound.Helpers.Ads
         {
             try
             {
-                MapsInitializer.Initialize(context);
-                AudienceNetworkAds.Initialize(context);
+                if (AppSettings.ShowFbBannerAds || AppSettings.ShowFbInterstitialAds || AppSettings.ShowFbRewardVideoAds)
+                {
+                    AudienceNetworkAds.Initialize(context);
+                }
             }
             catch (Exception e)
             {

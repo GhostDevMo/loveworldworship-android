@@ -190,7 +190,11 @@ namespace DeepSound.Activities.Search
                             e.AddButton.Text = GetText(Resource.String.Lbl_RemoveFromCart);
                             e.AddButton.Tag = "true";
                             item.AddedToCart = 1;
+
                             PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Product.AddToCartAsync(item.Id?.ToString(), "Add") });
+
+                            GlobalContext?.TrendingFragment?.UpdateBadgeViewIcon(true);
+
                             break;
                         default:
                             e.AddButton.Text = GetText(Resource.String.Lbl_AddToCart);
@@ -198,6 +202,9 @@ namespace DeepSound.Activities.Search
                             item.AddedToCart = 0;
 
                             PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Product.AddToCartAsync(item.Id?.ToString(), "Remove") });
+
+                            GlobalContext?.TrendingFragment?.UpdateBadgeViewIcon(false);
+
                             break;
                     }
                 }

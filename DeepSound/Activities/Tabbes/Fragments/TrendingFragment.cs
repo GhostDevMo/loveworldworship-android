@@ -1,11 +1,10 @@
 ﻿using Android.Content;
-using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
-using AndroidX.Fragment.App;
 using AndroidX.SwipeRefreshLayout.Widget;
+using Com.Google.Android.Gms.Ads.Admanager;
 using DeepSound.Activities.Blog;
 using DeepSound.Activities.Blog.Adapters;
 using DeepSound.Activities.Event;
@@ -25,11 +24,13 @@ using DeepSoundClient.Classes.Playlist;
 using DeepSoundClient.Classes.Product;
 using DeepSoundClient.Requests;
 using Newtonsoft.Json;
+using Q.Rorbin.Badgeview;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using Fragment = AndroidX.Fragment.App.Fragment;
 
 namespace DeepSound.Activities.Tabbes.Fragments
 {
@@ -41,8 +42,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
         private PlaylistAdapter PublicPlaylistAdapter;
         private EventAdapter EventAdapter;
         private BlogAdapter BlogAdapter;
-        public ProductAdapter ProductAdapter;
-        //private StoryAdapter StoryAdapter;
+        private ProductAdapter ProductAdapter;
         private HomeActivity GlobalContext;
         private SwipeRefreshLayout SwipeRefreshLayout;
         private ViewStub EmptyStateLayout, EventViewStub, BlogViewStub, PublicPlaylistViewStub, ProductViewStub;
@@ -56,6 +56,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
         public SearchFragment SearchFragment;
         public ProductFragment ProductFragment;
         private ProductProfileFragment ProductProfileFragment;
+        private static int CountCartsStatic;
 
         #endregion
 
@@ -142,8 +143,8 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 SwipeRefreshLayout.SetProgressBackgroundColorSchemeColor(DeepSoundTools.IsTabDark() ? Color.ParseColor("#424242") : Color.ParseColor("#f7f7f7"));
                 SwipeRefreshLayout.Refresh += SwipeRefreshLayoutOnRefresh;
 
-                var publisherAdView = view.FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
-                AdsGoogle.InitPublisherAdView(publisherAdView);
+                var AdManagerAdView = view.FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
 
                 if (!AppSettings.ShowProduct || !UserDetails.IsLogin)
                     CartIcon.Visibility = ViewStates.Gone;
@@ -468,6 +469,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
             }
             else Methods.DisplayReportResult(Activity, respond);
 
+            await LoadCarts();
             Activity?.RunOnUiThread(() => { ShowEmptyPage("Product"); });
         }
 
@@ -618,12 +620,18 @@ namespace DeepSound.Activities.Tabbes.Fragments
                             e.AddButton.Text = GetText(Resource.String.Lbl_RemoveFromCart);
                             e.AddButton.Tag = "true";
                             item.AddedToCart = 1;
+
                             PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Product.AddToCartAsync(item.Id?.ToString(), "Add") });
+
+                            UpdateBadgeViewIcon(true);
+
                             break;
                         default:
                             e.AddButton.Text = GetText(Resource.String.Lbl_AddToCart);
                             e.AddButton.Tag = "false";
                             item.AddedToCart = 0;
+
+                            UpdateBadgeViewIcon(false);
 
                             PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Product.AddToCartAsync(item.Id?.ToString(), "Remove") });
                             break;
@@ -681,7 +689,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
         {
             try
             {
-                Activity.StartActivity(new Intent(Activity, typeof(BlogActivity)));
+                StartActivity(new Intent(Activity, typeof(BlogActivity)));
             }
             catch (Exception exception)
             {
@@ -711,7 +719,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 {
                     Intent intent = new Intent(Activity, typeof(ShowArticleActivity));
                     intent.PutExtra("itemObject", JsonConvert.SerializeObject(item));
-                    Activity.StartActivity(intent);
+                    StartActivity(intent);
                 }
             }
             catch (Exception exception)
@@ -805,6 +813,100 @@ namespace DeepSound.Activities.Tabbes.Fragments
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
+        #endregion
+
+        #region Carts & Badge
+
+        private async Task LoadCarts()
+        {
+            try
+            {
+                var (apiStatus, respond) = await RequestsAsync.Product.GetCartsAsync("8").ConfigureAwait(false);
+                if (apiStatus == 200)
+                {
+                    if (respond is GetCartsObject result)
+                    {
+                        Activity?.RunOnUiThread(() =>
+                        {
+                            try
+                            {
+                                var count = result.Data?.Count ?? 0;
+                                if (count > 0)
+                                {
+                                    ShowOrHideBadgeViewIcon(count, true);
+                                }
+                                else
+                                {
+                                    ShowOrHideBadgeViewIcon();
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                Methods.DisplayReportResultTrack(e);
+                            }
+                        });
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
+        private QBadgeView BadgeCart;
+        private void ShowOrHideBadgeViewIcon(int count = 0, bool show = false)
+        {
+            try
+            {
+                CountCartsStatic = count;
+                if (show)
+                {
+                    BadgeCart ??= new QBadgeView(Activity);
+                    int gravity = (int)(GravityFlags.End | GravityFlags.Top);
+                    BadgeCart.BindTarget(CartIcon);
+                    BadgeCart.SetBadgeNumber(count);
+                    BadgeCart.SetBadgeGravity(gravity);
+                    BadgeCart.SetBadgeBackgroundColor(Color.ParseColor(AppSettings.MainColor));
+                    BadgeCart.SetGravityOffset(10, true);
+                }
+                else
+                {
+                    BadgeCart?.BindTarget(CartIcon).Hide(true);
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        public void UpdateBadgeViewIcon(bool add)
+        {
+            try
+            {
+                if (add)
+                {
+                    ShowOrHideBadgeViewIcon(CountCartsStatic++, true);
+                }
+                else
+                {
+                    if (CountCartsStatic > 1)
+                    {
+                        ShowOrHideBadgeViewIcon(CountCartsStatic--, true);
+                    }
+                    else
+                    {
+                        ShowOrHideBadgeViewIcon();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
             }
         }
 

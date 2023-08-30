@@ -1,15 +1,15 @@
-﻿using System;
-using Com.Google.Android.Exoplayer2;
+﻿using Com.Google.Android.Exoplayer2;
 using Com.Google.Android.Exoplayer2.Audio;
 using Com.Google.Android.Exoplayer2.Metadata;
 using Com.Google.Android.Exoplayer2.Text;
 using Com.Google.Android.Exoplayer2.Trackselection;
 using Com.Google.Android.Exoplayer2.Video;
-using DeepSound.Helpers.Utils; 
+using DeepSound.Helpers.Utils;
+using System;
 using Object = Java.Lang.Object;
 
 namespace DeepSound.Helpers.MediaPlayerController
-{ 
+{
     public class PlayerEvents : Object, IPlayer.IListener
     {
         private static PlayerService PlayerController;
@@ -127,7 +127,7 @@ namespace DeepSound.Helpers.MediaPlayerController
         {
 
         }
-         
+
         public void OnPlayerStateChanged(bool playWhenReady, int playbackState)
         {
             try
@@ -163,7 +163,7 @@ namespace DeepSound.Helpers.MediaPlayerController
 
         public void OnPositionDiscontinuity(int p0)
         {
-            
+
         }
 
         public void OnRenderedFirstFrame()
@@ -208,7 +208,7 @@ namespace DeepSound.Helpers.MediaPlayerController
 
         public void OnTimelineChanged(Timeline timeline, int reason)
         {
-             
+
         }
 
         public void OnTrackSelectionParametersChanged(TrackSelectionParameters parameters)
@@ -229,6 +229,6 @@ namespace DeepSound.Helpers.MediaPlayerController
         public void OnVolumeChanged(float volume)
         {
 
-        } 
+        }
     }
 }

@@ -1,6 +1,8 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Gms.Auth.Api;
+using Com.Facebook;
+using Com.Facebook.Login;
 using DeepSound.Activities.Albums;
 using DeepSound.Activities.Default;
 using DeepSound.Activities.SettingsUser;
@@ -26,8 +28,6 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Xamarin.Facebook;
-using Xamarin.Facebook.Login;
 using Exception = System.Exception;
 
 namespace DeepSound.Helpers.Controller
@@ -47,7 +47,7 @@ namespace DeepSound.Helpers.Controller
                         ListUtils.SettingsSiteList = result.DataOptions;
 
                         AppSettings.OneSignalAppId = result.DataOptions.AndroidMPushId;
-                         
+
                         //Blog Categories
                         var listBlog = result.DataOptions.BlogCategories?.Select(cat => new Classes.Categories
                         {

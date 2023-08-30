@@ -21,7 +21,7 @@ using Exception = System.Exception;
 
 namespace DeepSound.Activities.Default
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class WoWonderLoginActivity : AppCompatActivity, IDialogInputCallBack
     {
         #region Variables Basic
@@ -439,7 +439,7 @@ namespace DeepSound.Activities.Default
                 }
                 else
                 {
-                    if (PermissionsController.CheckPermissionStorage())
+                    if (PermissionsController.CheckPermissionStorage(this))
                     {
                         LoadConfigSettings();
                         CheckCrossAppAuthentication();

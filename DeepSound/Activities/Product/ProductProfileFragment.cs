@@ -343,7 +343,11 @@ namespace DeepSound.Activities.Product
                         BtnAddToCart.Text = GetText(Resource.String.Lbl_RemoveFromCart);
                         BtnAddToCart.Tag = "true";
                         ProductObject.AddedToCart = 1;
+
                         PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Product.AddToCartAsync(ProductObject.Id?.ToString(), "Add") });
+
+                        GlobalContext?.TrendingFragment?.UpdateBadgeViewIcon(true);
+
                         break;
                     default:
                         BtnAddToCart.Text = GetText(Resource.String.Lbl_AddToCart);
@@ -351,6 +355,9 @@ namespace DeepSound.Activities.Product
                         ProductObject.AddedToCart = 0;
 
                         PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Product.AddToCartAsync(ProductObject.Id?.ToString(), "Remove") });
+
+                        GlobalContext?.TrendingFragment?.UpdateBadgeViewIcon(false);
+
                         break;
                 }
             }
@@ -806,10 +813,10 @@ namespace DeepSound.Activities.Product
 
                         TxtCount.Text = "1";
                     }
-                    var descriptionAutoLink = new TextSanitizer(TxtDescription, Activity);
+                    var descriptionAutoLink = new TextSanitizer(TxtDescription, GlobalContext);
                     descriptionAutoLink.Load(Methods.FunString.DecodeString(ProductObject.Desc));
 
-                    var tagsAutoLink = new TextSanitizer(TxtTags, Activity);
+                    var tagsAutoLink = new TextSanitizer(TxtTags, GlobalContext);
                     tagsAutoLink.Load(Methods.FunString.DecodeString(ProductObject.Tags).Replace(",", " #"));
 
                     if (ProductObject.RelatedSong?.SongClass != null)
@@ -929,7 +936,7 @@ namespace DeepSound.Activities.Product
 
                     var intent = new Intent(Activity, typeof(EditProductActivity));
                     intent.PutExtra("ProductView", JsonConvert.SerializeObject(ProductObject));
-                    Activity.StartActivity(intent);
+                    StartActivity(intent);
                 }
                 else if (text == GetText(Resource.String.Lbl_Share))
                 {

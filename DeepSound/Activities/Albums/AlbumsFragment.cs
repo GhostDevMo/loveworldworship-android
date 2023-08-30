@@ -1,5 +1,4 @@
-﻿using Android.Gms.Ads.DoubleClick;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -8,6 +7,7 @@ using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
 using Bumptech.Glide.Util;
+using Com.Google.Android.Gms.Ads.Admanager;
 using DeepSound.Activities.Library.Listeners;
 using DeepSound.Activities.Songs.Adapters;
 using DeepSound.Activities.Tabbes;
@@ -52,7 +52,7 @@ namespace DeepSound.Activities.Albums
         private ViewStub EmptyStateLayout;
         private View Inflated;
 
-        private PublisherAdView PublisherAdView;
+        private AdManagerAdView AdManagerAdView;
 
         private DataAlbumsObject AlbumsObject;
         private string AlbumsId;
@@ -113,7 +113,7 @@ namespace DeepSound.Activities.Albums
             try
             {
                 base.OnResume();
-                PublisherAdView?.Resume();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -126,7 +126,7 @@ namespace DeepSound.Activities.Albums
             try
             {
                 base.OnPause();
-                PublisherAdView?.Pause();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -151,7 +151,7 @@ namespace DeepSound.Activities.Albums
             try
             {
                 Instance = null;
-                PublisherAdView?.Destroy();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Destroy");
                 base.OnDestroy();
             }
             catch (Exception exception)
@@ -196,8 +196,8 @@ namespace DeepSound.Activities.Albums
                 MRecycler = view.FindViewById<RecyclerView>(Resource.Id.songRecycler);
                 EmptyStateLayout = view.FindViewById<ViewStub>(Resource.Id.viewStub);
 
-                PublisherAdView = view.FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
-                AdsGoogle.InitPublisherAdView(PublisherAdView);
+                AdManagerAdView = view.FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
             }
             catch (Exception e)
             {
@@ -243,7 +243,6 @@ namespace DeepSound.Activities.Albums
         #endregion
 
         #region Event
-
 
         //Start Play all Sound 
         private void MAdapterItemClick(object sender, RowSoundAdapterClickEventArgs e)
@@ -413,7 +412,7 @@ namespace DeepSound.Activities.Albums
         {
             try
             {
-                LibrarySynchronizer?.AlbumsOnMoreClick(AlbumsObject);
+                LibrarySynchronizer?.AlbumsOnMoreClick(AlbumsObject, MAdapter.SoundsList);
             }
             catch (Exception exception)
             {

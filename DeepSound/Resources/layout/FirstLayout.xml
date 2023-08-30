@@ -67,7 +67,7 @@
 				android:layout_marginTop="15dp"
 				android:layout_marginBottom="5dp"
 				android:background="@drawable/round_button_pressed"
-				android:text="@string/bt_next"
+				android:text="@string/Lbl_Next"
 				android:textAppearance="?android:attr/textAppearanceSmall"
 				android:textColor="@color/gnt_white"
 				android:textSize="13sp"

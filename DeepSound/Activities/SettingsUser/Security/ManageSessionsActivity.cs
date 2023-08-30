@@ -1,7 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -9,6 +8,7 @@ using Android.Widget;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
+using Com.Google.Android.Gms.Ads;
 using DeepSound.Activities.Base;
 using DeepSound.Activities.SettingsUser.Adapters;
 using DeepSound.Helpers.Ads;
@@ -26,7 +26,7 @@ using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser.Security
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class ManageSessionsActivity : BaseActivity
     {
         #region Variables Basic
@@ -74,7 +74,7 @@ namespace DeepSound.Activities.SettingsUser.Security
             {
                 base.OnResume();
                 AddOrRemoveEvent(true);
-                MAdView?.Resume();
+                AdsGoogle.LifecycleAdView(MAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -88,7 +88,7 @@ namespace DeepSound.Activities.SettingsUser.Security
             {
                 base.OnPause();
                 AddOrRemoveEvent(false);
-                MAdView?.Pause();
+                AdsGoogle.LifecycleAdView(MAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -126,7 +126,7 @@ namespace DeepSound.Activities.SettingsUser.Security
         {
             try
             {
-                MAdView?.Destroy();
+                AdsGoogle.LifecycleAdView(MAdView, "Destroy");
                 base.OnDestroy();
             }
             catch (Exception exception)

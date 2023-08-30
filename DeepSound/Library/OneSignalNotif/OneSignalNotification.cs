@@ -227,7 +227,10 @@ namespace DeepSound.Library.OneSignalNotif
                 Console.WriteLine(notification);
 
                 if (notification?.To.IsSubscribed != null && notification.To.IsSubscribed.Value && !string.IsNullOrEmpty(notification.To.UserId))
+                {
                     UserDetails.DeviceId = notification.To.UserId;
+                    UserDetails.AndroidId = UserDetails.UserId + "_" + notification.To.UserId.Replace("-", "");
+                }
 
                 IdsAvailable();
             }

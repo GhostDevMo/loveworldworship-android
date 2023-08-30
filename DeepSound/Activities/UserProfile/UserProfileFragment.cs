@@ -486,7 +486,7 @@ namespace DeepSound.Activities.UserProfile
                 Intent intent = new Intent(Activity, typeof(DialogInfoUserActivity));
                 intent.PutExtra("ItemDataUser", JsonConvert.SerializeObject(DataUser));
                 intent.PutExtra("ItemDataDetails", JsonConvert.SerializeObject(DetailsCounter));
-                Activity.StartActivity(intent);
+                StartActivity(intent);
             }
             catch (Exception exception)
             {

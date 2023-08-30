@@ -152,7 +152,7 @@ namespace DeepSound.Activities.Tabbes
         {
             try
             {
-                Activity.StartActivity(new Intent(Activity, typeof(CreateAdvertiseActivity)));
+                StartActivity(new Intent(Activity, typeof(CreateAdvertiseActivity)));
                 Dismiss();
             }
             catch (Exception exception)
@@ -180,7 +180,7 @@ namespace DeepSound.Activities.Tabbes
         {
             try
             {
-                Activity.StartActivity(new Intent(Activity, typeof(CreateStationsActivity)));
+                StartActivity(new Intent(Activity, typeof(CreateStationsActivity)));
                 Dismiss();
             }
             catch (Exception exception)
@@ -193,7 +193,7 @@ namespace DeepSound.Activities.Tabbes
         {
             try
             {
-                Activity.StartActivityForResult(new Intent(Activity, typeof(CreateProductActivity)), 3500);
+                StartActivityForResult(new Intent(Activity, typeof(CreateProductActivity)), 3500);
                 Dismiss();
             }
             catch (Exception exception)
@@ -206,7 +206,7 @@ namespace DeepSound.Activities.Tabbes
         {
             try
             {
-                Activity.StartActivityForResult(new Intent(Activity, typeof(CreateEventActivity)), 4500);
+                StartActivityForResult(new Intent(Activity, typeof(CreateEventActivity)), 4500);
                 Dismiss();
             }
             catch (Exception exception)

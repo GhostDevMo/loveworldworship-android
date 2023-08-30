@@ -188,7 +188,7 @@
 					android:layout_width="match_parent"
 					android:layout_height="350dp" />
 				 
-				<com.google.android.gms.ads.doubleclick.PublisherAdView
+				<com.google.android.gms.ads.admanager.AdManagerAdView
 					android:id="@+id/multiple_ad_sizes_view"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"

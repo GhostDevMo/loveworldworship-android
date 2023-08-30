@@ -1,7 +1,7 @@
-﻿using Android.App;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.Views;
 using Android.Widget;
+using AndroidX.AppCompat.App;
 using AndroidX.RecyclerView.Widget;
 using Bumptech.Glide;
 using Bumptech.Glide.Request;
@@ -27,11 +27,11 @@ namespace DeepSound.Activities.Comments.Adapters
         public event EventHandler<CommentAdapterClickEventArgs> ItemClick;
         public event EventHandler<CommentAdapterClickEventArgs> ItemLongClick;
 
-        private readonly Activity ActivityContext;
+        private readonly AppCompatActivity ActivityContext;
         private readonly string Type;
         public ObservableCollection<CommentsDataObject> CommentList = new ObservableCollection<CommentsDataObject>();
 
-        public CommentsAdapter(Activity context, string type)
+        public CommentsAdapter(AppCompatActivity context, string type)
         {
             try
             {

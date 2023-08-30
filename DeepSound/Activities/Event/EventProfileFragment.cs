@@ -253,7 +253,7 @@ namespace DeepSound.Activities.Event
                     {
                         try
                         {
-                            Activity.StartActivity(new Intent(Activity, typeof(WalletActivity)));
+                            StartActivity(new Intent(Activity, typeof(WalletActivity)));
                         }
                         catch (Exception exception)
                         {
@@ -432,7 +432,7 @@ namespace DeepSound.Activities.Event
 
                     if (!string.IsNullOrEmpty(EventObject.OnlineUrl))
                     {
-                        var descriptionAutoLink = new TextSanitizer(TxtLocation, Activity);
+                        var descriptionAutoLink = new TextSanitizer(TxtLocation, GlobalContext);
                         descriptionAutoLink.Load(EventObject.OnlineUrl);
                     }
                     else if (!string.IsNullOrEmpty(EventObject.RealAddress))
@@ -555,7 +555,7 @@ namespace DeepSound.Activities.Event
 
                     var intent = new Intent(Activity, typeof(EditEventActivity));
                     intent.PutExtra("EventView", JsonConvert.SerializeObject(EventObject));
-                    Activity.StartActivity(intent);
+                    StartActivity(intent);
                 }
                 else if (text == GetText(Resource.String.Lbl_Share))
                 {

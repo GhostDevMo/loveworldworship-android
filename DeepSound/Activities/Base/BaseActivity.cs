@@ -1,17 +1,17 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.Res;
-using Android.Views;
-using AndroidX.AppCompat.App;
-using DeepSound.Activities.SettingsUser;
-using DeepSound.Helpers.Utils;
-using System;
 using Android.OS;
 using Android.Runtime;
+using Android.Views;
 using Android.Window;
 using AndroidX.Activity;
+using AndroidX.AppCompat.App;
 using AndroidX.Core.OS;
+using DeepSound.Activities.SettingsUser;
 using DeepSound.Activities.Tabbes;
+using DeepSound.Helpers.Utils;
+using System;
 using Object = Java.Lang.Object;
 
 namespace DeepSound.Activities.Base
@@ -146,7 +146,7 @@ namespace DeepSound.Activities.Base
                 }
                 else
                 {
-                    BackCallAppTools.OnBackPressed(Activity, PageName);
+                    BackCallDeepSoundTools.OnBackPressed(Activity, PageName);
                 }
             }
             catch (Exception e)
@@ -178,7 +178,7 @@ namespace DeepSound.Activities.Base
                 }
                 else
                 {
-                    BackCallAppTools.OnBackPressed(Activity, PageName);
+                    BackCallDeepSoundTools.OnBackPressed(Activity, PageName);
                 }
             }
             catch (Exception e)
@@ -188,7 +188,7 @@ namespace DeepSound.Activities.Base
         }
     }
 
-    public static class BackCallAppTools
+    public static class BackCallDeepSoundTools
     {
         public static void OnBackPressed(Activity activity, string pageName)
         {
@@ -200,15 +200,15 @@ namespace DeepSound.Activities.Base
                     activity?.Finish();
                 }
                 else switch (pageName)
-                {
-                    case "HomeActivity":
                     {
-                        var subActivity = activity as HomeActivity;
-                        subActivity?.BackPressed();
-                        break;
-                    }
+                        case "HomeActivity":
+                            {
+                                var subActivity = activity as HomeActivity;
+                                subActivity?.BackPressed();
+                                break;
+                            }
 
-                }
+                    }
             }
             catch (Exception e)
             {

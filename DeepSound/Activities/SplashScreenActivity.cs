@@ -2,7 +2,7 @@
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
-using DeepSound.Activities.Base;
+using AndroidX.AppCompat.App;
 using DeepSound.Activities.Default;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Controller;
@@ -15,9 +15,9 @@ using Exception = System.Exception;
 namespace DeepSound.Activities
 {
     [Activity(Icon = "@mipmap/icon", MainLauncher = true, NoHistory = true, Theme = "@style/SplashScreenTheme", Exported = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryBrowsable, Intent.CategoryDefault }, DataSchemes = new[] { "http", "https" }, DataHost = "@string/ApplicationUrlWeb", AutoVerify = false)]
-    [IntentFilter(new[] { Intent.ActionView, Intent.ActionMain }, Categories = new[] { Intent.CategoryBrowsable, Intent.CategoryDefault }, DataSchemes = new[] { "http", "https" }, DataHost = "@string/ApplicationUrlWeb", DataPathPrefixes = new[] { "/track", "/reset-password", "ref=", }, AutoVerify = false)]
-    public class SplashScreenActivity : BaseActivity
+    [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryBrowsable, Intent.CategoryDefault, Intent.CategoryAppBrowser }, DataSchemes = new[] { "http", "https", "app" }, DataHosts = new[] { "@string/ApplicationUrlWeb", "@string/ApplicationShortUrl" }, AutoVerify = true)]
+    [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryBrowsable, Intent.CategoryDefault, Intent.CategoryAppBrowser }, DataSchemes = new[] { "http", "https", "app" }, DataHosts = new[] { "@string/ApplicationUrlWeb", "@string/ApplicationShortUrl" }, DataPathPrefixes = new[] { "/track/", "/reset-password/", "ref=" }, AutoVerify = true)]
+    public class SplashScreenActivity : AppCompatActivity
     {
         #region Variables Basic
 
@@ -31,7 +31,7 @@ namespace DeepSound.Activities
             {
                 if (Build.VERSION.SdkInt >= BuildVersionCodes.S)
                 {
-                   Androidx.Core.Splashscreen.SplashScreen.InstallSplashScreen(this);
+                    AndroidX.Core.SplashScreen.SplashScreen.InstallSplashScreen(this);
                 }
 
                 base.OnCreate(savedInstanceState);
@@ -63,13 +63,14 @@ namespace DeepSound.Activities
 
                 if (Intent?.Data != null)
                 {
-                    if (Intent.Data.ToString()!.Contains("/track"))
+                    if (Intent.Data.ToString()!.Contains("track"))
                     {
-                        //https://demo.deepsoundscript.com/track/715v7bilQTnBK8c
+                        //https://demo.deepsoundscript.com/track/uxIRQ5QcwLnf8oh
                         var trackId = Intent.Data.ToString()!.Split("/track/")?.LastOrDefault()?.Replace("/", "") ?? "";
 
                         var intent = new Intent(this, typeof(HomeActivity));
                         intent.PutExtra("TrackId", trackId);
+                        intent.PutExtra("TypeNotification", "RunSong");
                         switch (UserDetails.Status)
                         {
                             case "Active":
@@ -94,12 +95,12 @@ namespace DeepSound.Activities
                         intent.PutExtra("EmailCode", code);
                         StartActivity(intent);
                     }
-                    else if (Intent.Data.ToString()!.Contains("ref=") && string.IsNullOrEmpty(UserDetails.AccessToken))
+                    else if (Intent.Data.ToString()!.Contains("ref=") && !string.IsNullOrEmpty(UserDetails.AccessToken))
                     {
                         //https://demo.deepsoundscript.com/?ref=admin 
                         var referral = Intent.Data.ToString()!.Split("?ref=")?.LastOrDefault() ?? "";
 
-                        var intent = new Intent(Application.Context, typeof(RegisterActivity));
+                        var intent = new Intent(this, typeof(RegisterActivity));
                         intent.PutExtra("Referral", referral);
                         StartActivity(intent);
                     }

@@ -1,11 +1,12 @@
 ﻿using Android.App;
-using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
 using Android.Widget;
+using AndroidX.AppCompat.App;
 using Bumptech.Glide;
 using Bumptech.Glide.Load.Engine;
 using Bumptech.Glide.Load.Resource.Bitmap;
 using Bumptech.Glide.Request;
+using Com.Google.Android.Gms.Ads.Admanager;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.CacheLoaders;
@@ -23,7 +24,7 @@ namespace DeepSound.Activities.Songs
     {
         #region Variables Basic
 
-        private readonly Activity ActivityContext;
+        private readonly AppCompatActivity ActivityContext;
         private Dialog InfoSongWindow;
         private ImageView ImageSong, ImageCover;
         private TextView IconClose, TxtNameSong, IconGenres, TxtGenres, TxtPublisherName, TxtDate, TxtAgeRestriction, TxtDuration, TxtPurchased;
@@ -32,12 +33,12 @@ namespace DeepSound.Activities.Songs
 
         //private LinearLayout LayoutGenres, LayoutPublisher, LayoutAddedOn;
         private SoundDataObject DataObject;
-        private PublisherAdView PublisherAdView;
+        private AdManagerAdView AdManagerAdView;
         public StReadMoreOption ReadMoreOption { get; }
 
         #endregion
 
-        public DialogInfoSong(Activity activity)
+        public DialogInfoSong(AppCompatActivity activity)
         {
             try
             {
@@ -129,8 +130,8 @@ namespace DeepSound.Activities.Songs
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, IconShare, IonIconsFonts.ShareAlt);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeLight, IconComment, FontAwesomeIcon.CommentDots);
 
-                PublisherAdView = InfoSongWindow?.FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
-                AdsGoogle.InitPublisherAdView(PublisherAdView);
+                AdManagerAdView = InfoSongWindow?.FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
             }
             catch (Exception e)
             {
@@ -185,7 +186,7 @@ namespace DeepSound.Activities.Songs
         {
             try
             {
-                PublisherAdView?.Destroy();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Destroy");
 
                 InfoSongWindow?.Hide();
                 InfoSongWindow?.Dismiss();

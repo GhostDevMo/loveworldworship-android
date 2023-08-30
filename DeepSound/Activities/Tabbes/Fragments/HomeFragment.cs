@@ -8,6 +8,7 @@ using DeepSound.Activities.Songs;
 using DeepSound.Activities.Tabbes.HomePages;
 using DeepSound.Adapters;
 using DeepSound.Helpers.Ads;
+using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using Google.Android.Material.Tabs;
@@ -254,6 +255,13 @@ namespace DeepSound.Activities.Tabbes.Fragments
         {
             try
             {
+                if (!UserDetails.IsLogin)
+                {
+                    PopupDialogController dialog = new PopupDialogController(Activity, null, "Login");
+                    dialog.ShowNormalDialog(Activity.GetText(Resource.String.Lbl_Login), Activity.GetText(Resource.String.Lbl_Message_Sorry_signin), Activity.GetText(Resource.String.Lbl_Yes), Activity.GetText(Resource.String.Lbl_No));
+                    return;
+                }
+
                 AddBottomSheetFragment addBottomSheetFragment = new AddBottomSheetFragment();
                 addBottomSheetFragment.Show(ChildFragmentManager, addBottomSheetFragment.Tag);
             }
@@ -267,6 +275,13 @@ namespace DeepSound.Activities.Tabbes.Fragments
         {
             try
             {
+                if (!UserDetails.IsLogin)
+                {
+                    PopupDialogController dialog = new PopupDialogController(Activity, null, "Login");
+                    dialog.ShowNormalDialog(Activity.GetText(Resource.String.Lbl_Login), Activity.GetText(Resource.String.Lbl_Message_Sorry_signin), Activity.GetText(Resource.String.Lbl_Yes), Activity.GetText(Resource.String.Lbl_No));
+                    return;
+                }
+
                 NotificationFragment notificationFragment = new NotificationFragment();
                 ContextGlobal.FragmentBottomNavigator.DisplayFragment(notificationFragment);
             }

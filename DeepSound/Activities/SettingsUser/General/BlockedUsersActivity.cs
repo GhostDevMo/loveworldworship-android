@@ -1,7 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -10,6 +9,7 @@ using AndroidX.AppCompat.Content.Res;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
 using Bumptech.Glide.Util;
+using Com.Google.Android.Gms.Ads;
 using DeepSound.Activities.Base;
 using DeepSound.Activities.SettingsUser.Adapters;
 using DeepSound.Helpers.Ads;
@@ -30,7 +30,7 @@ using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser.General
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class BlockedUsersActivity : BaseActivity
     {
         #region Variables Basic
@@ -80,7 +80,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 base.OnResume();
                 AddOrRemoveEvent(true);
 
-                MAdView?.Resume();
+                AdsGoogle.LifecycleAdView(MAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -95,7 +95,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 base.OnPause();
                 AddOrRemoveEvent(false);
 
-                MAdView?.Pause();
+                AdsGoogle.LifecycleAdView(MAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -134,7 +134,7 @@ namespace DeepSound.Activities.SettingsUser.General
             try
             {
 
-                MAdView?.Destroy();
+                AdsGoogle.LifecycleAdView(MAdView, "Destroy");
                 base.OnDestroy();
             }
             catch (Exception exception)

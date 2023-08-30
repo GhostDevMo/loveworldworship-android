@@ -158,6 +158,13 @@ namespace DeepSound.Activities.Library
                 MainScrollEvent.LoadMoreEvent += MainScrollEventOnLoadMoreEvent;
                 MRecycler.AddOnScrollListener(xamarinRecyclerViewOnScrollListener);
                 MainScrollEvent.IsLoading = false;
+
+                if (ListUtils.PlaylistList.Count > 0)
+                {
+                    MAdapter.PlaylistList = new ObservableCollection<PlaylistDataObject>(ListUtils.PlaylistList);
+                    MAdapter.NotifyDataSetChanged();
+                }
+
             }
             catch (Exception e)
             {
@@ -202,13 +209,6 @@ namespace DeepSound.Activities.Library
             if (MainScrollEvent.IsLoading)
                 return;
 
-            if (ListUtils.PlaylistList.Count > 0)
-            {
-                MAdapter.PlaylistList = new ObservableCollection<PlaylistDataObject>(ListUtils.PlaylistList);
-                Activity.RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); });
-                offset = MAdapter.PlaylistList.LastOrDefault()?.Id.ToString() ?? "0";
-            }
-
             if (Methods.CheckConnectivity())
             {
                 MainScrollEvent.IsLoading = true;
@@ -219,6 +219,7 @@ namespace DeepSound.Activities.Library
                     Name = GetText(Resource.String.Lbl_AddNewPlaylist),
                     UserId = 0
                 };
+
                 if (!MAdapter.PlaylistList.Contains(addNewPlaylist))
                     MAdapter.PlaylistList.Insert(0, addNewPlaylist);
 

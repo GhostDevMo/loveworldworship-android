@@ -6,7 +6,7 @@ using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
 using Bumptech.Glide.Util;
-using Com.Adcolony.Sdk;
+using Com.Facebook.Ads;
 using DeepSound.Activities.Songs;
 using DeepSound.Activities.Songs.Adapters;
 using DeepSound.Activities.Tabbes;
@@ -24,7 +24,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Facebook.Ads;
 
 namespace DeepSound.Activities.UserProfile.Fragments
 {
@@ -112,8 +111,8 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 LinearLayout adContainer = view.FindViewById<LinearLayout>(Resource.Id.bannerContainer);
                 if (AppSettings.ShowFbBannerAds)
                     BannerAd = AdsFacebook.InitAdView(Activity, adContainer, MRecycler);
-                else
-                    AdsColony.InitBannerAd(Activity, adContainer, AdColonyAdSize.Banner, MRecycler);
+                else if (AppSettings.ShowAppLovinBannerAds)
+                    AdsAppLovin.InitBannerAd(Activity, adContainer, MRecycler);
             }
             catch (Exception e)
             {

@@ -1,10 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <resources>
 
-  <!--add your website without http >> deepsoundscript.com-->
-  <string name="ApplicationUrlWeb">deepsoundscript.com</string>
+  <!--add your website without http >> demo.deepsoundscript.com-->
+  <string name="ApplicationUrlWeb">demo.deepsoundscript.com</string>
+  <string name="ApplicationShortUrl">dsound.app</string>
 
-  <!-- #warning about new privacy on google AdMob...
+	<!-- #warning about new privacy on google AdMob...
 	should add file app-ads.txt in the server >>this content file text https://prnt.sc/vm086w
 	and the link should example: https://www.demo.com/app-ads.txt -->
   <!--ADMOB APPLICATION_ID >> ca-app-pub-xxxxxxxxxxxxxxxx~yyyyyyyyyy-->
@@ -29,5 +30,8 @@
 	<string name="google_key">AIzaSyAZFwH8l7SRVNgxwbmC5TAx1D2omGeaZEI</string>
 
   <string name="razorpay_api_Key">rzp_test_ruzI7R7AkonOIi</string>
+
+  <!--applovin-->
+  <string name="applovin_key">SxMabBT0TXbgZEUdyrgV-cu_PA2AgCaVLN5TORmuM2SFcx6iXQRAzVzdTC4OoMewfzlqnKcF8ZQIHrqEfcIb2S</string>
 
 </resources>

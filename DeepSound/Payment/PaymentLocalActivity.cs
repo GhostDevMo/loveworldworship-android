@@ -1,7 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -14,6 +13,7 @@ using AT.Markushi.UI;
 using Bumptech.Glide;
 using Bumptech.Glide.Request;
 using Com.Canhub.Cropper;
+using Com.Google.Android.Gms.Ads.Admanager;
 using DeepSound.Activities.Base;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.CacheLoaders;
@@ -26,7 +26,7 @@ using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Payment
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class PaymentLocalActivity : BaseActivity, IActivityResultCallback
     {
         #region Variables Basic
@@ -36,7 +36,7 @@ namespace DeepSound.Payment
         private CircleButton ImageClose;
         private AppCompatButton BtnAddImage, BtnApply;
         private string Id, Price, PayType, PathImage = "";
-        private PublisherAdView PublisherAdView;
+        private AdManagerAdView AdManagerAdView;
         private DialogGalleryController GalleryController;
 
         #endregion
@@ -75,7 +75,7 @@ namespace DeepSound.Payment
             try
             {
                 base.OnResume();
-                PublisherAdView?.Resume();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Resume");
                 AddOrRemoveEvent(true);
             }
             catch (Exception e)
@@ -89,7 +89,7 @@ namespace DeepSound.Payment
             try
             {
                 base.OnPause();
-                PublisherAdView?.Pause();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Pause");
                 AddOrRemoveEvent(false);
             }
             catch (Exception e)
@@ -127,7 +127,7 @@ namespace DeepSound.Payment
         {
             try
             {
-                PublisherAdView?.Destroy();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Destroy");
                 base.OnDestroy();
             }
             catch (Exception exception)
@@ -182,8 +182,8 @@ namespace DeepSound.Payment
                     CardCountry.Text = splitText[7];
                 }
 
-                PublisherAdView = FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
-                AdsGoogle.InitPublisherAdView(PublisherAdView);
+                AdManagerAdView = FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
             }
             catch (Exception e)
             {

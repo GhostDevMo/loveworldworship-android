@@ -32,11 +32,12 @@
 			android:textFontWeight="700"
 			android:layout_weight="1"
 			android:layout_marginStart="15dp" />
-		 
+		  
 		<ImageView
 			android:id="@+id/CartIcon"
-			android:layout_width="25dp"
-			android:layout_height="25dp"
+			android:layout_width="40dp"
+			android:layout_height="40dp"
+			android:padding="6dp"
 			android:background="?attr/selectableItemBackgroundBorderless"
 			android:clickable="true"
 			android:layout_marginStart="5dp"
@@ -132,7 +133,7 @@
 					android:layout_height="?attr/actionBarSize"
 					android:layout_width="match_parent" />
 
-				<com.google.android.gms.ads.doubleclick.PublisherAdView
+				<com.google.android.gms.ads.admanager.AdManagerAdView
 					android:id="@+id/multiple_ad_sizes_view"
 					android:layout_width="match_parent"
 					android:layout_height="wrap_content"

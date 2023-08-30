@@ -1,7 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -9,6 +8,7 @@ using Android.Widget;
 using AndroidHUD;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.AppCompat.Widget;
+using Com.Google.Android.Gms.Ads.Admanager;
 using DeepSound.Activities.Base;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Utils;
@@ -21,14 +21,14 @@ using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.Upload
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class ImportSongActivity : BaseActivity
     {
         #region Variables Basic
 
         private EditText TxtLink;
         private AppCompatButton BtnImport;
-        private PublisherAdView PublisherAdView;
+        private AdManagerAdView AdManagerAdView;
 
         #endregion
 
@@ -49,8 +49,8 @@ namespace DeepSound.Activities.Upload
                 InitComponent();
                 InitToolbar();
 
-                PublisherAdView = FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
-                AdsGoogle.InitPublisherAdView(PublisherAdView);
+                AdManagerAdView = FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
             }
             catch (Exception e)
             {
@@ -63,7 +63,7 @@ namespace DeepSound.Activities.Upload
             try
             {
                 base.OnResume();
-                PublisherAdView?.Resume();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Resume");
                 AddOrRemoveEvent(true);
             }
             catch (Exception e)
@@ -77,7 +77,7 @@ namespace DeepSound.Activities.Upload
             try
             {
                 base.OnPause();
-                PublisherAdView?.Pause();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Pause");
                 AddOrRemoveEvent(false);
             }
             catch (Exception e)
@@ -115,7 +115,7 @@ namespace DeepSound.Activities.Upload
         {
             try
             {
-                PublisherAdView?.Destroy();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Destroy");
                 base.OnDestroy();
             }
             catch (Exception exception)

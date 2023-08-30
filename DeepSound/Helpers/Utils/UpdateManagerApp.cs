@@ -150,7 +150,7 @@ namespace DeepSound.Helpers.Utils
             //        {
             //            appUpdateManager.CompleteUpdate();
             //            // You can start your activityonresult method when update is not available when using immediate update when testing with fakeappupdate manager
-            //            //_mainActivity.StartActivityForResult(_intent, 400);
+            //            //MainActivity.StartActivityForResult(_intent, 400);
             //        });
             //        alert.Show();
             //    }

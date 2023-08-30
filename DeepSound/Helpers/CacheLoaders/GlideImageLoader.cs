@@ -50,7 +50,7 @@ namespace DeepSound.Helpers.CacheLoaders
                 var newImage = Glide.With(activity.BaseContext);
 
                 options ??= GetOptions(style, imagePlaceholders);
-                 
+
                 switch (compress)
                 {
                     case true:
@@ -63,7 +63,6 @@ namespace DeepSound.Helpers.CacheLoaders
                     newImage.Load(imageUri).Apply(options)
                         .Transition(DrawableTransitionOptions.WithCrossFade())
                         .Transform(new BlurTransformation(activity), new CenterCrop())
-                        .Override(150)
                         .Into(image);
                     return;
                 }
@@ -98,7 +97,7 @@ namespace DeepSound.Helpers.CacheLoaders
                 }
                 else if (!string.IsNullOrEmpty(imageUri) && imageUri.Contains("http"))
                 {
-                    newImage.Load(imageUri).Apply(options).Override(150).Into(image);
+                    newImage.Load(imageUri).Apply(options).Into(image);
                 }
                 else if (!string.IsNullOrEmpty(imageUri) && (imageUri.Contains("file://") || imageUri.Contains("content://") || imageUri.Contains("storage") || imageUri.Contains("/data/user/0/")))
                 {
@@ -107,22 +106,22 @@ namespace DeepSound.Helpers.CacheLoaders
                         File file2 = new File(imageUri);
                         if (!System.IO.File.Exists(file2.Path))
                         {
-                            Glide.With(activity.BaseContext).Load(file2).Apply(options).Override(150).Into(image);
+                            Glide.With(activity.BaseContext).Load(file2).Apply(options).Into(image);
                         }
                         else
                         {
                             var photoUri = FileProvider.GetUriForFile(activity, activity.PackageName + ".fileprovider", file2);
-                            Glide.With(activity.BaseContext).Load(photoUri).Apply(options).Override(150).Into(image);
+                            Glide.With(activity.BaseContext).Load(photoUri).Apply(options).Into(image);
                         }
                     }
                     catch
                     {
-                        Glide.With(activity.BaseContext).Load(imageUri).Apply(options).Override(150).Into(image);
+                        Glide.With(activity.BaseContext).Load(imageUri).Apply(options).Into(image);
                     }
                 }
                 else
                 {
-                    newImage.Load(Resource.Drawable.no_profile_image).Apply(options).Override(150).Into(image);
+                    newImage.Load(Resource.Drawable.no_profile_image).Apply(options).Into(image);
                 }
             }
             catch (Exception e)
@@ -220,7 +219,7 @@ namespace DeepSound.Helpers.CacheLoaders
                     options.CircleCrop();
 
                 options.Override(200);
-                 
+
                 options.SetDiskCacheStrategy(DiskCacheStrategy.All);
 
                 return Glide.With(activityContext.BaseContext)

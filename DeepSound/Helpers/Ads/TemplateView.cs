@@ -1,7 +1,5 @@
 ﻿using Android.Content;
 using Android.Content.Res;
-using Android.Gms.Ads;
-using Android.Gms.Ads.Formats;
 using Android.Graphics;
 using Android.Graphics.Drawables;
 using Android.Runtime;
@@ -9,8 +7,8 @@ using Android.Text;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
-using AndroidX.AppCompat.Widget;
-using DeepSound.Helpers.Utils;
+using Com.Google.Android.Gms.Ads;
+using Com.Google.Android.Gms.Ads.Nativead;
 using System;
 
 namespace DeepSound.Helpers.Ads
@@ -19,8 +17,8 @@ namespace DeepSound.Helpers.Ads
     {
         private int TemplateType;
         private NativeTemplateStyle Styles;
-        private UnifiedNativeAd NativeAd;
-        private UnifiedNativeAdView NativeAdView;
+        private NativeAd NativeAd;
+        private NativeAdView NativeAdView;
 
         private TextView PrimaryView;
         private TextView SecondaryView;
@@ -31,7 +29,7 @@ namespace DeepSound.Helpers.Ads
 
         private MediaView MediaView;
 
-        //private AppCompatButton CallToActionView; 
+        //private Button CallToActionView; 
 
         private new LinearLayout Background;
 
@@ -70,7 +68,7 @@ namespace DeepSound.Helpers.Ads
             ApplyStyles();
         }
 
-        public UnifiedNativeAdView GetNativeAdView()
+        public NativeAdView GetNativeAdView()
         {
             return NativeAdView;
         }
@@ -154,21 +152,27 @@ namespace DeepSound.Helpers.Ads
                 //}
 
                 float primaryTextSize = Styles.GetPrimaryTextSize();
-                if (primaryTextSize > 0)
+                switch (primaryTextSize)
                 {
-                    PrimaryView?.SetTextSize(ComplexUnitType.Sp, primaryTextSize);
+                    case > 0:
+                        PrimaryView?.SetTextSize(ComplexUnitType.Sp, primaryTextSize);
+                        break;
                 }
 
                 float secondaryTextSize = Styles.GetSecondaryTextSize();
-                if (secondaryTextSize > 0)
+                switch (secondaryTextSize)
                 {
-                    SecondaryView?.SetTextSize(ComplexUnitType.Sp, secondaryTextSize);
+                    case > 0:
+                        SecondaryView?.SetTextSize(ComplexUnitType.Sp, secondaryTextSize);
+                        break;
                 }
 
                 float tertiaryTextSize = Styles.GetTertiaryTextSize();
-                if (tertiaryTextSize > 0)
+                switch (tertiaryTextSize)
                 {
-                    TertiaryView?.SetTextSize(ComplexUnitType.Sp, tertiaryTextSize);
+                    case > 0:
+                        TertiaryView?.SetTextSize(ComplexUnitType.Sp, tertiaryTextSize);
+                        break;
                 }
 
                 //Drawable ctaBackground = Styles.GetCallToActionBackgroundColor();
@@ -200,18 +204,18 @@ namespace DeepSound.Helpers.Ads
             }
             catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(e);
+                Console.WriteLine(e);
             }
         }
 
-        private bool AdHasOnlyStore(UnifiedNativeAd nativeAd)
+        private bool AdHasOnlyStore(NativeAd nativeAd)
         {
             string store = nativeAd.Store;
             string advertiser = nativeAd.Advertiser;
             return !TextUtils.IsEmpty(store) && TextUtils.IsEmpty(advertiser);
         }
 
-        public void SetNativeAd(UnifiedNativeAd nativeAd)
+        public void SetNativeAd(NativeAd nativeAd)
         {
             try
             {
@@ -298,7 +302,7 @@ namespace DeepSound.Helpers.Ads
             }
             catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(e);
+                Console.WriteLine(e);
             }
         }
 
@@ -341,7 +345,7 @@ namespace DeepSound.Helpers.Ads
             }
             catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(e);
+                Console.WriteLine(e);
             }
         }
 
@@ -351,38 +355,41 @@ namespace DeepSound.Helpers.Ads
             {
                 base.OnFinishInflate();
 
-                NativeAdView = (UnifiedNativeAdView)FindViewById(Resource.Id.native_ad_view);
+                NativeAdView = (NativeAdView)FindViewById(Resource.Id.native_ad_view);
 
-                if (!AppSettings.ShowAdMobNative)
+                switch (AppSettings.ShowAdMobNative)
                 {
-                    if (NativeAdView != null) NativeAdView.Visibility = ViewStates.Gone;
-                }
-                else
-                {
-                    PrimaryView = (TextView)FindViewById(Resource.Id.primary);
-                    SecondaryView = (TextView)FindViewById(Resource.Id.secondary);
-                    TertiaryView = (TextView)FindViewById(Resource.Id.body);
+                    case false:
+                        {
+                            if (NativeAdView != null) NativeAdView.Visibility = ViewStates.Gone;
+                            break;
+                        }
+                    default:
+                        PrimaryView = (TextView)FindViewById(Resource.Id.primary);
+                        SecondaryView = (TextView)FindViewById(Resource.Id.secondary);
+                        TertiaryView = (TextView)FindViewById(Resource.Id.body);
 
-                    //RatingBar = (RatingBar)FindViewById(Resource.Id.rating_bar);
-                    //RatingBar.Enabled=false;
+                        //RatingBar = (RatingBar)FindViewById(Resource.Id.rating_bar);
+                        //RatingBar.Enabled=false;
 
-                    //CallToActionView = (AppCompatButton)FindViewById(Resource.Id.cta);
-                    IconView = (ImageView)FindViewById(Resource.Id.icon);
-                    MediaView = (MediaView)FindViewById(Resource.Id.media_view);
-                    Background = (LinearLayout)FindViewById(Resource.Id.background);
+                        //CallToActionView = (Button)FindViewById(Resource.Id.cta);
+                        IconView = (ImageView)FindViewById(Resource.Id.icon);
+                        MediaView = (MediaView)FindViewById(Resource.Id.media_view);
+                        Background = (LinearLayout)FindViewById(Resource.Id.background);
+                        break;
                 }
             }
             catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(e);
+                Console.WriteLine(e);
             }
         }
 
-        public void NativeContentAdView(UnifiedNativeAd nativeAd)
+        public void NativeContentAdView(NativeAd nativeAd)
         {
             try
             {
-                NativeAdView = (UnifiedNativeAdView)FindViewById(Resource.Id.nativeAdView);
+                NativeAdView = (NativeAdView)FindViewById(Resource.Id.nativeAdView);
 
                 // Set other ad assets.
                 NativeAdView.HeadlineView = NativeAdView.FindViewById(Resource.Id.contentad_headline);
@@ -392,10 +399,10 @@ namespace DeepSound.Helpers.Ads
                 NativeAdView.AdvertiserView = NativeAdView.FindViewById(Resource.Id.contentad_advertiser);
                 NativeAdView.ImageView = NativeAdView.FindViewById(Resource.Id.contentad_image);
 
-                // The headline and mediaContent are guaranteed to be in every UnifiedNativeAd.
+                // The headline and mediaContent are guaranteed to be in every NativeAd.
                 ((TextView)NativeAdView.HeadlineView).Text = nativeAd.Headline;
 
-                // These assets aren't guaranteed to be in every UnifiedNativeAd, so it's important to
+                // These assets aren't guaranteed to be in every NativeAd, so it's important to
                 // check before trying to display them.
                 if (string.IsNullOrEmpty(nativeAd.Body))
                 {
@@ -414,29 +421,33 @@ namespace DeepSound.Helpers.Ads
                 else
                 {
                     NativeAdView.CallToActionView.Visibility = ViewStates.Visible;
-                    ((AppCompatButton)NativeAdView.CallToActionView).Text = nativeAd.CallToAction;
+                    ((Button)NativeAdView.CallToActionView).Text = nativeAd.CallToAction;
                 }
 
-                if (nativeAd.Icon == null)
+                switch (nativeAd.Icon)
                 {
-                    NativeAdView.IconView.Visibility = ViewStates.Gone;
-                }
-                else
-                {
-                    ((ImageView)NativeAdView.IconView).SetImageDrawable(nativeAd.Icon.Drawable);
-                    NativeAdView.IconView.Visibility = ViewStates.Visible;
+                    case null:
+                        NativeAdView.IconView.Visibility = ViewStates.Gone;
+                        break;
+                    default:
+                        ((ImageView)NativeAdView.IconView).SetImageDrawable(nativeAd.Icon.Drawable);
+                        NativeAdView.IconView.Visibility = ViewStates.Visible;
+                        break;
                 }
 
-                if (nativeAd.Images?.Count == 0)
+                switch (nativeAd.Images?.Count)
                 {
-                    NativeAdView.IconView.Visibility = ViewStates.Gone;
-                }
-                else
-                {
-                    if (nativeAd.Images != null)
-                        ((ImageView)NativeAdView.ImageView).SetImageDrawable(nativeAd.Images[0].Drawable);
+                    case 0:
+                        NativeAdView.IconView.Visibility = ViewStates.Gone;
+                        break;
+                    default:
+                        {
+                            if (nativeAd.Images != null)
+                                ((ImageView)NativeAdView.ImageView).SetImageDrawable(nativeAd.Images[0].Drawable);
 
-                    NativeAdView.ImageView.Visibility = ViewStates.Visible;
+                            NativeAdView.ImageView.Visibility = ViewStates.Visible;
+                            break;
+                        }
                 }
 
                 if (string.IsNullOrEmpty(nativeAd.Advertiser))
@@ -455,29 +466,36 @@ namespace DeepSound.Helpers.Ads
 
                 // Get the video controller for the ad. One will always be provided, even if the ad doesn't
                 // have a video asset.
-                VideoController vc = nativeAd.VideoController;
+                //VideoController vc = nativeAd.MediaContent?.VideoController;
 
-                // Updates the UI to say whether or not this ad has a video asset.
-                if (vc.HasVideoContent)
-                {
-                    //"Video status: Ad contains a %.2f:1 video asset."
+                //switch (vc != null && vc.HasVideoContent)
+                //{
+                //    // Updates the UI to say whether or not this ad has a video asset.
+                //    case true:
+                //        //"Video status: Ad contains a %.2f:1 video asset."
 
-                    // Create a new VideoLifecycleCallbacks object and pass it to the VideoController. The
-                    // VideoController will call methods on this object when events occur in the video
-                    // lifecycle.
-                    vc.SetVideoLifecycleCallbacks(new VideoController.VideoLifecycleCallbacks());
-
-                }
-                else
-                {
-                    //"Video status: Ad does not contain a video asset."
-                }
+                //        // Create a new VideoLifecycleCallbacks object and pass it to the VideoController. The
+                //        // VideoController will call methods on this object when events occur in the video
+                //        // lifecycle.
+                //        vc.SetVideoLifecycleCallbacks(new MyVideoController());
+                //        break;
+                //    default:
+                //        //"Video status: Ad does not contain a video asset."
+                //        break;
+                //}
             }
             catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(e);
+                Console.WriteLine(e);
             }
         }
 
+        private class MyVideoController : VideoController.VideoLifecycleCallbacks
+        {
+            public MyVideoController()
+            {
+
+            }
+        }
     }
 }

@@ -33,7 +33,7 @@ using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser.General
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class WalletActivity : BaseActivity, IDialogListCallBack, IPaymentResultWithDataListener, ISecurionPayPaymentListener, IIyziPayPaymentListener, IDialogInputCallBack
     {
         #region Variables Basic
@@ -44,7 +44,6 @@ namespace DeepSound.Activities.SettingsUser.General
         private TextView TxtMyBalance;
         public EditText TxtAmount;
         private AppCompatButton BtnReplenish;
-        private InitPayPalPayment InitPayPalPayment;
         private InitPayStackPayment PayStackPayment;
         private InitCashFreePayment CashFreePayment;
         private InitRazorPayPayment InitRazorPay;
@@ -181,7 +180,6 @@ namespace DeepSound.Activities.SettingsUser.General
         {
             try
             {
-                if (AppSettings.ShowPaypal) InitPayPalPayment ??= new InitPayPalPayment(this);
                 if (AppSettings.ShowRazorPay) InitRazorPay ??= new InitRazorPayPayment(this);
                 if (AppSettings.ShowPayStack) PayStackPayment ??= new InitPayStackPayment(this);
                 if (AppSettings.ShowCashFree) CashFreePayment ??= new InitCashFreePayment(this);
@@ -314,6 +312,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 if (AppSettings.ShowAuthorizeNet) arrayAdapter.Add(GetString(Resource.String.Lbl_AuthorizeNet));
                 if (AppSettings.ShowIyziPay) arrayAdapter.Add(GetString(Resource.String.Lbl_IyziPay));
                 if (AppSettings.ShowAamarPay) arrayAdapter.Add(GetString(Resource.String.Lbl_AamarPay));
+                if (AppSettings.ShowFlutterWave) arrayAdapter.Add(GetString(Resource.String.Lbl_FlutterWave));
 
                 dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
                 dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
@@ -336,11 +335,7 @@ namespace DeepSound.Activities.SettingsUser.General
             try
             {
                 string text = itemString;
-                if (text == GetString(Resource.String.Btn_Paypal))
-                {
-                    InitPayPalPayment.BtnPaypalOnClick(Price);
-                }
-                else if (text == GetString(Resource.String.Lbl_CreditCard))
+                if (text == GetString(Resource.String.Lbl_CreditCard))
                 {
                     OpenIntentCreditCard();
                 }
@@ -388,13 +383,17 @@ namespace DeepSound.Activities.SettingsUser.General
                 {
                     AamarPayPayment.BtnAamarPayOnClick(Price);
                 }
+                else if (text == GetString(Resource.String.Lbl_FlutterWave))
+                {
+                    FlutterWave();
+                }
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         public async void OnInput(IDialogInterface dialog, string input)
         {
             try
@@ -419,7 +418,7 @@ namespace DeepSound.Activities.SettingsUser.General
                 Methods.DisplayReportResultTrack(e);
             }
         }
-         
+
         private void OpenIntentCreditCard()
         {
             try
@@ -469,6 +468,20 @@ namespace DeepSound.Activities.SettingsUser.General
             try
             {
                 Intent intent = new Intent(this, typeof(AuthorizeNetPaymentActivity));
+                intent.PutExtra("Price", Price);
+                StartActivity(intent);
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        private void FlutterWave()
+        {
+            try
+            {
+                Intent intent = new Intent(this, typeof(FlutterWaveActivity));
                 intent.PutExtra("Price", Price);
                 StartActivity(intent);
             }
@@ -629,7 +642,7 @@ namespace DeepSound.Activities.SettingsUser.General
                         {"price", Price},
                     };
 
-                    var (apiStatus, respond) = await RequestsAsync.Payments.InitializeCashFreeAsync("initialize", AppSettings.CashFreeCurrency,UserDetails.UserId.ToString(), ListUtils.SettingsSiteList?.CashfreeSecretKey ?? "", ListUtils.SettingsSiteList?.CashfreeMode, keyValues);
+                    var (apiStatus, respond) = await RequestsAsync.Payments.InitializeCashFreeAsync("initialize", AppSettings.CashFreeCurrency, UserDetails.UserId.ToString(), ListUtils.SettingsSiteList?.CashfreeSecretKey ?? "", ListUtils.SettingsSiteList?.CashfreeMode, keyValues);
                     switch (apiStatus)
                     {
                         case 200:
@@ -963,7 +976,7 @@ namespace DeepSound.Activities.SettingsUser.General
         }
 
         #endregion
-        
+
         private async void Get_Data_User()
         {
             try
@@ -985,6 +998,6 @@ namespace DeepSound.Activities.SettingsUser.General
             {
                 Methods.DisplayReportResultTrack(exception);
             }
-        } 
+        }
     }
 }

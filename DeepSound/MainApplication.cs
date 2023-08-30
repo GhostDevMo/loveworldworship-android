@@ -100,15 +100,17 @@ namespace DeepSound
             }
         }
 
-        public void SecondRunExcite()
+        public void SecondRunExcite(Activity context)
         {
             try
             {
-                AdsGoogle.InitializeAdsGoogle.Initialize(this);
+                AdsGoogle.InitializeAdsGoogle.Initialize(context);
 
                 if (AppSettings.ShowFbBannerAds || AppSettings.ShowFbInterstitialAds || AppSettings.ShowFbRewardVideoAds)
                     InitializeFacebook.Initialize(this);
-                 
+
+                AdsAppLovin.Initialize(this);
+
                 ClassMapper.SetMappers();
 
                 //App restarted after crash
@@ -329,7 +331,7 @@ namespace DeepSound
         public override void OnLowMemory()
         {
             try
-            { 
+            {
                 base.OnLowMemory();
                 Glide.With(this).OnLowMemory();
                 GC.Collect(GC.MaxGeneration);
@@ -344,7 +346,7 @@ namespace DeepSound
         {
             try
             {
-                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced); 
+                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
                 base.OnTrimMemory(level);
                 Glide.With(this).OnTrimMemory(level);
             }

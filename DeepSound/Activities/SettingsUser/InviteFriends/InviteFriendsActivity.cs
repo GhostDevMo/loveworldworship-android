@@ -1,13 +1,13 @@
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
+using Com.Google.Android.Gms.Ads;
 using DeepSound.Activities.Base;
 using DeepSound.Activities.SettingsUser.InviteFriends.Adapter;
 using DeepSound.Helpers.Ads;
@@ -69,7 +69,7 @@ namespace DeepSound.Activities.SettingsUser.InviteFriends
         {
             try
             {
-                MAdView?.Resume();
+                AdsGoogle.LifecycleAdView(MAdView, "Resume");
                 base.OnResume();
                 AddOrRemoveEvent(true);
             }
@@ -83,7 +83,7 @@ namespace DeepSound.Activities.SettingsUser.InviteFriends
         {
             try
             {
-                MAdView?.Pause();
+                AdsGoogle.LifecycleAdView(MAdView, "Pause");
                 base.OnPause();
                 AddOrRemoveEvent(false);
             }
@@ -245,7 +245,7 @@ namespace DeepSound.Activities.SettingsUser.InviteFriends
         {
             try
             {
-                MAdView?.Destroy();
+                AdsGoogle.LifecycleAdView(MAdView, "Destroy");
 
                 MAdapter = null;
                 SwipeRefreshLayout = null;

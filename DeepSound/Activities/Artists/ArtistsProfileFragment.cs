@@ -1,5 +1,4 @@
 ﻿using Android.Content;
-using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -7,6 +6,7 @@ using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.SwipeRefreshLayout.Widget;
+using Com.Google.Android.Gms.Ads.Admanager;
 using DeepSound.Activities.Albums;
 using DeepSound.Activities.Albums.Adapters;
 using DeepSound.Activities.Chat;
@@ -71,7 +71,7 @@ namespace DeepSound.Activities.Artists
         public EventAdapter EventAdapter;
         public StationsAdapter StationsAdapter;
 
-        private PublisherAdView PublisherAdView;
+        private AdManagerAdView AdManagerAdView;
 
         public AlbumsFragment AlbumsFragment;
 
@@ -131,7 +131,7 @@ namespace DeepSound.Activities.Artists
             try
             {
                 base.OnResume();
-                PublisherAdView?.Resume();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -144,7 +144,7 @@ namespace DeepSound.Activities.Artists
             try
             {
                 base.OnPause();
-                PublisherAdView?.Pause();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -170,7 +170,7 @@ namespace DeepSound.Activities.Artists
             try
             {
                 Instance = null;
-                PublisherAdView?.Destroy();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Destroy");
                 base.OnDestroy();
             }
             catch (Exception exception)
@@ -217,8 +217,8 @@ namespace DeepSound.Activities.Artists
                 StationsViewStub = view.FindViewById<ViewStub>(Resource.Id.viewStubStations);
                 EventViewStub = view.FindViewById<ViewStub>(Resource.Id.viewStubEvent);
 
-                PublisherAdView = view.FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
-                AdsGoogle.InitPublisherAdView(PublisherAdView);
+                AdManagerAdView = view.FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
             }
             catch (Exception e)
             {
@@ -1053,7 +1053,7 @@ namespace DeepSound.Activities.Artists
                 TxtName.Text = DeepSoundTools.GetNameFinal(DataUser);
                 TxtName.SetCompoundDrawablesWithIntrinsicBounds(0, 0, DataUser.Verified == 1 ? Resource.Drawable.icon_checkmark_small_vector : 0, 0);
 
-                TextSanitizer aboutSanitizer = new TextSanitizer(TxtAbout, Activity);
+                TextSanitizer aboutSanitizer = new TextSanitizer(TxtAbout, GlobalContext);
                 aboutSanitizer.Load(DeepSoundTools.GetAboutFinal(DataUser));
 
                 if (DataUser.IsFollowing == "1" || DataUser.IsFollowing == "true") // My Friend
@@ -1150,7 +1150,7 @@ namespace DeepSound.Activities.Artists
                     Intent intent = new Intent(Activity, typeof(DialogInfoUserActivity));
                     intent.PutExtra("ItemDataUser", JsonConvert.SerializeObject(DataUser));
                     intent.PutExtra("ItemDataDetails", JsonConvert.SerializeObject(DetailsCounter));
-                    Activity.StartActivity(intent);
+                    StartActivity(intent);
                 }
             }
             catch (Exception e)

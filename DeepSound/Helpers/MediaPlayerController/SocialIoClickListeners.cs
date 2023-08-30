@@ -408,6 +408,17 @@ namespace DeepSound.Helpers.MediaPlayerController
                             GlobalContext?.LibraryFragment.LikedFragment?.MAdapter?.NotifyItemChanged(index);
                         }
                     }
+                    else if (name == "PurchasesFragment")
+                    {
+                        var list = GlobalContext?.LibraryFragment.PurchasesFragment?.MAdapter?.PurchasesList;
+                        var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id.ToString());
+                        if (dataSong != null)
+                        {
+                            //dataSong.IsLiked = refs;
+                            int index = list.IndexOf(dataSong);
+                            GlobalContext?.LibraryFragment.PurchasesFragment?.MAdapter?.NotifyItemChanged(index);
+                        }
+                    }
                     else if (name == "RecentlyPlayedFragment")
                     {
                         var list = GlobalContext?.LibraryFragment.RecentlyPlayedFragment?.MAdapter;
@@ -606,11 +617,21 @@ namespace DeepSound.Helpers.MediaPlayerController
                 if (!CrossShare.IsSupported)
                     return;
 
+                string url;
+                if (AppSettings.ShareSystem == ShareSystem.ApplicationShortUrl)
+                {
+                    url = "https://" + MainContext.GetText(Resource.String.ApplicationShortUrl) + "/track/" + args.SongsClass.AudioId;
+                }
+                else
+                {
+                    url = args.SongsClass.Url;
+                }
+
                 await CrossShare.Current.Share(new ShareMessage
                 {
                     Title = args.SongsClass.Title,
                     Text = args.SongsClass.Description,
-                    Url = args.SongsClass.Url
+                    Url = url
                 });
 
                 SqLiteDatabase dbDatabase = new SqLiteDatabase();

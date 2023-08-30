@@ -257,11 +257,11 @@ namespace DeepSound.Payment
                     if (!InitWalletAuthorizeNet())
                         return;
 
-                    var cardNumber = MultilineWidget.CardNumberEditText.Text;
+                    var cardNumber = MultilineWidget.CardNumberEditText.Text?.Replace(" ", "");
                     var cardExpire = MultilineWidget.ExpiryDateEditText.Text;
 
-                    var ExpMonth = cardExpire.Split("\\").First();
-                    var ExpYear = cardExpire.Split("\\").Last();
+                    var ExpMonth = cardExpire.Split("/").First();
+                    var ExpYear = cardExpire.Split("/").Last();
 
                     var cardCvv = MultilineWidget.CvcEditText.Text;
 

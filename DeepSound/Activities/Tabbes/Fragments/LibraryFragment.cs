@@ -1,9 +1,9 @@
 ﻿using Android.Content;
-using Android.Gms.Ads.DoubleClick;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
 using AndroidX.Fragment.App;
+using Com.Google.Android.Gms.Ads.Admanager;
 using DeepSound.Activities.Chat;
 using DeepSound.Activities.Library;
 using DeepSound.Activities.Songs.Adapters;
@@ -34,15 +34,17 @@ namespace DeepSound.Activities.Tabbes.Fragments
         public HSoundAdapter MAdapter;
         private ViewStub RecentlyViewStub;
         private View RecentlyInflated;
-        private PublisherAdView PublisherAdView;
+        private AdManagerAdView AdManagerAdView;
 
-        private LinearLayout PlayListsLayout, LikedLayout, DownloadsLayout, SharedLayout;
+        private LinearLayout PlayListsLayout, LikedLayout, DownloadsLayout, SharedLayout, PurchasesLayout;
         public LikedFragment LikedFragment;
         public RecentlyPlayedFragment RecentlyPlayedFragment;
         public FavoritesFragment FavoritesFragment;
         public LatestDownloadsFragment LatestDownloadsFragment;
         public MyPlaylistFragment MyPlaylistFragment;
         public SharedFragment SharedFragment;
+        public PurchasesFragment PurchasesFragment;
+
 
         #endregion
 
@@ -99,7 +101,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
             try
             {
                 base.OnResume();
-                PublisherAdView?.Resume();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -112,7 +114,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
             try
             {
                 base.OnPause();
-                PublisherAdView?.Pause();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -137,7 +139,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
         {
             try
             {
-                PublisherAdView?.Destroy();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Destroy");
                 base.OnDestroy();
             }
             catch (Exception exception)
@@ -171,8 +173,11 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 SharedLayout = view.FindViewById<LinearLayout>(Resource.Id.SharedLayout);
                 SharedLayout.Click += SharedLayoutOnClick;
 
-                PublisherAdView = view.FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
-                AdsGoogle.InitPublisherAdView(PublisherAdView);
+                PurchasesLayout = view.FindViewById<LinearLayout>(Resource.Id.PurchasesLayout);
+                PurchasesLayout.Click += PurchasesLayoutOnClick;
+
+                AdManagerAdView = view.FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
             }
             catch (Exception e)
             {
@@ -227,6 +232,20 @@ namespace DeepSound.Activities.Tabbes.Fragments
                     Constant.PlayPos = e.Position;
                     GlobalContext?.SoundController?.StartPlaySound(item, MAdapter.SoundsList);
                 }
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
+
+        private void PurchasesLayoutOnClick(object sender, EventArgs e)
+        {
+            try
+            {
+                PurchasesFragment = new PurchasesFragment();
+                GlobalContext.FragmentBottomNavigator.DisplayFragment(PurchasesFragment);
             }
             catch (Exception exception)
             {

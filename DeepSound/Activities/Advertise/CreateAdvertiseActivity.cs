@@ -1,7 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -13,6 +12,7 @@ using AndroidX.AppCompat.Widget;
 using Bumptech.Glide;
 using Bumptech.Glide.Request;
 using Com.Canhub.Cropper;
+using Com.Google.Android.Gms.Ads.Admanager;
 using DeepSound.Activities.Base;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.CacheLoaders;
@@ -38,7 +38,7 @@ namespace DeepSound.Activities.Advertise
         private ImageView ImageAd, BtnSelectImage;
         private EditText TxtName, TxtTitle, TxtUrl, TxtDescription, TxtAudience, TxtPlacement, TxtPricing, TxtSpending, TxtType;
         private string PathFile, TotalIdAudienceChecked, PlacementStatus, PricingStatus, TypeStatus, TypeDialog;
-        private PublisherAdView PublisherAdView;
+        private AdManagerAdView AdManagerAdView;
         private AppCompatButton BtnApply;
         private DialogGalleryController GalleryController;
 
@@ -75,7 +75,7 @@ namespace DeepSound.Activities.Advertise
             {
                 base.OnResume();
                 AddOrRemoveEvent(true);
-                PublisherAdView?.Resume();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -89,7 +89,7 @@ namespace DeepSound.Activities.Advertise
             {
                 base.OnPause();
                 AddOrRemoveEvent(false);
-                PublisherAdView?.Pause();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -173,8 +173,8 @@ namespace DeepSound.Activities.Advertise
 
                 BtnApply = FindViewById<AppCompatButton>(Resource.Id.ApplyButton);
 
-                PublisherAdView = FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
-                AdsGoogle.InitPublisherAdView(PublisherAdView);
+                AdManagerAdView = FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
 
                 Methods.SetColorEditText(TxtName, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(TxtTitle, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
@@ -259,7 +259,7 @@ namespace DeepSound.Activities.Advertise
         {
             try
             {
-                PublisherAdView?.Destroy();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Destroy");
 
                 TxtName = null;
                 ImageAd = null;
@@ -270,7 +270,7 @@ namespace DeepSound.Activities.Advertise
                 TxtPlacement = null;
                 TxtPricing = null;
 
-                PublisherAdView = null;
+                AdManagerAdView = null;
             }
             catch (Exception e)
             {
@@ -748,7 +748,7 @@ namespace DeepSound.Activities.Advertise
                     new IntentController(this).OpenIntentAudio(); //505
                 else
                 {
-                    if (PermissionsController.CheckPermissionStorage())
+                    if (PermissionsController.CheckPermissionStorage(this))
                         new IntentController(this).OpenIntentAudio(); //505
                     else
                         new PermissionsController(this).RequestPermission(100);

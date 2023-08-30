@@ -5,7 +5,7 @@ using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
 using Bumptech.Glide.Util;
-using Com.Adcolony.Sdk;
+using Com.Facebook.Ads;
 using DeepSound.Activities.MyContacts.Adapters;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Facebook.Ads;
 
 namespace DeepSound.Activities.Tabbes.HomePages
 {
@@ -162,8 +161,8 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 LinearLayout adContainer = view.FindViewById<LinearLayout>(Resource.Id.bannerContainer);
                 if (AppSettings.ShowFbBannerAds)
                     BannerAd = AdsFacebook.InitAdView(Activity, adContainer, MRecycler);
-                else
-                    AdsColony.InitBannerAd(Activity, adContainer, AdColonyAdSize.Banner, MRecycler);
+                else if (AppSettings.ShowAppLovinBannerAds)
+                    AdsAppLovin.InitBannerAd(Activity, adContainer, MRecycler);
             }
             catch (Exception e)
             {

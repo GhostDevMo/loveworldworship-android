@@ -1,4 +1,5 @@
-﻿using Android.App;
+﻿using Android;
+using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.OS;
@@ -6,6 +7,7 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.App;
 using AndroidX.Core.Content;
 using AndroidX.ViewPager.Widget;
 using Bumptech.Glide;
@@ -20,12 +22,11 @@ using DeepSoundClient;
 using Me.Relex.CircleIndicatorLib;
 using System;
 using System.Collections.Generic;
-using Android;
 using static DeepSound.Helpers.Controller.ViewPagerStringAdapter;
 
 namespace DeepSound.Activities.Default
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class FirstActivity : AppCompatActivity
     {
         #region Variables Basic
@@ -161,7 +162,7 @@ namespace DeepSound.Activities.Default
                     }
                     else
                     {
-                        RequestPermissions(new[]
+                        ActivityCompat.RequestPermissions(this, new[]
                         {
                             Manifest.Permission.PostNotifications
                         }, 16248);
@@ -287,7 +288,7 @@ namespace DeepSound.Activities.Default
         {
             try
             {
-                if (BtnRegister.Text == GetString(Resource.String.bt_next))
+                if (BtnRegister.Text == GetString(Resource.String.Lbl_Next))
                 {
                     OnMoveSliderEffect();
                     BtnRegister.Text = GetString(Resource.String.Btn_GetStarted);
@@ -306,7 +307,7 @@ namespace DeepSound.Activities.Default
         #endregion
 
         #region Permissions 
-         
+
         //Permissions
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
         {

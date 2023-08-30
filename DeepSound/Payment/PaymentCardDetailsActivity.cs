@@ -26,7 +26,7 @@ using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 namespace DeepSound.Payment
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
-    public class PaymentCardDetailsActivity : ComponentActivity, IPaymentLauncherPaymentResultCallback
+    public class PaymentCardDetailsActivity : ComponentActivity, IPaymentLauncher.IPaymentResultCallback
     {
         #region Variables Basic
 
@@ -310,7 +310,9 @@ namespace DeepSound.Payment
                     PaymentConfiguration.Init(this, stripePublishableKey);
 
                     PaymentConfiguration paymentConfiguration = PaymentConfiguration.GetInstance(this);
-                    StripePaymentLauncher = PaymentLauncher.Companion.Create(this, paymentConfiguration.PublishableKey, paymentConfiguration.StripeAccountId, this);
+
+                    var paymentLauncher = IPaymentLauncher.Companion.GetInstance();
+                    StripePaymentLauncher = paymentLauncher.Create(this, paymentConfiguration.PublishableKey, paymentConfiguration.StripeAccountId, this);
                     Stripe = new Stripe(this, stripePublishableKey);
 
                     PollyController.RunRetryPolicyFunction(new List<Func<Task>> { StripeCreatePayment, CreateStripeHash });
@@ -337,8 +339,9 @@ namespace DeepSound.Payment
                     if (tabbedWallet != null)
                     {
                         //var priceInt = Convert.ToInt32(Price) * 100;
-
-                        var (apiStatus, respond) = await RequestsAsync.Payments.TopWalletStripeAsync(TokenId, Price);
+                        //wael fix api after update ... 
+                        var (apiStatus, respond) = await RequestsAsync.Payments.TopWalletPaypalAsync(Price);
+                        //var (apiStatus, respond) = await RequestsAsync.Payments.TopWalletStripeAsync(TokenId, Price);
                         switch (apiStatus)
                         {
                             case 200:

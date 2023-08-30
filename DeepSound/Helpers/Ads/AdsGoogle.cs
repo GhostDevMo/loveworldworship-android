@@ -1,21 +1,28 @@
 ﻿using Android.App;
-using Android.Content;
 using Android.Content.Res;
-using Android.Gms.Ads;
-using Android.Gms.Ads.AppOpen;
-using Android.Gms.Ads.DoubleClick;
-using Android.Gms.Ads.Formats;
-using Android.Gms.Ads.Initialization;
-using Android.Gms.Ads.Rewarded;
-using Android.Gms.Ads.RewardedInterstitial;
+using Android.Gms.Maps;
 using Android.Util;
 using Android.Views;
+using Android.Widget;
 using AndroidX.RecyclerView.Widget;
-using DeepSound.Helpers.Model;
+using Anjo.Android.GoogleAds;
+using Com.Google.Android.Gms.Ads;
+using Com.Google.Android.Gms.Ads.Admanager;
+using Com.Google.Android.Gms.Ads.Appopen;
+using Com.Google.Android.Gms.Ads.Initialization;
+using Com.Google.Android.Gms.Ads.Interstitial;
+using Com.Google.Android.Gms.Ads.Nativead;
+using Com.Google.Android.Gms.Ads.Rewarded;
+using Com.Google.Android.Gms.Ads.Rewardedinterstitial;
+using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Utils;
+using DeepSoundClient.Requests;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using Xamarin.Google.UserMesssagingPlatform;
 using Exception = System.Exception;
+using NativeAd = Com.Google.Android.Gms.Ads.Nativead.NativeAd;
 using Object = Java.Lang.Object;
 
 namespace DeepSound.Helpers.Ads
@@ -26,84 +33,78 @@ namespace DeepSound.Helpers.Ads
         private static int CountRewarded;
         private static int CountAppOpen;
         private static int CountRewardedInterstitial;
+        public static List<NativeAd> NativeAdsPool = new List<NativeAd>();
 
         #region Interstitial
 
-        private class AdMobInterstitial
+        private class AdMobInterstitial : AnjoInterstitialLoadCallback
         {
-            private InterstitialAd Ad;
+            private Activity ActivityContext;
 
-            public void ShowAd(Context context)
+            public void Show(Activity context)
             {
                 try
                 {
-                    Ad = new InterstitialAd(context) { AdUnitId = AppSettings.AdInterstitialKey };
-
-                    var listener = new InterstitialAdListener(Ad);
-                    listener.OnAdLoaded();
-                    Ad.AdListener = listener;
-
-                    var requestBuilder = new AdRequest.Builder();
-                    Ad.LoadAd(requestBuilder.Build());
+                    ActivityContext = context;
+                    var requestBuilder = new AdRequest.Builder().Build();
+                    InterstitialAd.Load(context, AppSettings.AdInterstitialKey, requestBuilder, this);
                 }
                 catch (Exception exception)
                 {
                     Methods.DisplayReportResultTrack(exception);
                 }
             }
-        }
 
-        private class InterstitialAdListener : AdListener
-        {
-            private readonly InterstitialAd Ad;
-
-            public InterstitialAdListener(InterstitialAd ad)
-            {
-                Ad = ad;
-            }
-
-            public override void OnAdLoaded()
+            public override void OnAdLoaded(InterstitialAd p0)
             {
                 try
                 {
-                    base.OnAdLoaded();
-
-                    if (Ad != null && Ad.IsLoaded)
-                        Ad?.Show();
+                    p0?.Show(ActivityContext);
+                    base.OnAdLoaded(p0);
                 }
-                catch (Exception exception)
+                catch (Exception e)
                 {
-                    Methods.DisplayReportResultTrack(exception);
+                    Methods.DisplayReportResultTrack(e);
                 }
+            }
+
+            public override void OnAdFailedToLoad(LoadAdError p0)
+            {
+                Log.Debug("Google-Ads", "I_Ad AdMobInterstitial Load Failed: " + p0.Message);
+                base.OnAdFailedToLoad(p0);
             }
         }
 
-
-        public static void Ad_Interstitial(Activity context)
+        public static void Ad_Interstitial(Activity context, bool openDir = false)
         {
             try
             {
-                switch (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobInterstitial)
+                if (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobInterstitial)
                 {
-                    case true:
-                        {
-                            if (CountInterstitial == AppSettings.ShowAdInterstitialCount)
-                            {
-                                CountInterstitial = 0;
-                                AdMobInterstitial ads = new AdMobInterstitial();
-                                ads.ShowAd(context);
-                            }
-                            else
-                            {
-                                Ad_AppOpenManager(context);
-                            }
+                    if (openDir)
+                    {
+                        AdMobInterstitial ads = new AdMobInterstitial();
+                        ads.Show(context);
+                        return;
+                    }
 
-                            CountInterstitial++;
-                            break;
-                        }
-                    default:
+                    if (CountInterstitial == AppSettings.ShowAdInterstitialCount)
+                    {
+                        CountInterstitial = 0;
+                        AdMobInterstitial ads = new AdMobInterstitial();
+                        ads.Show(context);
+                        return;
+                    }
+                    else
+                    {
                         Ad_AppOpenManager(context);
-                        break;
+                    }
+
+                    CountInterstitial++;
+                }
+                else
+                {
+                    Ad_AppOpenManager(context);
                 }
             }
             catch (Exception exception)
@@ -114,12 +115,45 @@ namespace DeepSound.Helpers.Ads
 
         #endregion
 
-        #region Native
+        #region Native 
 
-        private class AdMobNative : Object, UnifiedNativeAd.IOnUnifiedNativeAdLoadedListener
+        public class AdMobNative : AdListener, NativeAd.IOnNativeAdLoadedListener
         {
             private TemplateView Template;
             private Activity Context;
+            private AdLoader AdLoader;
+
+            public void BindAdMobNative(Activity act)
+            {
+                try
+                {
+                    if (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobNative)
+                    {
+                        AdLoader.Builder builder = new AdLoader.Builder(act, AppSettings.AdAdMobNativeKey);
+                        builder.ForNativeAd(this);
+
+                        VideoOptions videoOptions = new VideoOptions.Builder()
+                            .SetCustomControlsRequested(true)
+                            .SetStartMuted(true)
+                            .Build();
+
+                        NativeAdOptions adOptions = new NativeAdOptions.Builder()
+                            .SetMediaAspectRatio(IMediaAspectRatio.Portrait)
+                            .SetVideoOptions(videoOptions)
+                            .Build();
+
+                        builder.WithNativeAdOptions(adOptions);
+
+                        AdLoader = builder.WithAdListener(this).Build();
+                        AdLoader.LoadAds(new AdRequest.Builder().Build(), 5);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Methods.DisplayReportResultTrack(e);
+                }
+            }
+
             public void ShowAd(Activity context, TemplateView template = null)
             {
                 try
@@ -131,28 +165,13 @@ namespace DeepSound.Helpers.Ads
                     {
                         Template.Visibility = ViewStates.Gone;
 
-                        switch (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobNative)
+                        if (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobNative)
                         {
-                            case true:
-                                {
-                                    AdLoader.Builder builder = new AdLoader.Builder(Context, AppSettings.AdAdMobNativeKey);
-                                    builder.ForUnifiedNativeAd(this);
-                                    VideoOptions videoOptions = new VideoOptions.Builder()
-                                        .SetStartMuted(true)
-                                        .Build();
-                                    NativeAdOptions adOptions = new NativeAdOptions.Builder()
-                                        .SetVideoOptions(videoOptions)
-                                        .Build();
-
-                                    builder.WithNativeAdOptions(adOptions);
-
-                                    AdLoader adLoader = builder.WithAdListener(new AdListener()).Build();
-                                    adLoader.LoadAd(new AdRequest.Builder().Build());
-                                    break;
-                                }
-                            default:
-                                Template.Visibility = ViewStates.Gone;
-                                break;
+                            BindAdMobNative(context);
+                        }
+                        else
+                        {
+                            Template.Visibility = ViewStates.Gone;
                         }
                     }
                 }
@@ -162,23 +181,52 @@ namespace DeepSound.Helpers.Ads
                 }
             }
 
-            public void OnUnifiedNativeAdLoaded(UnifiedNativeAd ad)
+            public void OnNativeAdLoaded(NativeAd ad)
             {
                 try
                 {
-                    NativeTemplateStyle styles = new NativeTemplateStyle.Builder().Build();
-
-                    if (Template.GetTemplateTypeName() == TemplateView.NativeContentAd)
+                    // some code that displays the ad.
+                    if (AdLoader != null && AdLoader.IsLoading)
                     {
-                        Template.NativeContentAdView(ad);
+                        // The AdLoader is still loading ads.
+                        // Expect more adLoaded or onAdFailedToLoad callbacks.
+                        NativeAdsPool.Add(ad);
                     }
                     else
                     {
-                        Template.SetStyles(styles);
-                        Template.SetNativeAd(ad);
-                    }
+                        // The AdLoader has finished loading ads. 
+                        if (Template != null)
+                        {
+                            NativeTemplateStyle styles = new NativeTemplateStyle.Builder().Build();
 
-                    Template.Visibility = ViewStates.Visible;
+                            if (Template.GetTemplateTypeName() == TemplateView.NativeContentAd)
+                            {
+                                Template.NativeContentAdView(ad);
+                            }
+                            else
+                            {
+                                Template.SetStyles(styles);
+                                Template.SetNativeAd(ad);
+                            }
+
+                            Template.Visibility = ViewStates.Visible;
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    Methods.DisplayReportResultTrack(e);
+                }
+            }
+
+            public override void OnAdFailedToLoad(LoadAdError p0)
+            {
+                try
+                {
+                    Log.Debug("Google-Ads", "I_Ad AdMobNative Load Failed: " + p0.Message);
+
+                    if (Template != null)
+                        Template.Visibility = ViewStates.Gone;
                 }
                 catch (Exception e)
                 {
@@ -191,14 +239,10 @@ namespace DeepSound.Helpers.Ads
         {
             try
             {
-                switch (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobNative)
+                if (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobNative)
                 {
-                    case true:
-                        {
-                            AdMobNative ads = new AdMobNative();
-                            ads.ShowAd(context, template);
-                            break;
-                        }
+                    AdMobNative ads = new AdMobNative();
+                    ads.ShowAd(context, template);
                 }
             }
             catch (Exception exception)
@@ -211,9 +255,8 @@ namespace DeepSound.Helpers.Ads
 
         #region Rewarded
 
-        public class AdMobRewardedVideo : RewardedAdLoadCallback
+        public class AdMobRewardedVideo : AnjoRewardedLoadCallback
         {
-            private RewardedAd Rad;
             private Activity Context;
             public void ShowAd(Activity context)
             {
@@ -221,11 +264,8 @@ namespace DeepSound.Helpers.Ads
                 {
                     Context = context;
 
-                    // Use an activity context to get the rewarded video instance. 
-                    Rad = new RewardedAd(context, AppSettings.AdRewardVideoKey);
-
                     AdRequest adRequest = new AdRequest.Builder().Build();
-                    Rad.LoadAd(adRequest, this);
+                    RewardedAd.Load(context, AppSettings.AdRewardVideoKey, adRequest, this);
                 }
                 catch (Exception exception)
                 {
@@ -233,14 +273,12 @@ namespace DeepSound.Helpers.Ads
                 }
             }
 
-            public override void OnRewardedAdLoaded()
+            public override void OnAdLoaded(RewardedAd p0)
             {
                 try
                 {
-                    base.OnRewardedAdLoaded();
-
-                    if (Rad != null && Rad.IsLoaded)
-                        Rad.Show(Context, new MyRewardedAdCallback(Rad));
+                    p0?.Show(Context, new MyUserEarnedRewardListener(Context));
+                    base.OnAdLoaded(p0);
                 }
                 catch (Exception e)
                 {
@@ -248,103 +286,47 @@ namespace DeepSound.Helpers.Ads
                 }
             }
 
-            public override void OnRewardedAdFailedToLoad(LoadAdError p0)
+            public override void OnAdFailedToLoad(LoadAdError p0)
             {
-                try
-                {
-                    base.OnRewardedAdFailedToLoad(p0);
-                }
-                catch (Exception e)
-                {
-                    Methods.DisplayReportResultTrack(e);
-                }
-            }
-
-            private class MyRewardedAdCallback : RewardedAdCallback
-            {
-                private RewardedAd Rad;
-                public MyRewardedAdCallback(RewardedAd rad)
-                {
-                    Rad = rad;
-                }
-
-                public override void OnRewardedAdOpened()
-                {
-                    try
-                    {
-                        base.OnRewardedAdOpened();
-                    }
-                    catch (Exception e)
-                    {
-                        Methods.DisplayReportResultTrack(e);
-                    }
-                }
-
-                public override void OnRewardedAdClosed()
-                {
-                    try
-                    {
-                        base.OnRewardedAdClosed();
-                    }
-                    catch (Exception e)
-                    {
-                        Methods.DisplayReportResultTrack(e);
-                    }
-                }
-
-                public override void OnRewardedAdFailedToShow(AdError p0)
-                {
-                    try
-                    {
-                        base.OnRewardedAdFailedToShow(p0);
-                    }
-                    catch (Exception e)
-                    {
-                        Methods.DisplayReportResultTrack(e);
-                    }
-                }
-
-                public override void OnUserEarnedReward(IRewardItem p0)
-                {
-                    try
-                    {
-                        //finish time ad    
-                    }
-                    catch (Exception e)
-                    {
-                        Methods.DisplayReportResultTrack(e);
-                    }
-                }
+                Log.Debug("Google-Ads", "I_Ad AdMobRewardedVideo Load Failed: " + p0.Message);
+                base.OnAdFailedToLoad(p0);
             }
         }
 
-        public static AdMobRewardedVideo Ad_RewardedVideo(Activity context)
+        public static void Ad_RewardedVideo(Activity context)
         {
             try
             {
-                switch (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobRewardVideo)
+                if (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobRewardVideo)
                 {
-                    case true when CountRewarded == AppSettings.ShowAdRewardedVideoCount:
-                        {
-                            CountRewarded = 0;
-                            AdMobRewardedVideo ads = new AdMobRewardedVideo();
-                            ads.ShowAd(context);
-                            return ads;
-                        }
-                    case true:
-                        Ad_RewardedInterstitial(context);
-                        break;
-                    default:
-                        Ad_RewardedInterstitial(context);
-                        break;
-                }
+                    if (CountRewarded == AppSettings.ShowAdRewardedVideoCount)
+                    {
+                        CountRewarded = 0;
+                        AdMobRewardedVideo ads = new AdMobRewardedVideo();
+                        ads.ShowAd(context);
+                        return;
+                    }
+                    else
+                    {
+                        if (AppSettings.ShowFbInterstitialAds)
+                            AdsFacebook.InitInterstitial(context);
+                        else if (AppSettings.ShowAppLovinInterstitialAds)
+                            AdsAppLovin.Ad_Interstitial(context);
+                    }
 
-                return null;
+                    CountRewarded++;
+                }
+                else
+                {
+                    if (AppSettings.ShowFbInterstitialAds)
+                        AdsFacebook.InitInterstitial(context);
+                    else if (AppSettings.ShowAppLovinInterstitialAds)
+                        AdsAppLovin.Ad_Interstitial(context);
+                }
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null;
             }
         }
 
@@ -356,29 +338,48 @@ namespace DeepSound.Helpers.Ads
         {
             try
             {
-                switch (mAdView)
-                {
-                    case null:
-                        return;
-                }
+                if (mAdView == null) return;
 
-                switch (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobBanner)
+                if (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobBanner)
                 {
-                    case true:
-                        {
-                            mAdView.Visibility = ViewStates.Visible;
-                            var adRequest = new AdRequest.Builder();
-                            mAdView.LoadAd(adRequest.Build());
-                            mAdView.AdListener = new MyAdListener(mAdView, mRecycler);
+                    mAdView.Visibility = ViewStates.Visible;
+                    var adRequest = new AdRequest.Builder();
+                    mAdView.LoadAd(adRequest.Build());
+                    mAdView.AdListener = new MyAdListener(mAdView, mRecycler);
+                }
+                else
+                {
+                    mAdView.Pause();
+                    mAdView.Visibility = ViewStates.Gone;
+                    if (mRecycler != null) Methods.SetMargin(mRecycler, 0, 0, 0, 0);
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        public static void LifecycleAdView(AdView mAdView, string lifecycle)
+        {
+            try
+            {
+                if (mAdView == null) return;
+
+                if (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobBanner)
+                {
+                    switch (lifecycle)
+                    {
+                        case "Resume":
+                            mAdView.Resume();
                             break;
-                        }
-                    default:
-                        {
+                        case "Pause":
                             mAdView.Pause();
-                            mAdView.Visibility = ViewStates.Gone;
-                            if (mRecycler != null) Methods.SetMargin(mRecycler, 0, 0, 0, 0);
                             break;
-                        }
+                        case "Destroy":
+                            mAdView.Destroy();
+                            break;
+                    }
                 }
             }
             catch (Exception e)
@@ -401,6 +402,8 @@ namespace DeepSound.Helpers.Ads
             {
                 try
                 {
+                    Log.Debug("Google-Ads", "I_Ad AdView Load Failed: " + p0.Message);
+
                     MAdView.Visibility = ViewStates.Gone;
                     if (MRecycler != null) Methods.SetMargin(MRecycler, 0, 0, 0, 0);
                     base.OnAdFailedToLoad(p0);
@@ -433,32 +436,52 @@ namespace DeepSound.Helpers.Ads
 
         #endregion
 
-        #region Publisher
+        #region Manager
 
-        public static void InitPublisherAdView(PublisherAdView mAdView)
+        public static void InitAdManagerAdView(AdManagerAdView mAdView)
         {
             try
             {
-                switch (mAdView)
-                {
-                    case null:
-                        return;
-                }
+                if (mAdView == null) return;
 
-                switch (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobBanner)
+                if (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobBanner)
                 {
-                    case true:
-                        {
-                            mAdView.Visibility = ViewStates.Visible;
-                            var adRequest = new PublisherAdRequest.Builder();
-                            mAdView.AdListener = new MyPublisherAdViewListener(mAdView);
-                            mAdView.LoadAd(adRequest.Build());
+                    mAdView.Visibility = ViewStates.Visible;
+                    var adRequest = new AdManagerAdRequest.Builder();
+                    mAdView.AdListener = new MyAdManagerAdViewListener(mAdView);
+                    mAdView.LoadAd(adRequest.Build());
+                }
+                else
+                {
+                    mAdView.Pause();
+                    mAdView.Visibility = ViewStates.Gone;
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+        public static void LifecycleAdManagerAdView(AdManagerAdView mAdView, string lifecycle)
+        {
+            try
+            {
+                if (mAdView == null) return;
+
+                if (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobBanner)
+                {
+                    switch (lifecycle)
+                    {
+                        case "Resume":
+                            mAdView.Resume();
                             break;
-                        }
-                    default:
-                        mAdView.Pause();
-                        mAdView.Visibility = ViewStates.Gone;
-                        break;
+                        case "Pause":
+                            mAdView.Pause();
+                            break;
+                        case "Destroy":
+                            mAdView.Destroy();
+                            break;
+                    }
                 }
             }
             catch (Exception e)
@@ -467,10 +490,10 @@ namespace DeepSound.Helpers.Ads
             }
         }
 
-        private class MyPublisherAdViewListener : AdListener
+        private class MyAdManagerAdViewListener : AdListener
         {
-            private readonly PublisherAdView MAdView;
-            public MyPublisherAdViewListener(PublisherAdView mAdView)
+            private readonly AdManagerAdView MAdView;
+            public MyAdManagerAdViewListener(AdManagerAdView mAdView)
             {
                 MAdView = mAdView;
             }
@@ -479,6 +502,8 @@ namespace DeepSound.Helpers.Ads
             {
                 try
                 {
+                    Log.Debug("Google-Ads", "I_Ad AdManagerAdView Load Failed: " + p0.Message);
+
                     MAdView.Visibility = ViewStates.Gone;
                     base.OnAdFailedToLoad(p0);
                 }
@@ -510,34 +535,32 @@ namespace DeepSound.Helpers.Ads
         {
             try
             {
-                switch (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobAppOpen)
+                if (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobAppOpen)
                 {
-                    case true:
-                        {
-                            if (CountAppOpen == AppSettings.ShowAdAppOpenCount)
-                            {
-                                CountAppOpen = 0;
+                    if (CountAppOpen == AppSettings.ShowAdAppOpenCount)
+                    {
+                        CountAppOpen = 0;
 
-                                AppOpenManager appOpenManager = new AppOpenManager(context);
-                                appOpenManager.ShowAdIfAvailable();
-                            }
-                            else
-                            {
-                                if (AppSettings.ShowFbInterstitialAds)
-                                    AdsFacebook.InitInterstitial(context);
-                                else
-                                    AdsColony.Ad_Interstitial(context);
-                            }
-
-                            CountAppOpen++;
-                            break;
-                        }
-                    default:
+                        AppOpenManager appOpenManager = new AppOpenManager(context);
+                        appOpenManager.ShowAdIfAvailable();
+                        return;
+                    }
+                    else
+                    {
                         if (AppSettings.ShowFbInterstitialAds)
                             AdsFacebook.InitInterstitial(context);
-                        else
-                            AdsColony.Ad_Interstitial(context);
-                        break;
+                        else if (AppSettings.ShowAppLovinInterstitialAds)
+                            AdsAppLovin.Ad_Interstitial(context);
+                    }
+
+                    CountAppOpen++;
+                }
+                else
+                {
+                    if (AppSettings.ShowFbInterstitialAds)
+                        AdsFacebook.InitInterstitial(context);
+                    else if (AppSettings.ShowAppLovinInterstitialAds)
+                        AdsAppLovin.Ad_Interstitial(context);
                 }
             }
             catch (Exception exception)
@@ -546,13 +569,10 @@ namespace DeepSound.Helpers.Ads
             }
         }
 
-        private class AppOpenManager : AppOpenAd.AppOpenAdLoadCallback
+        private class AppOpenManager : AnjoAppOpenLoadCallback
         {
-            private static readonly long AdExpiryDuration = 3600000 * 4;
             private readonly Activity MostCurrentActivity;
             private static AppOpenAd Ad;
-            private static bool IsShowingAd;
-            private static long LastAdFetchTime;
 
             public AppOpenManager(Activity context)
             {
@@ -566,81 +586,12 @@ namespace DeepSound.Helpers.Ads
                 }
             }
 
-            public bool IsAdExpired()
-            {
-                try
-                {
-                    return Methods.Time.CurrentTimeMillis() - LastAdFetchTime > AdExpiryDuration;
-                }
-                catch (Exception e)
-                {
-                    Methods.DisplayReportResultTrack(e);
-                    return false;
-                }
-            }
-
-            public bool IsAdAvailable()
-            {
-                try
-                {
-                    return Ad != null && !IsAdExpired();
-                }
-                catch (Exception e)
-                {
-                    Methods.DisplayReportResultTrack(e);
-                    return false;
-                }
-            }
-
-            public void FetchAd()
-            {
-                try
-                {
-                    if (IsAdAvailable())
-                    {
-                        return;
-                    }
-
-                    AdRequest request = new AdRequest.Builder().Build();
-                    AppOpenAd.Load(MostCurrentActivity, AppSettings.AdAdMobAppOpenKey, request, AppOpenAd.AppOpenAdOrientationPortrait, this);
-                }
-                catch (Exception e)
-                {
-                    Methods.DisplayReportResultTrack(e);
-                }
-            }
-
-            public void ShowAdIfAvailable(FullScreenContentCallback listener)
-            {
-                try
-                {
-                    switch (IsShowingAd)
-                    {
-                        case true:
-                            //Can't show the ad: Already showing the ad
-                            return;
-                    }
-
-                    if (!IsAdAvailable())
-                    {
-                        //Can't show the ad: Ad not available
-                        FetchAd();
-                        return;
-                    }
-
-                    Ad.Show(MostCurrentActivity, new MyFullScreenContentCallback(this, listener));
-                }
-                catch (Exception e)
-                {
-                    Methods.DisplayReportResultTrack(e);
-                }
-            }
-
             public void ShowAdIfAvailable()
             {
                 try
                 {
-                    ShowAdIfAvailable(new FullScreenContentCallback());
+                    AdRequest request = new AdRequest.Builder().Build();
+                    AppOpenAd.Load(MostCurrentActivity, AppSettings.AdAdMobAppOpenKey, request, this);
                 }
                 catch (Exception e)
                 {
@@ -648,14 +599,14 @@ namespace DeepSound.Helpers.Ads
                 }
             }
 
-            public override void OnAppOpenAdLoaded(AppOpenAd ad)
+            public override void OnAdLoaded(AppOpenAd p0)
             {
                 try
                 {
-                    base.OnAppOpenAdLoaded(ad);
+                    base.OnAdLoaded(p0);
 
-                    LastAdFetchTime = Methods.Time.CurrentTimeMillis();
-                    Ad = ad;
+                    Ad = p0;
+                    Ad.Show(MostCurrentActivity);
                 }
                 catch (Exception e)
                 {
@@ -663,89 +614,21 @@ namespace DeepSound.Helpers.Ads
                 }
             }
 
-            public override void OnAppOpenAdFailedToLoad(LoadAdError error)
+            public override void OnAdFailedToLoad(LoadAdError p0)
             {
-                try
-                {
-                    base.OnAppOpenAdFailedToLoad(error);
-                    Console.WriteLine("Failed to load an ad: " + error.Message);
-                }
-                catch (Exception e)
-                {
-                    Methods.DisplayReportResultTrack(e);
-                }
+                Log.Debug("Google-Ads", "I_Ad AppOpenManager Load Failed: " + p0.Message);
+                base.OnAdFailedToLoad(p0);
             }
 
-            private class MyFullScreenContentCallback : FullScreenContentCallback
-            {
-                private readonly FullScreenContentCallback Listener;
-                private readonly AppOpenManager AppOpenAdManager;
-                public MyFullScreenContentCallback(AppOpenManager appOpenManager, FullScreenContentCallback listener)
-                {
-                    try
-                    {
-                        Listener = listener;
-                        AppOpenAdManager = appOpenManager;
-                    }
-                    catch (Exception e)
-                    {
-                        Methods.DisplayReportResultTrack(e);
-                    }
-                }
-
-                public override void OnAdFailedToShowFullScreenContent(AdError p0)
-                {
-                    try
-                    {
-                        base.OnAdFailedToShowFullScreenContent(p0);
-                        Listener?.OnAdFailedToShowFullScreenContent(p0);
-                    }
-                    catch (Exception e)
-                    {
-                        Methods.DisplayReportResultTrack(e);
-                    }
-                }
-
-                public override void OnAdShowedFullScreenContent()
-                {
-                    try
-                    {
-                        base.OnAdShowedFullScreenContent();
-                        Listener?.OnAdShowedFullScreenContent();
-                        IsShowingAd = true;
-                    }
-                    catch (Exception e)
-                    {
-                        Methods.DisplayReportResultTrack(e);
-                    }
-                }
-
-                public override void OnAdDismissedFullScreenContent()
-                {
-                    try
-                    {
-                        base.OnAdDismissedFullScreenContent();
-                        Listener?.OnAdDismissedFullScreenContent();
-                        IsShowingAd = false;
-                        Ad = null;
-                        AppOpenAdManager.FetchAd();
-                    }
-                    catch (Exception e)
-                    {
-                        Methods.DisplayReportResultTrack(e);
-                    }
-                }
-            }
         }
 
         #endregion
 
         #region RewardedInterstitial
 
-        public class AdMobRewardedInterstitial : RewardedInterstitialAdLoadCallback
+        public class AdMobRewardedInterstitial : AnjoRewardedInterstitialLoadCallback
         {
             private Activity Context;
-            private RewardedInterstitialAd Rad;
             public void ShowAd(Activity context)
             {
                 try
@@ -763,144 +646,125 @@ namespace DeepSound.Helpers.Ads
                 }
             }
 
-            public override void OnRewardedInterstitialAdFailedToLoad(LoadAdError p0)
+            public override void OnAdLoaded(RewardedInterstitialAd p0)
             {
                 try
                 {
-                    base.OnRewardedInterstitialAdFailedToLoad(p0);
+                    p0?.Show(Context, new MyUserEarnedRewardListener(Context));
+                    base.OnAdLoaded(p0);
                 }
-                catch (Exception e)
+                catch (Exception exception)
                 {
-                    Methods.DisplayReportResultTrack(e);
+                    Methods.DisplayReportResultTrack(exception);
                 }
             }
 
-            public override void OnRewardedInterstitialAdLoaded(RewardedInterstitialAd ad)
+            public override void OnAdFailedToLoad(LoadAdError p0)
             {
-                try
-                {
-                    base.OnRewardedInterstitialAdLoaded(ad);
-                    Rad = ad;
-                    Rad?.Show(Context, new MyUserEarnedRewardListener(Rad));
-
-                    Rad.SetFullScreenContentCallback(new MyFullScreenContentCallback(Rad));
-                }
-                catch (Exception e)
-                {
-                    Methods.DisplayReportResultTrack(e);
-                }
-            }
-
-            private class MyUserEarnedRewardListener : Object, IOnUserEarnedRewardListener
-            {
-                private RewardedInterstitialAd Rad;
-                public MyUserEarnedRewardListener(RewardedInterstitialAd rad)
-                {
-                    Rad = rad;
-                }
-
-                public void OnUserEarnedReward(IRewardItem p0)
-                {
-
-                }
-            }
-
-            private class MyFullScreenContentCallback : FullScreenContentCallback
-            {
-                private RewardedInterstitialAd Rad;
-                public MyFullScreenContentCallback(RewardedInterstitialAd rad)
-                {
-                    Rad = rad;
-                }
-
-                public override void OnAdFailedToShowFullScreenContent(AdError p0)
-                {
-                    try
-                    {
-                        base.OnAdFailedToShowFullScreenContent(p0);
-                    }
-                    catch (Exception e)
-                    {
-                        Methods.DisplayReportResultTrack(e);
-                    }
-                }
-
-                public override void OnAdShowedFullScreenContent()
-                {
-                    try
-                    {
-                        base.OnAdShowedFullScreenContent();
-                    }
-                    catch (Exception e)
-                    {
-                        Methods.DisplayReportResultTrack(e);
-                    }
-                }
-
-                public override void OnAdDismissedFullScreenContent()
-                {
-                    try
-                    {
-                        base.OnAdDismissedFullScreenContent();
-                    }
-                    catch (Exception e)
-                    {
-                        Methods.DisplayReportResultTrack(e);
-                    }
-                }
+                Log.Debug("Google-Ads", "I_Ad AdMobRewardedInterstitial Load Failed: " + p0.Message);
+                base.OnAdFailedToLoad(p0);
             }
         }
 
-        public static AdMobRewardedInterstitial Ad_RewardedInterstitial(Activity context)
+        public static void Ad_RewardedInterstitial(Activity context)
         {
             try
             {
-                switch (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobRewardedInterstitial)
+                if (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobRewardedInterstitial)
                 {
-                    case true when CountRewardedInterstitial == AppSettings.ShowAdRewardedVideoCount:
-                        {
-                            CountRewardedInterstitial = 0;
-                            AdMobRewardedInterstitial ads = new AdMobRewardedInterstitial();
-                            ads.ShowAd(context);
-                            return ads;
-                        }
-                    case true:
+                    if (CountRewardedInterstitial == AppSettings.ShowAdRewardedVideoCount)
+                    {
+                        CountRewardedInterstitial = 0;
+                        AdMobRewardedInterstitial ads = new AdMobRewardedInterstitial();
+                        ads.ShowAd(context);
+                        return;
+                    }
+                    else
+                    {
                         if (AppSettings.ShowFbRewardVideoAds)
                             AdsFacebook.InitRewardVideo(context);
-                        else
-                            AdsColony.Ad_Rewarded(context);
-                        break;
-                    default:
-                        if (AppSettings.ShowFbRewardVideoAds)
-                            AdsFacebook.InitRewardVideo(context);
-                        else
-                            AdsColony.Ad_Rewarded(context);
-                        break;
-                }
+                        else if (AppSettings.ShowAppLovinRewardAds)
+                            AdsAppLovin.Ad_Rewarded(context);
+                    }
 
-                return null;
+                    CountRewardedInterstitial++;
+                }
+                else
+                {
+                    if (AppSettings.ShowFbRewardVideoAds)
+                        AdsFacebook.InitRewardVideo(context);
+                    else if (AppSettings.ShowAppLovinRewardAds)
+                        AdsAppLovin.Ad_Rewarded(context);
+                }
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return null;
             }
         }
 
         #endregion
 
-        public static class InitializeAdsGoogle
+        private class MyUserEarnedRewardListener : Object, IOnUserEarnedRewardListener
         {
-            public static void Initialize(Context context)
+            private readonly Activity Activity;
+            public MyUserEarnedRewardListener(Activity context)
+            {
+                Activity = context;
+            }
+
+            public void OnUserEarnedReward(IRewardItem rewardItem)
             {
                 try
                 {
-                    if (DeepSoundTools.GetStatusAds() && (AppSettings.ShowAdMobBanner || AppSettings.ShowAdMobInterstitial || AppSettings.ShowAdMobRewardVideo || AppSettings.ShowAdMobNative || AppSettings.ShowAdMobAppOpen || AppSettings.ShowAdMobRewardedInterstitial))
+                    // Handle the reward.
+                    Console.WriteLine("The user earned the reward.");
+                    int rewardAmount = rewardItem.Amount;
+                    string rewardType = rewardItem.Type;
+
+                    if (!AppSettings.RewardedAdvertisingSystem)
+                        return;
+
+                    if (!Methods.CheckConnectivity())
+                        Toast.MakeText(Activity, Activity.GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
+                    else
                     {
-                        RequestConfiguration configuration = new RequestConfiguration.Builder().SetTestDeviceIds(new List<string> { UserDetails.AndroidId }).Build();
+                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { RequestsAsync.Advertise.AddAdMobPointAsync });
+                        Toast.MakeText(Activity, Activity.GetString(Resource.String.Lbl_PointsAdded), ToastLength.Short)?.Show();
+                    }
+                }
+                catch (Exception e)
+                {
+                    Methods.DisplayReportResultTrack(e);
+                }
+            }
+        }
+
+        public static class InitializeAdsGoogle
+        {
+            public static void Initialize(Activity context)
+            {
+                try
+                {
+                    if (AppSettings.ShowAdMobBanner || AppSettings.ShowAdMobInterstitial || AppSettings.ShowAdMobRewardVideo || AppSettings.ShowAdMobNative || AppSettings.ShowAdMobAppOpen || AppSettings.ShowAdMobRewardedInterstitial)
+                    {
+                        RequestConfiguration configuration = new RequestConfiguration.Builder().SetTestDeviceIds(new List<string>() { "5BCFF0AAE83AF424648A954038C71DE6", "A5E3E2068BD88202CBC281AD76984BEE" ,
+                           // AdRequest.DeviceIdEmulator
+                            
+                        }).Build();
                         MobileAds.RequestConfiguration = configuration;
 
-                        MobileAds.Initialize(context, new MyInitializationCompleteListener());
+                        MobileAds.Initialize(context, new MyInitializationCompleteListener(context));
+                        MapsInitializer.Initialize(context);
+
+                        // Set tag for under age of consent. false means users are not under age.
+                        ConsentRequestParameters param = new ConsentRequestParameters.Builder()
+                            .SetTagForUnderAgeOfConsent(false)
+                            .Build();
+
+                        var consentInformation = UserMessagingPlatform.GetConsentInformation(context);
+                        var requestParameters = new MyConsentRequestParameters();
+                        consentInformation.RequestConsentInfoUpdate(context, param, requestParameters, requestParameters);
                     }
                 }
                 catch (Exception e)
@@ -911,11 +775,40 @@ namespace DeepSound.Helpers.Ads
 
             private class MyInitializationCompleteListener : Object, IOnInitializationCompleteListener
             {
+                private readonly Activity Context;
+                public MyInitializationCompleteListener(Activity context)
+                {
+                    Context = context;
+                }
+
                 public void OnInitializationComplete(IInitializationStatus p0)
+                {
+                    try
+                    {
+                        AdsGoogle.AdMobNative ads = new AdsGoogle.AdMobNative();
+                        ads.BindAdMobNative(Context);
+                    }
+                    catch (Exception e)
+                    {
+                        Methods.DisplayReportResultTrack(e);
+                    }
+                }
+            }
+
+            private class MyConsentRequestParameters : Object, IConsentInformationOnConsentInfoUpdateSuccessListener, IConsentInformationOnConsentInfoUpdateFailureListener
+            {
+
+                public void OnConsentInfoUpdateSuccess()
+                {
+
+                }
+
+                public void OnConsentInfoUpdateFailure(FormError p0)
                 {
 
                 }
             }
+
         }
     }
 }

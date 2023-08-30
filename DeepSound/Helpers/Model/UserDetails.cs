@@ -1,5 +1,4 @@
-﻿using Android.App;
-using DeepSound.Helpers.Utils;
+﻿using DeepSound.Helpers.Utils;
 using DeepSoundClient;
 using Newtonsoft.Json;
 using System;
@@ -34,7 +33,7 @@ namespace DeepSound.Helpers.Model
         public static int UnixTimestamp = (int)DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1)).TotalSeconds;
         public static string Time = UnixTimestamp.ToString();
 
-        public static string AndroidId = Android.Provider.Settings.Secure.GetString(Application.Context.ContentResolver, Android.Provider.Settings.Secure.AndroidId);
+        public static string AndroidId = "";//Android.Provider.Settings.Secure.GetString(Application.Context.ContentResolver, Android.Provider.Settings.Secure.AndroidId);
         public static readonly JsonSerializerSettings JsonSettings = new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore, PreserveReferencesHandling = PreserveReferencesHandling.Objects, MetadataPropertyHandling = MetadataPropertyHandling.Ignore, DateParseHandling = DateParseHandling.None, };
 
         public static bool IsOptimizationApp = false;

@@ -1,12 +1,12 @@
 ﻿using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Content.Res;
+using Com.Google.Android.Gms.Ads.Admanager;
 using DeepSound.Activities.Base;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
@@ -23,7 +23,7 @@ using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser.General
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class NotificationsSettingsActivity : BaseActivity
     {
         #region Variables Basic
@@ -33,7 +33,7 @@ namespace DeepSound.Activities.SettingsUser.General
         private string EmailOnFollowUserPref, EmailOnLikedTrackPref, EmailOnReviewedTrackPref, EmailOnLikedCommentPref, EmailOnArtistStatusChangedPref, EmailOnReceiptStatusChangedPref, EmailOnNewTrackPref, EmailOnCommentMentionPref, EmailOnCommentReplayMentionPref;
 
         private Toolbar Toolbar;
-        private PublisherAdView PublisherAdView;
+        private AdManagerAdView AdManagerAdView;
 
         #endregion
 
@@ -53,8 +53,8 @@ namespace DeepSound.Activities.SettingsUser.General
                 InitComponent();
                 InitToolbar();
 
-                PublisherAdView = FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
-                AdsGoogle.InitPublisherAdView(PublisherAdView);
+                AdManagerAdView = FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
 
                 GetMyInfoData();
             }
@@ -70,7 +70,7 @@ namespace DeepSound.Activities.SettingsUser.General
             {
                 base.OnResume();
                 AddOrRemoveEvent(true);
-                PublisherAdView?.Resume();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -84,7 +84,7 @@ namespace DeepSound.Activities.SettingsUser.General
             {
                 base.OnPause();
                 AddOrRemoveEvent(false);
-                PublisherAdView?.Pause();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -122,7 +122,7 @@ namespace DeepSound.Activities.SettingsUser.General
         {
             try
             {
-                PublisherAdView?.Destroy();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Destroy");
                 base.OnDestroy();
             }
             catch (Exception exception)
@@ -169,8 +169,8 @@ namespace DeepSound.Activities.SettingsUser.General
                 ArtistStatusChangedLayout = FindViewById<LinearLayout>(Resource.Id.artist_status_changedLayout);
                 SwitchArtistStatusChanged = FindViewById<Switch>(Resource.Id.Switch_artist_status_changed);
 
-                ReceiptStatusChangedLayout = FindViewById<LinearLayout>(Resource.Id.artist_status_changedLayout);
-                SwitchReceiptStatusChanged = FindViewById<Switch>(Resource.Id.Switch_artist_status_changed);
+                ReceiptStatusChangedLayout = FindViewById<LinearLayout>(Resource.Id.receipt_status_changedLayout);
+                SwitchReceiptStatusChanged = FindViewById<Switch>(Resource.Id.Switch_receipt_status_changed);
 
                 NewTrackLayout = FindViewById<LinearLayout>(Resource.Id.new_trackLayout);
                 SwitchNewTrack = FindViewById<Switch>(Resource.Id.Switch_new_track);

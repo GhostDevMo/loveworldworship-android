@@ -1,5 +1,4 @@
-﻿using Android.Gms.Ads.DoubleClick;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
@@ -7,6 +6,7 @@ using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
 using Bumptech.Glide.Util;
+using Com.Google.Android.Gms.Ads.Admanager;
 using DeepSound.Activities.Library.Listeners;
 using DeepSound.Activities.Songs.Adapters;
 using DeepSound.Activities.Tabbes;
@@ -28,6 +28,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
+using AndroidHUD;
+using DeepSoundClient.Classes.User;
 using Exception = System.Exception;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
@@ -54,7 +56,7 @@ namespace DeepSound.Activities.Playlist
         private ViewStub EmptyStateLayout;
         private View Inflated;
 
-        private PublisherAdView PublisherAdView;
+        private AdManagerAdView AdManagerAdView;
 
         private string PlaylistId;
         private PlaylistDataObject PlaylistObject;
@@ -113,7 +115,7 @@ namespace DeepSound.Activities.Playlist
             try
             {
                 base.OnResume();
-                PublisherAdView?.Resume();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -126,7 +128,7 @@ namespace DeepSound.Activities.Playlist
             try
             {
                 base.OnPause();
-                PublisherAdView?.Pause();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -151,7 +153,7 @@ namespace DeepSound.Activities.Playlist
             try
             {
                 Instance = null;
-                PublisherAdView?.Destroy();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Destroy");
                 base.OnDestroy();
             }
             catch (Exception exception)
@@ -203,8 +205,8 @@ namespace DeepSound.Activities.Playlist
                 MRecycler = view.FindViewById<RecyclerView>(Resource.Id.recycler);
                 EmptyStateLayout = view.FindViewById<ViewStub>(Resource.Id.viewStub);
 
-                PublisherAdView = view.FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
-                AdsGoogle.InitPublisherAdView(PublisherAdView);
+                AdManagerAdView = view.FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
             }
             catch (Exception e)
             {
@@ -425,6 +427,24 @@ namespace DeepSound.Activities.Playlist
         {
             try
             {
+                var isPro = ListUtils.MyUserInfoList?.FirstOrDefault()?.IsPro ?? 0;
+                if (isPro == 0)
+                {
+                    PopupDialogController dialog = new PopupDialogController(Activity, null, "GoPro");
+                    dialog.ShowNormalDialog(GetText(Resource.String.Lbl_Warning), GetText(Resource.String.Lbl_ActivateWithUpgraded), GetText(Resource.String.Lbl_Ok), GetText(Resource.String.Lbl_Cancel));
+                    return;
+                }
+
+                if (!Methods.CheckConnectivity())
+                {
+                    Toast.MakeText(Activity, Activity.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
+                    return;
+                }
+
+                AndHUD.Shared.Show(Context, GetText(Resource.String.Lbl_Downloading));
+
+                Methods.Path.Chack_MyFolder();
+
                 foreach (var item in MAdapter.SoundsList)
                 {
                     var SoundDownload = new SoundDownloadAsyncController(item.AudioLocation, item.Title, Activity);
@@ -433,6 +453,8 @@ namespace DeepSound.Activities.Playlist
                         SoundDownload.StartDownloadManager(item.Title, item, "Playlist");
                     }
                 }
+
+                AndHUD.Shared.Dismiss(Context); 
             }
             catch (Exception exception)
             {

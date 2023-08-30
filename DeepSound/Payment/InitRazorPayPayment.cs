@@ -102,7 +102,7 @@ namespace DeepSound.Payment
 #pragma warning disable 618
                     CheckOut.OnDestroy();
 #pragma warning restore 618
-                    CheckOut = null!;
+                    CheckOut = null;
                 }
             }
             catch (Exception e)

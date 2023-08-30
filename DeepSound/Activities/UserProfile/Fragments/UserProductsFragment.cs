@@ -6,7 +6,7 @@ using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
 using Bumptech.Glide.Util;
-using Com.Adcolony.Sdk;
+using Com.Facebook.Ads;
 using DeepSound.Activities.Product;
 using DeepSound.Activities.Product.Adapters;
 using DeepSound.Activities.Tabbes;
@@ -23,7 +23,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Xamarin.Facebook.Ads;
 
 namespace DeepSound.Activities.UserProfile.Fragments
 {
@@ -111,8 +110,8 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 LinearLayout adContainer = view.FindViewById<LinearLayout>(Resource.Id.bannerContainer);
                 if (AppSettings.ShowFbBannerAds)
                     BannerAd = AdsFacebook.InitAdView(Activity, adContainer, MRecycler);
-                else
-                    AdsColony.InitBannerAd(Activity, adContainer, AdColonyAdSize.Banner, MRecycler);
+                else if (AppSettings.ShowAppLovinBannerAds)
+                    AdsAppLovin.InitBannerAd(Activity, adContainer, MRecycler);
             }
             catch (Exception e)
             {
@@ -189,6 +188,9 @@ namespace DeepSound.Activities.UserProfile.Fragments
                             e.AddButton.Tag = "true";
                             item.AddedToCart = 1;
                             PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Product.AddToCartAsync(item.Id?.ToString(), "Add") });
+
+                            GlobalContext?.TrendingFragment?.UpdateBadgeViewIcon(true);
+
                             break;
                         default:
                             e.AddButton.Text = GetText(Resource.String.Lbl_AddToCart);
@@ -196,6 +198,9 @@ namespace DeepSound.Activities.UserProfile.Fragments
                             item.AddedToCart = 0;
 
                             PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Product.AddToCartAsync(item.Id?.ToString(), "Remove") });
+
+                            GlobalContext?.TrendingFragment?.UpdateBadgeViewIcon(false);
+
                             break;
                     }
                 }

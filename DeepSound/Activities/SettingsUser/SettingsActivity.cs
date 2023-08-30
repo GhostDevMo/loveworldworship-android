@@ -10,7 +10,9 @@ using Android.Widget;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.CardView.Widget;
+using AndroidX.Core.Content;
 using DeepSound.Activities.Address;
+using DeepSound.Activities.Artists;
 using DeepSound.Activities.Base;
 using DeepSound.Activities.Genres;
 using DeepSound.Activities.MyProfile;
@@ -31,7 +33,6 @@ using Google.Android.Material.Dialog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AndroidX.Core.Content;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 
 namespace DeepSound.Activities.SettingsUser
@@ -47,7 +48,7 @@ namespace DeepSound.Activities.SettingsUser
         private TextView Name, Email;
 
         public CardView GoProLayout;
-        private LinearLayout EditProfileLayout, MyAccountLayout, MyAddressesLayout, NotificationsLayout, WithdrawalsLayout, MyAffiliatesLayout, BlockedUsersLayout;
+        private LinearLayout EditProfileLayout, MyAccountLayout, BecomeAnArtistLayout, MyAddressesLayout, NotificationsLayout, WithdrawalsLayout, MyAffiliatesLayout, BlockedUsersLayout;
         private LinearLayout PasswordLayout, TwoFactorLayout, ManageSessionsLayout;
         private LinearLayout ThemeLayout;
 
@@ -193,6 +194,7 @@ namespace DeepSound.Activities.SettingsUser
                 GoProLayout = FindViewById<CardView>(Resource.Id.GoProLayout);
                 EditProfileLayout = FindViewById<LinearLayout>(Resource.Id.layoutEditProfile);
                 MyAccountLayout = FindViewById<LinearLayout>(Resource.Id.layoutMyAccount);
+                BecomeAnArtistLayout = FindViewById<LinearLayout>(Resource.Id.layoutBecomeAnArtist);
                 MyAddressesLayout = FindViewById<LinearLayout>(Resource.Id.layoutMyAddresses);
                 NotificationsLayout = FindViewById<LinearLayout>(Resource.Id.layoutNotifications);
                 WithdrawalsLayout = FindViewById<LinearLayout>(Resource.Id.layoutWithdrawals);
@@ -259,6 +261,7 @@ namespace DeepSound.Activities.SettingsUser
                     InfoUserContainer.Click += InfoUserContainerOnClick;
                     EditProfileLayout.Click += EditProfileLayoutOnClick;
                     MyAccountLayout.Click += MyAccountLayoutOnClick;
+                    BecomeAnArtistLayout.Click += BecomeAnArtistLayoutOnClick;
                     NotificationsLayout.Click += NotificationsLayoutOnClick;
                     MyAddressesLayout.Click += MyAddressesLayoutOnClick;
                     WithdrawalsLayout.Click += WithdrawalsLayoutOnClick;
@@ -282,6 +285,7 @@ namespace DeepSound.Activities.SettingsUser
                     InfoUserContainer.Click -= InfoUserContainerOnClick;
                     EditProfileLayout.Click -= EditProfileLayoutOnClick;
                     MyAccountLayout.Click -= MyAccountLayoutOnClick;
+                    BecomeAnArtistLayout.Click -= BecomeAnArtistLayoutOnClick;
                     NotificationsLayout.Click -= NotificationsLayoutOnClick;
                     MyAddressesLayout.Click -= MyAddressesLayoutOnClick;
                     WithdrawalsLayout.Click -= WithdrawalsLayoutOnClick;
@@ -355,7 +359,6 @@ namespace DeepSound.Activities.SettingsUser
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-
 
         private void WithdrawalsLayoutOnClick(object sender, EventArgs e)
         {
@@ -494,6 +497,18 @@ namespace DeepSound.Activities.SettingsUser
             }
         }
 
+        private void BecomeAnArtistLayoutOnClick(object sender, EventArgs e)
+        {
+            try
+            {
+                StartActivity(new Intent(this, typeof(BecomeArtistActivity)));
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
         private void MyAccountLayoutOnClick(object sender, EventArgs e)
         {
             try
@@ -512,7 +527,7 @@ namespace DeepSound.Activities.SettingsUser
             try
             {
                 StoreReviewApp store = new StoreReviewApp();
-                store.OpenStoreReviewPage(PackageName);
+                store.OpenStoreReviewPage(this, PackageName);
             }
             catch (Exception exception)
             {
@@ -712,7 +727,7 @@ namespace DeepSound.Activities.SettingsUser
                 {
                     //NightMode.Summary = this.GetString(Resource.String.Lbl_SetByBattery);
                     Constant.IsChangingTheme = true;
-                    
+
                     SharedPref.SharedData?.Edit()?.PutString("Night_Mode_key", SharedPref.DefaultMode)?.Commit();
 
                     if ((int)Build.VERSION.SdkInt >= 29)
@@ -803,6 +818,11 @@ namespace DeepSound.Activities.SettingsUser
                 if (!AppSettings.ShowBlockedUsers)
                     BlockedUsersLayout.Visibility = ViewStates.Gone;
 
+                if (AppSettings.ShowBecomeAnArtist)
+                    BecomeAnArtistLayout.Visibility = dataUser?.Artist == 1 ? ViewStates.Gone : ViewStates.Visible;
+                else
+                    BecomeAnArtistLayout.Visibility = ViewStates.Gone;
+
                 //============== SecurityAccount ===================
 
                 if (!AppSettings.ShowEditPassword)
@@ -827,7 +847,6 @@ namespace DeepSound.Activities.SettingsUser
 
                 if (!AppSettings.ShowSettingsDeleteAccount)
                     DeleteAccountLayout.Visibility = ViewStates.Gone;
-
 
                 if (!AppSettings.ShowSettingsMyAffiliates)
                     MyAffiliatesLayout.Visibility = ViewStates.Gone;

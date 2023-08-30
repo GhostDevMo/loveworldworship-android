@@ -1164,7 +1164,7 @@ namespace DeepSound.Helpers.Utils
                         if (System.IO.File.Exists(pathOfFile))
                         {
                             System.IO.File.Copy(pathOfFile, copyFileFullPath);
-                            //var mediaScanIntent = new Intent(Intent.ActionMediaScannerScanFile);
+                            //var mediaScanIntent = new Intent(Intent?.ActionMediaScannerScanFile);
                             //mediaScanIntent?.SetData(Uri.FromFile(new File(copyFileFullPath)));
                             //Application.Context.SendBroadcast(mediaScanIntent);
 
@@ -1266,7 +1266,7 @@ namespace DeepSound.Helpers.Utils
                             await using FileStream fs = new FileStream(mediaFile, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
                             await s.CopyToAsync(fs);
 
-                            //var mediaScanIntent = new Intent(Intent.ActionMediaScannerScanFile);
+                            //var mediaScanIntent = new Intent(Intent?.ActionMediaScannerScanFile);
                             //mediaScanIntent?.SetData(Uri.FromFile(new File(mediaFile)));
                             //Application.Context.SendBroadcast(mediaScanIntent);
 
@@ -2742,7 +2742,7 @@ namespace DeepSound.Helpers.Utils
             {
                 var tcs = new TaskCompletionSource<MessageResult>();
 
-                var builder = new AlertDialog.Builder(MContext, Resource.Style.AlertDialogCustom);
+                var builder = new MaterialAlertDialogBuilder(MContext);
                 builder.SetIconAttribute(iconAttribute);
                 builder.SetTitle(title);
                 builder.SetMessage(message);
@@ -2915,12 +2915,12 @@ namespace DeepSound.Helpers.Utils
                         Intent launchIntent = context.PackageManager?.GetLaunchIntentForPackage(packageName);
                         if (launchIntent != null)
                         {
-                            launchIntent?.AddFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);
+                            launchIntent.AddFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);
 
-                            launchIntent?.PutExtra("App", "Timeline");
-                            launchIntent?.PutExtra("type", type); // SendMsgProduct , OpenChat , OpenChatPage
+                            launchIntent.PutExtra("App", "Timeline");
+                            launchIntent.PutExtra("type", type); // SendMsgProduct , OpenChat , OpenChatPage
 
-                            launchIntent?.AddFlags(ActivityFlags.SingleTop);
+                            launchIntent.AddFlags(ActivityFlags.SingleTop);
                             context.StartActivity(launchIntent);
                         }
                         else
@@ -3004,7 +3004,7 @@ namespace DeepSound.Helpers.Utils
                 {
                     string mailto = "mailto:" + email + "?cc=" + email + "&subject=" + subject + "&body=" + text;
                     Intent emailIntent = new Intent(Intent.ActionSendto);
-                    emailIntent?.SetData(Uri.Parse(mailto));
+                    emailIntent.SetData(Uri.Parse(mailto));
                     context.StartActivity(Intent.CreateChooser(emailIntent, "Send Email"));
                 }
                 catch (Exception exception)
@@ -3061,12 +3061,12 @@ namespace DeepSound.Helpers.Utils
             }
 
 
-            public static string GetKeyHashesConfigured(Context applicationContext)
+            public static string GetKeyHashesConfigured(Context context)
             {
                 try
                 {
 #pragma warning disable 618
-                    PackageInfo info = Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu ? applicationContext.PackageManager?.GetPackageInfo(applicationContext.PackageName!, PackageManager.PackageInfoFlags.Of((long)PackageInfoFlags.Signatures)) : applicationContext.PackageManager?.GetPackageInfo(applicationContext.PackageName!, PackageInfoFlags.Signatures);
+                    PackageInfo info = Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu ? context.PackageManager?.GetPackageInfo(context.PackageName!, PackageManager.PackageInfoFlags.Of((long)PackageInfoFlags.Signatures)) : context.PackageManager?.GetPackageInfo(context.PackageName!, PackageInfoFlags.Signatures);
                     foreach (var signature in info?.Signatures!)
 #pragma warning restore 618
                     {
@@ -3489,11 +3489,14 @@ namespace DeepSound.Helpers.Utils
             public static readonly string FolderDcimMyApp = AndroidDcimFolder + "/" + AppSettings.ApplicationName + "/";
             public static readonly string FolderDcimImage = FolderDcimMyApp + "/Images/";
             public static readonly string FolderDcimSound = FolderDcimMyApp + "/Sound/";
+            public static readonly string FolderDcimStory = FolderDcimMyApp + "/Story/";
 
             //Disk
             public static readonly string FolderDiskMyApp = PersonalFolder + "/" + AppSettings.ApplicationName + "/";
             public static readonly string FolderDiskImage = FolderDiskMyApp + "/Images/";
             public static readonly string FolderDiskSound = FolderDiskMyApp + "/Sound/";
+            public static readonly string FolderDiskStory = FolderDiskMyApp + "/Story/";
+
             public static string GetDirectoryDcim()
             {
                 try
@@ -3539,7 +3542,7 @@ namespace DeepSound.Helpers.Utils
             {
                 try
                 {
-                    if (!PermissionsController.CheckPermissionStorage())
+                    if (!PermissionsController.CheckPermissionStorage(Application.Context))
                         return;
 
                     if (!Directory.Exists(FolderDcimMyApp))
@@ -3554,6 +3557,9 @@ namespace DeepSound.Helpers.Utils
                     if (!Directory.Exists(FolderDcimSound + "/" + id))
                         Directory.CreateDirectory(FolderDcimSound + "/" + id);
 
+                    if (!Directory.Exists(FolderDcimStory + "/" + id))
+                        Directory.CreateDirectory(FolderDcimStory + "/" + id);
+
                     //================================================
 
                     if (!Directory.Exists(FolderDiskImage + "/" + id))
@@ -3561,6 +3567,9 @@ namespace DeepSound.Helpers.Utils
 
                     if (!Directory.Exists(FolderDiskSound + "/" + id))
                         Directory.CreateDirectory(FolderDiskSound + "/" + id);
+
+                    if (!Directory.Exists(FolderDiskStory + "/" + id))
+                        Directory.CreateDirectory(FolderDiskStory + "/" + id);
 
                 }
                 catch (Exception e)
@@ -3573,7 +3582,7 @@ namespace DeepSound.Helpers.Utils
             {
                 try
                 {
-                    if (!PermissionsController.CheckPermissionStorage())
+                    if (!PermissionsController.CheckPermissionStorage(Application.Context))
                         return;
 
                     if (Directory.Exists(FolderDcimImage + "/" + id))
@@ -3642,7 +3651,7 @@ namespace DeepSound.Helpers.Utils
                         var imageOut = cr.OpenOutputStream(url);
                         try
                         {
-                            source.Compress(Bitmap.CompressFormat.Jpeg, 50, imageOut);
+                            await source.CompressAsync(Bitmap.CompressFormat.Jpeg, 50, imageOut);
                         }
                         finally
                         {
@@ -3687,7 +3696,7 @@ namespace DeepSound.Helpers.Utils
 
                             var imageBytes = await client.GetByteArrayAsync(new System.Uri(url));
                             if (imageBytes is { Length: > 0 })
-                                return BitmapFactory.DecodeByteArray(imageBytes, 0, imageBytes.Length);
+                                return await BitmapFactory.DecodeByteArrayAsync(imageBytes, 0, imageBytes.Length);
                         }
                     }
                     else
@@ -3811,9 +3820,11 @@ namespace DeepSound.Helpers.Utils
 
         #endregion
 
-#pragma warning disable CS0618
-        public class AppLifecycleObserver : Java.Lang.Object, IGenericLifecycleObserver
-#pragma warning restore CS0618
+        #region AppLifecycleObserver
+
+        public static string AppState { set; get; }
+
+        public class AppLifecycleObserver : Java.Lang.Object, ILifecycleEventObserver
         {
             //public enum AppLifeState
             //{
@@ -3844,5 +3855,7 @@ namespace DeepSound.Helpers.Utils
                 }
             }
         }
+
+        #endregion
     }
 }

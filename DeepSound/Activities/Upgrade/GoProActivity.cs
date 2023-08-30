@@ -60,7 +60,7 @@ namespace DeepSound.Activities.Upgrade
                 TextDecorator = new TextDecorator();
 
                 if (AppSettings.ShowInAppBilling && InitializeDeepSound.IsExtended)
-                    BillingSupport = new BillingSupport(this, InAppBillingGoogle.ProductId, AppSettings.Cert, InAppBillingGoogle.ListProductSku, this);
+                    BillingSupport = new BillingSupport(this, AppSettings.Cert, InAppBillingGoogle.ListProductSku, this);
 
                 //Get Value And Set Toolbar
                 InitComponent();
@@ -173,7 +173,7 @@ namespace DeepSound.Activities.Upgrade
                     PriceText.Text = list.CurrencySymbol + list.ProPrice + " /" + GetText(Resource.String.Lbl_Month);
                 }
 
-                Typeface font = Typeface.CreateFromAsset(Application.Context.Resources?.Assets, "ionicons.ttf");
+                //Typeface font = Typeface.CreateFromAsset(Application.Context.Resources?.Assets, "ionicons.ttf");
                 string name = "go_pro_array";
                 int resourceId = Resources.GetIdentifier(name, "array", PackageName);
                 if (resourceId == 0)
@@ -416,6 +416,12 @@ namespace DeepSound.Activities.Upgrade
             }
         }
 
+        public void GetPurchase(IList<Purchase> result)
+        {
+
+        }
+
         #endregion
     }
+
 }

@@ -2,7 +2,6 @@
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Gms.Ads.DoubleClick;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -14,6 +13,7 @@ using AndroidX.Core.Content;
 using Bumptech.Glide;
 using Bumptech.Glide.Request;
 using Com.Canhub.Cropper;
+using Com.Google.Android.Gms.Ads.Admanager;
 using DeepSound.Activities.Base;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
@@ -42,7 +42,7 @@ namespace DeepSound.Activities.Event
         private EditText TxtName, TxtDescription, TxtLocation, TxtLocationData, TxtStartDate, TxtStartTime, TxtEndDate, TxtEndTime, TxtTimezone, TxtSellTickets, TxtTicketsAvailable, TxtTicketPrice;
         private LinearLayout LayoutTicketsData;
         private string Timezone, Location, SellTicket = "no", EventPathImage, EventPathVideo, ImageType, TypeDialog = "";
-        private PublisherAdView PublisherAdView;
+        private AdManagerAdView AdManagerAdView;
         private Dictionary<string, string> TimezonesList;
         private DialogGalleryController GalleryController;
 
@@ -81,7 +81,7 @@ namespace DeepSound.Activities.Event
             {
                 base.OnResume();
                 AddOrRemoveEvent(true);
-                PublisherAdView?.Resume();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -95,7 +95,7 @@ namespace DeepSound.Activities.Event
             {
                 base.OnPause();
                 AddOrRemoveEvent(false);
-                PublisherAdView?.Pause();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -213,8 +213,8 @@ namespace DeepSound.Activities.Event
                 Methods.SetFocusable(TxtTimezone);
                 Methods.SetFocusable(TxtSellTickets);
 
-                PublisherAdView = FindViewById<PublisherAdView>(Resource.Id.multiple_ad_sizes_view);
-                AdsGoogle.InitPublisherAdView(PublisherAdView);
+                AdManagerAdView = FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
 
                 LayoutTicketsData.Visibility = ViewStates.Gone;
                 TxtSellTickets.Hint = GetText(Resource.String.Lbl_No);
@@ -291,10 +291,10 @@ namespace DeepSound.Activities.Event
         {
             try
             {
-                PublisherAdView?.Destroy();
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Destroy");
 
                 TxtSave = null;
-                PublisherAdView = null;
+                AdManagerAdView = null;
                 TypeDialog = "";
             }
             catch (Exception e)
@@ -721,7 +721,7 @@ namespace DeepSound.Activities.Event
                                 break;
                             default:
                                 {
-                                    if (ContextCompat.CheckSelfPermission(this, Manifest.Permission.Camera) == Permission.Granted && PermissionsController.CheckPermissionStorage())
+                                    if (ContextCompat.CheckSelfPermission(this, Manifest.Permission.Camera) == Permission.Granted && PermissionsController.CheckPermissionStorage(this))
                                     {
                                         //requestCode >> 501 => video Gallery
                                         new IntentController(this).OpenIntentVideoGallery();
@@ -748,7 +748,7 @@ namespace DeepSound.Activities.Event
                                 break;
                             default:
                                 {
-                                    if (ContextCompat.CheckSelfPermission(this, Manifest.Permission.Camera) == Permission.Granted && PermissionsController.CheckPermissionStorage())
+                                    if (ContextCompat.CheckSelfPermission(this, Manifest.Permission.Camera) == Permission.Granted && PermissionsController.CheckPermissionStorage(this))
                                     {
                                         //requestCode >> 513 => video Camera
                                         new IntentController(this).OpenIntentVideoCamera();

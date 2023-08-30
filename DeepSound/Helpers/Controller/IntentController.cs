@@ -1,10 +1,10 @@
-﻿using Android.App;
-using Android.Content;
+﻿using Android.Content;
 using Android.Gms.Common;
 using Android.Locations;
 using Android.OS;
 using Android.Provider;
 using Android.Widget;
+using AndroidX.AppCompat.App;
 using AndroidX.Browser.CustomTabs;
 using AndroidX.Core.Content;
 using DeepSound.Helpers.Utils;
@@ -20,11 +20,11 @@ namespace DeepSound.Helpers.Controller
     {
         //############################# DON'T MODIFY HERE ##########################
 
-        private readonly Activity Context;
+        private readonly AppCompatActivity Context;
         public static string CurrentPhotoPath;
         public static string CurrentVideoPath;
 
-        public IntentController(Activity context)
+        public IntentController(AppCompatActivity context)
         {
             try
             {
@@ -51,14 +51,11 @@ namespace DeepSound.Helpers.Controller
             {
                 Methods.Path.Chack_MyFolder();
 
-                Intent intent = (int)Build.VERSION.SdkInt switch
-                {
-                    <= 25 => new Intent(Intent.ActionPick, MediaStore.Images.Media.ExternalContentUri),
-                    _ => Android.OS.Environment.GetExternalStorageState(null)!.Equals(Android.OS.Environment
-                        .MediaMounted)
-                        ? new Intent(Intent.ActionPick, MediaStore.Images.Media.ExternalContentUri)
-                        : new Intent(Intent.ActionPick, MediaStore.Images.Media.InternalContentUri)
-                };
+                Intent intent;
+                if ((int)Build.VERSION.SdkInt <= 25)
+                    intent = new Intent(Intent.ActionPick, MediaStore.Images.Media.ExternalContentUri);
+                else
+                    intent = Android.OS.Environment.GetExternalStorageState(null)!.Equals(Android.OS.Environment.MediaMounted) ? new Intent(Intent.ActionPick, MediaStore.Images.Media.ExternalContentUri) : new Intent(Intent.ActionPick, MediaStore.Images.Media.InternalContentUri);
 
                 intent.SetType("image/*");
                 intent.PutExtra("return-data", true); //added snippet
@@ -107,15 +104,11 @@ namespace DeepSound.Helpers.Controller
                 //intent.SetType("video/*");
                 //intent.PutExtra("return-data", true); //added snippet
                 //Context.StartActivityForResult(Intent.CreateChooser(intent, title), 501);
-
-                Intent intent = (int)Build.VERSION.SdkInt switch
-                {
-                    <= 25 => new Intent(Intent.ActionPick, MediaStore.Video.Media.ExternalContentUri),
-                    _ => Android.OS.Environment.GetExternalStorageState(null)!.Equals(Android.OS.Environment
-                        .MediaMounted)
-                        ? new Intent(Intent.ActionPick, MediaStore.Video.Media.ExternalContentUri)
-                        : new Intent(Intent.ActionPick, MediaStore.Video.Media.InternalContentUri)
-                };
+                Intent intent;
+                if ((int)Build.VERSION.SdkInt <= 25)
+                    intent = new Intent(Intent.ActionPick, MediaStore.Video.Media.ExternalContentUri);
+                else
+                    intent = Android.OS.Environment.GetExternalStorageState(null)!.Equals(Android.OS.Environment.MediaMounted) ? new Intent(Intent.ActionPick, MediaStore.Video.Media.ExternalContentUri) : new Intent(Intent.ActionPick, MediaStore.Video.Media.InternalContentUri);
 
                 //  In this example we will set the type to video
                 intent.SetType("video/*");
@@ -212,7 +205,7 @@ namespace DeepSound.Helpers.Controller
                 {
                     Intent takePictureIntent = new Intent(MediaStore.ActionImageCapture);
                     // Ensure that there's a camera activity to handle the intent
-                    var packageManager = takePictureIntent?.ResolveActivity(Context.PackageManager);
+                    var packageManager = takePictureIntent.ResolveActivity(Context.PackageManager);
                     if (packageManager != null)
                     {
                         // Create the File where the photo should go
@@ -222,7 +215,7 @@ namespace DeepSound.Helpers.Controller
                         if (photoFile != null)
                         {
                             var photoUri = FileProvider.GetUriForFile(Context, Context.PackageName + ".fileprovider", photoFile);
-                            takePictureIntent?.PutExtra(MediaStore.ExtraOutput, photoUri);
+                            takePictureIntent.PutExtra(MediaStore.ExtraOutput, photoUri);
                         }
                     }
 
@@ -336,7 +329,7 @@ namespace DeepSound.Helpers.Controller
                             intent.SetType("*/*");
                             intent.PutExtra(Intent.ExtraMimeTypes, mimeTypes);
                             intent.AddCategory(Intent.CategoryOpenable);
-                            intent.PutExtra(Intent.ExtraLocalOnly, true);
+                            //intent.PutExtra(Intent.ExtraLocalOnly, true);
                             break;
                         }
                 }
@@ -348,8 +341,8 @@ namespace DeepSound.Helpers.Controller
                 Methods.DisplayReportResultTrack(e);
 
                 var fileIntent = new Intent(Intent.ActionPick);
-                fileIntent?.SetAction(Intent.ActionGetContent);
-                fileIntent?.SetType("*/*");
+                fileIntent.SetAction(Intent.ActionGetContent);
+                fileIntent.SetType("*/*");
                 Context.StartActivityForResult(Intent.CreateChooser(fileIntent, title), 504);
             }
         }
@@ -494,7 +487,7 @@ namespace DeepSound.Helpers.Controller
             {
                 string mailto = "mailto:" + email + "?cc=" + email + "&subject=" + subject + "&body=" + text;
                 Intent emailIntent = new Intent(Intent.ActionSendto);
-                emailIntent?.SetData(Uri.Parse(mailto));
+                emailIntent.SetData(Uri.Parse(mailto));
                 Context.StartActivity(Intent.CreateChooser(emailIntent, "Send Email"));
             }
             catch (Exception e)
@@ -553,12 +546,12 @@ namespace DeepSound.Helpers.Controller
             {
                 CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
                 CustomTabsIntent customTabsIntent = builder.Build();
-                customTabsIntent?.Intent?.SetAction(Intent.ActionView);
-                customTabsIntent?.Intent?.AddFlags(ActivityFlags.NewTask);
+                customTabsIntent.Intent.SetAction(Intent.ActionView);
+                customTabsIntent.Intent.AddFlags(ActivityFlags.NewTask);
                 //builder.SetToolbarColor(Color.ParseColor(AppSettings.MainColor));
                 builder.SetStartAnimations(Context, Resource.Animation.abc_fade_in, Resource.Animation.abc_fade_out);
                 builder.SetExitAnimations(Context, Resource.Animation.abc_fade_in, Resource.Animation.abc_fade_out);
-                customTabsIntent?.LaunchUrl(Context, Uri.Parse(url));
+                customTabsIntent.LaunchUrl(Context, Uri.Parse(url));
             }
             catch (Exception e)
             {
@@ -600,29 +593,17 @@ namespace DeepSound.Helpers.Controller
             }
         }
 
-        public static Intent GetOpenFacebookIntent(Context context, string name)
+        public void OpenFacebookIntent(string name)
         {
             try
             {
-                //PackageManager?.GetPackageInfo("com.facebook.katana", 0); //Checks if FB is even installed.
-                //return new Intent(Intent.ActionView,Uri.Parse("fb://profile/" + name)); //Try's to make intent with FB is URI
-                return new Intent(Intent.ActionView, Uri.Parse("fb://facewebmodal/f?href=https://www.facebook.com/" + name)); //Try's to make intent with FB is URI
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-                return new Intent(Intent.ActionView, Uri.Parse("https://www.facebook.com/" + name)); //catches and opens a url to the desired page
-            }
-        }
-
-        public void OpenFacebookIntent(Context context, string name)
-        {
-            try
-            {
-                Intent facebookIntent = GetOpenFacebookIntent(context, name);
-
-                if (facebookIntent?.ResolveActivity(Context.PackageManager) != null)
-                    Context.StartActivity(facebookIntent);
+                Intent intent = new Intent(Intent.ActionView, Uri.Parse("fb://facewebmodal/f?href=https://www.facebook.com/" + name));
+                if (intent.ResolveActivity(Context.PackageManager) != null)
+                    Context.StartActivity(intent);
+                else
+                {
+                    OpenBrowserFromApp("https://www.facebook.com/" + name);
+                }
             }
             catch (Exception e)
             {
@@ -656,7 +637,7 @@ namespace DeepSound.Helpers.Controller
             {
                 string url = "https://www.linkedin.com/in/" + name;
                 Intent linkedInAppIntent = new Intent(Intent.ActionView, Uri.Parse(url));
-                linkedInAppIntent?.AddFlags(ActivityFlags.ClearWhenTaskReset);
+                linkedInAppIntent.AddFlags(ActivityFlags.ClearWhenTaskReset);
                 Context.StartActivity(linkedInAppIntent);
             }
             catch (Exception e)

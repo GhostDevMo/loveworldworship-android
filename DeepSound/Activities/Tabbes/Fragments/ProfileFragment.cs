@@ -377,7 +377,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
             try
             {
                 Intent intent = new Intent(Activity, typeof(EditProfileInfoActivity));
-                Activity.StartActivityForResult(intent, 200);
+                StartActivityForResult(intent, 200);
             }
             catch (Exception exception)
             {

@@ -130,37 +130,6 @@
                     android:tint="@color/gnt_white"
                     android:src="@drawable/icon_player_heart" />
             </FrameLayout>
-            <RelativeLayout
-                android:id="@+id/ll_download"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="1"
-                android:gravity="center"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="@drawable/custom_ripple"
-                android:orientation="vertical">
-                <ImageView
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:padding="10dp"
-                    android:background="@drawable/shape_bg_bottom_navigation"
-                    android:backgroundTint="#99000000"
-                    android:layout_gravity="center"
-                    android:id="@+id/icon_download"
-                    android:tint="@color/gnt_white"
-                    android:src="@drawable/icon_player_download" />
-                <ProgressBar
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:id="@+id/progressBar"
-                    android:padding="2dp"
-                    android:visibility="invisible"
-                    android:layout_gravity="center"
-                    android:indeterminate="true"
-                    android:gravity="center_horizontal"
-                    android:progressTint="@color/gnt_white" />
-            </RelativeLayout>
             <FrameLayout
                 android:id="@+id/ll_playlist"
                 android:layout_width="0dp"

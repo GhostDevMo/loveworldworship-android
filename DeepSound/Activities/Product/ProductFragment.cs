@@ -1,5 +1,4 @@
 ﻿using Android.Content;
-using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
 using Android.Util;
@@ -9,6 +8,7 @@ using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
 using Bumptech.Glide.Util;
+using Com.Google.Android.Gms.Ads;
 using DeepSound.Activities.Product.Adapters;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Ads;
@@ -109,7 +109,7 @@ namespace DeepSound.Activities.Product
             try
             {
                 base.OnResume();
-                MAdView?.Resume();
+                AdsGoogle.LifecycleAdView(MAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -122,7 +122,7 @@ namespace DeepSound.Activities.Product
             try
             {
                 base.OnPause();
-                MAdView?.Pause();
+                AdsGoogle.LifecycleAdView(MAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -134,7 +134,7 @@ namespace DeepSound.Activities.Product
         {
             try
             {
-                MAdView?.Destroy();
+                AdsGoogle.LifecycleAdView(MAdView, "Destroy");
                 base.OnDestroy();
             }
             catch (Exception e)
@@ -232,7 +232,7 @@ namespace DeepSound.Activities.Product
         {
             try
             {
-                Activity.StartActivityForResult(new Intent(Activity, typeof(CreateProductActivity)), 3500);
+                StartActivityForResult(new Intent(Activity, typeof(CreateProductActivity)), 3500);
             }
             catch (Exception exception)
             {
@@ -289,7 +289,11 @@ namespace DeepSound.Activities.Product
                             e.AddButton.Text = GetText(Resource.String.Lbl_RemoveFromCart);
                             e.AddButton.Tag = "true";
                             item.AddedToCart = 1;
+
                             PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Product.AddToCartAsync(item.Id?.ToString(), "Add") });
+
+                            GlobalContext?.TrendingFragment?.UpdateBadgeViewIcon(true);
+
                             break;
                         default:
                             e.AddButton.Text = GetText(Resource.String.Lbl_AddToCart);
@@ -297,6 +301,9 @@ namespace DeepSound.Activities.Product
                             item.AddedToCart = 0;
 
                             PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Product.AddToCartAsync(item.Id?.ToString(), "Remove") });
+
+                            GlobalContext?.TrendingFragment?.UpdateBadgeViewIcon(false);
+
                             break;
                     }
                 }

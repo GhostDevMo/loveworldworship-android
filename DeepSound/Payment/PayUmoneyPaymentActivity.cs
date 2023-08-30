@@ -248,7 +248,7 @@ namespace DeepSound.Payment
             }
         }
 
-        //AuthorizeNet
+        //PayUmoney
         private async void BtnApplyOnClick(object sender, EventArgs e)
         {
             try
@@ -258,11 +258,11 @@ namespace DeepSound.Payment
                     if (!InitWalletPayUmoney())
                         return;
 
-                    var cardNumber = MultilineWidget.CardNumberEditText.Text;
+                    var cardNumber = MultilineWidget.CardNumberEditText.Text?.Replace(" ", "");
                     var cardExpire = MultilineWidget.ExpiryDateEditText.Text;
 
-                    var ExpMonth = cardExpire.Split("\\").First();
-                    var ExpYear = cardExpire.Split("\\").Last();
+                    var ExpMonth = cardExpire.Split("/").First();
+                    var ExpYear = cardExpire.Split("/").Last();
 
                     var cardCvv = MultilineWidget.CvcEditText.Text;
 

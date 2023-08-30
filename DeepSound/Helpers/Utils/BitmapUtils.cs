@@ -19,6 +19,62 @@ namespace DeepSound.Helpers.Utils
 {
     public static class BitmapUtil
     {
+
+        public static Bitmap RemoveTransparency(Bitmap source)
+        {
+            int firstX = 0;
+            int firstY = 0;
+            int lastX = source.Width;
+            int lastY = source.Height;
+            int[] pixels = new int[source.Width * source.Height];
+            source.GetPixels(pixels, 0, source.Width, 0, 0, source.Width, source.Height);
+            for (int x = 0; x < source.Width; x++)
+            {
+                for (int y = 0; y < source.Height; y++)
+                {
+                    if (pixels[x + y * source.Width] != Color.Transparent)
+                    {
+                        firstX = x;
+                        break;
+                    }
+                }
+            }
+            for (int y = 0; y < source.Height; y++)
+            {
+                for (int x = firstX; x < source.Width; x++)
+                {
+                    if (pixels[x + y * source.Width] != Color.Transparent)
+                    {
+                        firstY = y;
+                        break;
+                    }
+                }
+            }
+            for (int x = source.Width - 1; x >= firstX; x--)
+            {
+                for (int y = source.Height - 1; y >= firstY; y--)
+                {
+                    if (pixels[x + y * source.Width] != Color.Transparent)
+                    {
+                        lastX = x;
+                        break;
+                    }
+                }
+            }
+            for (int y = source.Height - 1; y >= firstY; y--)
+            {
+                for (int x = source.Width - 1; x >= firstX; x--)
+                {
+                    if (pixels[x + y * source.Width] != Color.Transparent)
+                    {
+                        lastY = y;
+                        break;
+                    }
+                }
+            }
+            return Bitmap.CreateBitmap(source, firstX, firstY, lastX - firstX, lastY - firstY);
+        }
+
         /// <summary>
         ///     Save filter bitmap from {@link ImageFilterView}
         /// </summary>
@@ -210,13 +266,13 @@ namespace DeepSound.Helpers.Utils
 
                         var imageBytes = await client.GetByteArrayAsync(new Uri(url));
                         if (imageBytes is { Length: > 0 })
-                            return BitmapFactory.DecodeByteArray(imageBytes, 0, imageBytes.Length);
+                            return await BitmapFactory.DecodeByteArrayAsync(imageBytes, 0, imageBytes.Length);
                     }
                 }
                 else
                 {
                     BitmapFactory.Options bmOptions = new BitmapFactory.Options();
-                    return BitmapFactory.DecodeFile(url, bmOptions);
+                    return await BitmapFactory.DecodeFileAsync(url, bmOptions);
                 }
 
                 return null;

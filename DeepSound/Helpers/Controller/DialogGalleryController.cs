@@ -3,6 +3,7 @@ using Android.Content.PM;
 using Android.Graphics;
 using Android.OS;
 using AndroidX.Activity.Result;
+using AndroidX.Activity.Result.Contract;
 using AndroidX.AppCompat.App;
 using AndroidX.Core.Content;
 using Com.Canhub.Cropper;
@@ -18,18 +19,32 @@ namespace DeepSound.Helpers.Controller
         private readonly AppCompatActivity Activity;
         private readonly IActivityResultCallback Callback;
 
-        private ActivityResultLauncher CropImage;
+        private ActivityResultLauncher PickMedia;
+        private bool AllowMultiple;
+        private bool AllowCropping;
 
         public string ImageType;
 
-        public DialogGalleryController(AppCompatActivity activity, IActivityResultCallback callback)
+        public DialogGalleryController(AppCompatActivity activity, IActivityResultCallback callback, bool allowMultiple = false, bool imageCropping = true)
         {
             try
             {
                 Activity = activity;
                 Callback = callback;
+                AllowMultiple = allowMultiple;
+                AllowCropping = imageCropping;
 
-                InitCropImage(activity);
+                if (imageCropping)
+                {
+                    InitCropImage(activity);
+                }
+                else
+                {
+                    if (IsPhotoPickerAvailable())
+                        PickMedia = activity.RegisterForActivityResult(allowMultiple ? new ActivityResultContracts.PickMultipleVisualMedia(9) : new ActivityResultContracts.PickVisualMedia(), Callback);
+                    else
+                        InitCropImage(activity);
+                }
             }
             catch (Exception e)
             {
@@ -37,11 +52,70 @@ namespace DeepSound.Helpers.Controller
             }
         }
 
+        public static bool IsPhotoPickerAvailable()
+        {
+            if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+            {
+                return true;
+            }
+            else if (Build.VERSION.SdkInt >= BuildVersionCodes.R)
+            {
+                return Android.OS.Ext.SdkExtensions.GetExtensionVersion((int)BuildVersionCodes.R) >= 2;
+            }
+            else
+                return false;
+        }
+
+        #region PickVisualMedia
+
+        public void OpenPickVisualMedia(string mediaType = "All", bool allowMultiple = false)
+        {
+            try
+            {
+                if (mediaType == "All")
+                {
+                    // Launch the photo picker and allow the user to choose images and videos.
+                    PickMedia.Launch(new PickVisualMediaRequest.Builder()
+                        .SetMediaType(ActivityResultContracts.PickVisualMedia.ImageAndVideo.Instance)
+                        .Build());
+                }
+                else if (mediaType == "Video")
+                {
+                    // Launch the photo picker and allow the user to choose videos.
+                    PickMedia.Launch(new PickVisualMediaRequest.Builder()
+                        .SetMediaType(ActivityResultContracts.PickVisualMedia.VideoOnly.Instance)
+                        .Build());
+                }
+                else if (mediaType == "Image")
+                {
+                    // Launch the photo picker and allow the user to choose images
+                    PickMedia.Launch(new PickVisualMediaRequest.Builder()
+                        .SetMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.Instance)
+                        .Build());
+                }
+                else
+                {
+                    // Launch the photo picker and allow the user to choose all.
+                    PickMedia.Launch(new PickVisualMediaRequest.Builder()
+                        .SetMediaType(new ActivityResultContracts.PickVisualMedia.SingleMimeType("*/*"))
+                        .Build());
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        #endregion
+
+        #region CropImage
+
         private void InitCropImage(AppCompatActivity activity)
         {
             try
             {
-                CropImage = activity.RegisterForActivityResult(new CropImageContract(), Callback);
+                PickMedia = activity.RegisterForActivityResult(new CropImageContract(), Callback);
             }
             catch (Exception e)
             {
@@ -53,12 +127,6 @@ namespace DeepSound.Helpers.Controller
         {
             try
             {
-                //if (!PlayTubeTools.CheckAllowedFileUpload())
-                //{
-                //    Methods.DialogPopup.InvokeAndShowDialog(Activity, Activity.GetText(Resource.String.Lbl_Security), Activity.GetText(Resource.String.Lbl_Error_AllowedFileUpload), Activity.GetText(Resource.String.Lbl_Ok));
-                //    return;
-                //}
-
                 ImageType = typeImage;
 
                 // Check if we're running on Android 5.0 or higher
@@ -79,11 +147,11 @@ namespace DeepSound.Helpers.Controller
                         OutputCompressFormat = Bitmap.CompressFormat.Jpeg,
                     });
                     //Open Image 
-                    CropImage.Launch(option);
+                    PickMedia.Launch(option);
                 }
                 else
                 {
-                    if (PermissionsController.CheckPermissionStorage("image") && ContextCompat.CheckSelfPermission(Activity, Manifest.Permission.Camera) == Permission.Granted)
+                    if (PermissionsController.CheckPermissionStorage(Activity, "image") && ContextCompat.CheckSelfPermission(Activity, Manifest.Permission.Camera) == Permission.Granted)
                     {
                         Methods.Path.Chack_MyFolder();
 
@@ -101,7 +169,7 @@ namespace DeepSound.Helpers.Controller
                             OutputCompressFormat = Bitmap.CompressFormat.Jpeg,
                         });
                         //Open Image 
-                        CropImage.Launch(option);
+                        PickMedia.Launch(option);
                     }
                     else
                     {
@@ -135,14 +203,13 @@ namespace DeepSound.Helpers.Controller
                         Guidelines = CropImageView.Guidelines.On,
                         MaxZoom = 4,
                         OutputCompressFormat = Bitmap.CompressFormat.Jpeg,
-
                     });
                     //Open Image 
-                    CropImage.Launch(option);
+                    PickMedia.Launch(option);
                 }
                 else
                 {
-                    if (PermissionsController.CheckPermissionStorage("image") && ContextCompat.CheckSelfPermission(Activity, Manifest.Permission.Camera) == Permission.Granted)
+                    if (PermissionsController.CheckPermissionStorage(Activity, "image") && ContextCompat.CheckSelfPermission(Activity, Manifest.Permission.Camera) == Permission.Granted)
                     {
                         Methods.Path.Chack_MyFolder();
 
@@ -159,7 +226,7 @@ namespace DeepSound.Helpers.Controller
                             OutputCompressFormat = Bitmap.CompressFormat.Jpeg,
                         });
                         //Open Image 
-                        CropImage.Launch(option);
+                        PickMedia.Launch(option);
                     }
                     else
                     {
@@ -172,6 +239,8 @@ namespace DeepSound.Helpers.Controller
                 Methods.DisplayReportResultTrack(e);
             }
         }
+
+        #endregion
 
     }
 }

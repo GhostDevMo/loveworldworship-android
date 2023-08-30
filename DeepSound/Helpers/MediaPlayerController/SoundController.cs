@@ -7,6 +7,7 @@ using Android.OS;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.App;
 using AndroidX.Core.Content;
 using Com.Sothree.Slidinguppanel;
 using DeepSound.Activities.Comments;
@@ -40,11 +41,11 @@ namespace DeepSound.Helpers.MediaPlayerController
         public FloatingActionButton BtPlay;
         private TextView TvTitleSound, TvDescriptionSound;
         private TextView TvSongCurrentDuration, TvSongTotalDuration, TxtArtistName, TxtArtistAbout, TxtPlaybackSpeed;
-        private ImageView BtnIconComments, BtnIconFavorite, BtnIconLike;
+        private ImageView BtnIconComments, BtnIconFavorite, BtnIconLike, BtnIconDislike;
         public ImageView BtnIconDownload;
         public ProgressBar ProgressBarDownload;
         private ImageView BtnIconAddTo, BtnIconShare, IconInfo;
-        private FrameLayout LinearAddTo, LinearShare, LinearComments, LinearFavorite, LinearLike;
+        private FrameLayout LinearAddTo, LinearShare, LinearComments, LinearFavorite, LinearLike, LinearDislike;
         private RelativeLayout LinearDownload;
         private ImageView ImageCover, ImageToolbar;
         public ImageView BackIcon, CloseIcon, BtnPlayImage, BtnNextImage;
@@ -67,7 +68,7 @@ namespace DeepSound.Helpers.MediaPlayerController
             try
             {
                 ActivityContext = activity;
-                GlobalContext = (HomeActivity)activity ?? HomeActivity.GetInstance();
+                GlobalContext = HomeActivity.GetInstance();
 
                 ClickListeners = new SocialIoClickListeners(activity);
 
@@ -141,6 +142,8 @@ namespace DeepSound.Helpers.MediaPlayerController
                 BtnIconFavorite = ActivityContext.FindViewById<ImageView>(Resource.Id.icon_fav);
                 LinearLike = ActivityContext.FindViewById<FrameLayout>(Resource.Id.ll_like);
                 BtnIconLike = ActivityContext.FindViewById<ImageView>(Resource.Id.icon_like);
+                LinearDislike = ActivityContext.FindViewById<FrameLayout>(Resource.Id.ll_Dislike);
+                BtnIconDislike = ActivityContext.FindViewById<ImageView>(Resource.Id.icon_Dislike);
                 IconInfo = ActivityContext.FindViewById<ImageView>(Resource.Id.info);
                 TvTitleSound = ActivityContext.FindViewById<TextView>(Resource.Id.titleSound);
                 TvDescriptionSound = ActivityContext.FindViewById<TextView>(Resource.Id.descriptionSound);
@@ -184,6 +187,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                     LinearDownload.Click += LinearDownloadOnClick;
                     LinearFavorite.Click += LinearFavoriteOnClick;
                     LinearLike.Click += LinearLikeOnClick;
+                    LinearDislike.Click += LinearDislikeOnClick;
                     TxtPlaybackSpeed.Click += TxtPlaybackSpeedOnClick;
 
                     if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
@@ -248,7 +252,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                 var item = Constant.ArrayListPlay[Constant.PlayPos];
                 if (item != null)
                 {
-                    new DialogInfoSong(ActivityContext).Display(item);
+                    new DialogInfoSong(GlobalContext).Display(item);
                 }
             }
             catch (Exception exception)
@@ -514,6 +518,23 @@ namespace DeepSound.Helpers.MediaPlayerController
             }
         }
 
+        //Change Dislike
+        private void LinearDislikeOnClick(object sender, EventArgs e)
+        {
+            try
+            {
+                var item = Constant.ArrayListPlay[Constant.PlayPos];
+                if (item != null)
+                {
+                    ClickListeners.OnDislikeSongsClick(new MoreClickEventArgs { Button = BtnIconDislike, SongsClass = item });
+                }
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
         //Add Or remove Favorite 
         private void LinearFavoriteOnClick(object sender, EventArgs e)
         {
@@ -539,7 +560,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                 var item = Constant.ArrayListPlay[Constant.PlayPos];
                 if (item != null)
                 {
-                    new DialogComment(ActivityContext).Display(item, TvSongCurrentDuration.Text);
+                    new DialogComment(GlobalContext).Display(item, TvSongCurrentDuration.Text);
                 }
             }
             catch (Exception exception)
@@ -561,19 +582,41 @@ namespace DeepSound.Helpers.MediaPlayerController
                     }
                     else
                     {
-                        if (PermissionsController.CheckPermissionStorage())
+                        if (PermissionsController.CheckPermissionStorage(GlobalContext))
                         {
                             SetDownload();
                         }
                         else
                         {
-                            GlobalContext.RequestPermissions(new[]
+                            if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
                             {
-                                Manifest.Permission.ReadExternalStorage,
-                                Manifest.Permission.WriteExternalStorage,
-                                Manifest.Permission.ManageExternalStorage,
-                                Manifest.Permission.AccessMediaLocation,
-                            }, 1005);
+                                ActivityCompat.RequestPermissions(GlobalContext, new[]
+                                {
+                                    Manifest.Permission.ReadMediaImages,
+                                    Manifest.Permission.ReadMediaVideo,
+                                    Manifest.Permission.ReadMediaAudio,
+                                    Manifest.Permission.ReadExternalStorage,
+                                }, 1005);
+                            }
+                            else if (Build.VERSION.SdkInt >= BuildVersionCodes.R)
+                            {
+                                //below android 11
+                                ActivityCompat.RequestPermissions(GlobalContext, new[]
+                                {
+                                    Manifest.Permission.ReadExternalStorage,
+                                    Manifest.Permission.WriteExternalStorage,
+                                    Manifest.Permission.ManageExternalStorage,
+                                    Manifest.Permission.AccessMediaLocation,
+                                }, 1005);
+                            }
+                            else
+                            {
+                                ActivityCompat.RequestPermissions(GlobalContext, new[]
+                                {
+                                    Manifest.Permission.ReadExternalStorage,
+                                    Manifest.Permission.WriteExternalStorage,
+                                }, 1005);
+                            }
                         }
                     }
                 }
@@ -859,7 +902,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                     }
 
                     //Play Song  
-                    if (GlobalContext?.SlidingUpPanel != null && GlobalContext?.SlidingUpPanel != null)
+                    if (GlobalContext?.SlidingUpPanel != null)
                     {
                         StartOrPausePlayer();
 
@@ -911,7 +954,7 @@ namespace DeepSound.Helpers.MediaPlayerController
 
                     var item = Constant.ArrayListPlay[Constant.PlayPos];
                     if (item == null) return;
-                     
+
                     Intent intent = new Intent(ActivityContext, typeof(PlayerService));
                     if (Constant.IsPlayed)
                     {
@@ -919,6 +962,37 @@ namespace DeepSound.Helpers.MediaPlayerController
                         {
                             item.IsPlay = false;
                             intent.SetAction(PlayerService.ActionPause);
+                            ContextCompat.StartForegroundService(GlobalContext, intent);
+                        }
+                        else
+                        {
+                            if (item.AudioLocation.Contains("file://") || item.AudioLocation.Contains("content://") || item.AudioLocation.Contains("storage") || item.AudioLocation.Contains("/data/user/0/"))
+                            {
+                                item.IsPlay = true;
+                                intent.SetAction(PlayerService.ActionPlay);
+                                ContextCompat.StartForegroundService(GlobalContext, intent);
+                            }
+                            else
+                            {
+                                if (!Constant.IsOnline || Methods.CheckConnectivity())
+                                {
+                                    item.IsPlay = true;
+                                    intent.SetAction(PlayerService.ActionPlay);
+                                    ContextCompat.StartForegroundService(GlobalContext, intent);
+                                }
+                                else
+                                {
+                                    Toast.MakeText(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
+                                }
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if (item.AudioLocation.Contains("file://") || item.AudioLocation.Contains("content://") || item.AudioLocation.Contains("storage") || item.AudioLocation.Contains("/data/user/0/"))
+                        {
+                            item.IsPlay = true;
+                            intent.SetAction(PlayerService.ActionPlay);
                             ContextCompat.StartForegroundService(GlobalContext, intent);
                         }
                         else
@@ -933,19 +1007,6 @@ namespace DeepSound.Helpers.MediaPlayerController
                             {
                                 Toast.MakeText(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
                             }
-                        }
-                    }
-                    else
-                    {
-                        if (!Constant.IsOnline || Methods.CheckConnectivity())
-                        {
-                            item.IsPlay = true;
-                            intent.SetAction(PlayerService.ActionPlay);
-                            ContextCompat.StartForegroundService(GlobalContext, intent);
-                        }
-                        else
-                        {
-                            Toast.MakeText(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
                         }
                     }
 
@@ -1026,6 +1087,9 @@ namespace DeepSound.Helpers.MediaPlayerController
                         BtnIconLike.Tag = soundObject.IsLiked != null && soundObject.IsLiked.Value ? "Like" : "Liked" ?? "Liked";
                         ClickListeners.SetLike(BtnIconLike);
 
+                        BtnIconDislike.Tag = soundObject.IsDisLiked != null && soundObject.IsDisLiked.Value ? "Dislike" : "Disliked" ?? "Disliked";
+                        ClickListeners.SetDislike(BtnIconDislike);
+
                         BtnIconFavorite.Tag = soundObject.IsFavoriated != null && soundObject.IsFavoriated.Value ? "Add" : "Added";
                         ClickListeners.SetFav(BtnIconFavorite);
 
@@ -1104,6 +1168,8 @@ namespace DeepSound.Helpers.MediaPlayerController
         {
             try
             {
+                var item = Constant.ArrayListPlay[Constant.PlayPos];
+
                 GlobalContext?.RunOnUiThread(() =>
                 {
                     // check for already playing
@@ -1126,6 +1192,12 @@ namespace DeepSound.Helpers.MediaPlayerController
                             Timer.Enabled = true;
                             Timer.Start();
                         }
+
+                        if (item != null)
+                        {
+                            item.IsPlay = true;
+                            Adapter?.NotifyItemChanged(Constant.PlayPos);
+                        }
                     }
                     else
                     {
@@ -1145,6 +1217,12 @@ namespace DeepSound.Helpers.MediaPlayerController
                         {
                             Timer.Enabled = false;
                             Timer.Stop();
+                        }
+
+                        if (item != null)
+                        {
+                            item.IsPlay = false;
+                            Adapter?.NotifyItemChanged(Constant.PlayPos);
                         }
                     }
                 });

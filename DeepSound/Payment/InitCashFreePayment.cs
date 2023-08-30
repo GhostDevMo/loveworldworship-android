@@ -116,7 +116,7 @@ namespace DeepSound.Payment
                     var (apiStatus, respond) = await RequestsAsync.Payments.CashFreeGetStatusAsync(CashFreeObject.AppId, ListUtils.SettingsSiteList?.CashfreeSecretKey ?? "", orderId, ListUtils.SettingsSiteList?.CashfreeMode);
                     if (apiStatus == 200)
                     {
-                        if (respond is CashFreeGetStatusObject result) 
+                        if (respond is CashFreeGetStatusObject result)
                             await CashFree(result, "pay");
                     }
                     else
@@ -160,7 +160,7 @@ namespace DeepSound.Payment
                             AndHUD.Shared.Dismiss(ActivityContext);
 
                             Toast.MakeText(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_PaymentSuccessfully), ToastLength.Short)?.Show();
-                             
+
                             break;
                         default:
                             Methods.DisplayAndHudErrorResult(ActivityContext, respond);

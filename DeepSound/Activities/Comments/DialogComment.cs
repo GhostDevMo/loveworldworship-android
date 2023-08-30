@@ -175,7 +175,7 @@ namespace DeepSound.Activities.Comments
         {
             try
             {
-                MAdapter = new CommentsAdapter(ActivityContext, "Song") { CommentList = new ObservableCollection<CommentsDataObject>() };
+                MAdapter = new CommentsAdapter(GlobalContext, "Song") { CommentList = new ObservableCollection<CommentsDataObject>() };
                 MAdapter.ItemLongClick += MAdapterOnItemLongClick;
                 MAdapter.OnAvatarClick += CommentsAdapterOnAvatarClick;
                 MAdapter.OnLikeClick += MAdapterOnOnLikeClick;

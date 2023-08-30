@@ -46,7 +46,6 @@ namespace DeepSound.Helpers.Controller
                 Methods.DisplayReportResultTrack(e);
                 return null;
             }
-
         }
 
         public override bool IsViewFromObject(View view, Object @object)

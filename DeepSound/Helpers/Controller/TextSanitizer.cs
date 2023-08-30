@@ -1,7 +1,7 @@
-﻿using Android.App;
-using Android.Graphics;
+﻿using Android.Graphics;
 using Android.OS;
 using Android.Widget;
+using AndroidX.AppCompat.App;
 using AndroidX.Core.Content;
 using DeepSound.Activities.Search;
 using DeepSound.Activities.Tabbes;
@@ -18,9 +18,9 @@ namespace DeepSound.Helpers.Controller
     {
         private readonly HomeActivity Context;
         private readonly SuperTextView SuperTextView;
-        private readonly Activity Activity;
+        private readonly AppCompatActivity Activity;
 
-        public TextSanitizer(SuperTextView linkTextView, Activity activity)
+        public TextSanitizer(SuperTextView linkTextView, AppCompatActivity activity)
         {
             try
             {

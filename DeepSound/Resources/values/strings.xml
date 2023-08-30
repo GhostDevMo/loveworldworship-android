@@ -40,8 +40,8 @@
 	<string name="Lbl_Help_feedback">Help &amp; Feedback</string>
 	<string name="Lbl_Make_video_offline">Make video offline</string>
 	<string name="Lbl_Share">Share</string>
-	<string name="Lbl_InviteSMSText_1">Hi, join me on Loveworld Worship</string>
-	<string name="Lbl_InviteSMSText_2">Get started by visiting the Google Playstore</string>
+	<string name="Lbl_InviteSMSText_1">Hi let is meet on</string>
+	<string name="Lbl_InviteSMSText_2">for your smart phone</string>
 	<string name="Lbl_Success">Success</string>
 	<string name="Lbl_Offline_Mode">Offline Mode</string>
 	<string name="Lbl_Cover">Cover</string>
@@ -136,7 +136,7 @@
 	<!--WalkTroutPage-->
 	<string name="Lbl_FinishButton_WalkTroutPage">Get Started</string>
 	<string name="Lbl_Title_page1">Music</string>
-	<string name="Lbl_Description_page1">Listen To Music Everywhere, Anytime</string>
+	<string name="Lbl_Description_page1">Listen Music Everywhere, Anytime</string>
 	<string name="Lbl_Title_page2">Playlist</string>
 	<string name="Lbl_Description_page2">Create Playlist with any song, On-The-Go</string>
 	<string name="Lbl_Title_page3">Calling all creators</string>
@@ -192,7 +192,7 @@
 	<string name="Lbl_Permission_is_denied">"Sorry: You cannot proceed with your action if you don&apos;t allow"</string>
 	<string name="Lbl_something_went_wrong">Check your credentials something went wrong</string>
 	<string name="Lbl_CheckYourInternetConnection">Please check your internet connection</string>
-	<string name="Lbl_VerificationFailed">Email Sent!</string>
+	<string name="Lbl_VerificationFailed">Verification failed</string>
 	<string name="Lbl_You_will_be_logged">You will be logged out now, see you later</string>
 	<string name="Lbl_Are_you_logout">Are you sure you went to log out?</string>
 	<string name="Lbl_Text_copied">Text copied to clipboard</string>
@@ -237,8 +237,8 @@
 	<string name="Lbl_NoMoreAlbums">No more Albums found</string>
 	<!--===============================================================-->
 	<!--Artists-->
-	<string name="Lbl_Artists">Artists</string>
-	<string name="Lbl_NoMoreArtists">No more artists found</string>
+	<string name="Lbl_Artists">Artist</string>
+	<string name="Lbl_NoMoreArtists">No more artist found</string>
 	<!--===============================================================-->
 	<!--Filter-->
 	<string name="Lbl_Filter">Filter</string>
@@ -302,7 +302,7 @@
 	<string name="Lbl_See_Less">See Less</string>
 	<!--===============================================================-->
 	<!--Title List-->
-	<string name="Lbl_Browse_Description">Explore by genre and mood</string>
+	<string name="Lbl_Browse_Description">Explore by categories and mood</string>
 	<string name="Lbl_Popular_Title">Popular</string>
 	<string name="Lbl_Store_Title">Store</string>
 	<string name="Lbl_Activities_Title">Activities</string>
@@ -321,7 +321,7 @@
 	<string name="Lbl_NoConnection_DescriptionText">We could not establish a connection with our servers please try again later.</string>
 	<string name="Lbl_NoConnection_Button">Try Again</string>
 	<string name="Lbl_NoSearchResult_TitleText">Sad no result!</string>
-	<string name="Lbl_NoSearchResult_DescriptionText">We cannot find the keyword you are searching form maybe a little spelling mistake ?</string>
+	<string name="Lbl_NoSearchResult_DescriptionText">We cannot find the keyword you are searching for maybe a little spelling mistake ?</string>
 	<string name="Lbl_NoSearchResult_Button">Search Random</string>
 	<string name="Lbl_SomThingWentWrong_TitleText">Something Went Wrong</string>
 	<string name="Lbl_SomThingWentWrong_DescriptionText">Server respond</string>
@@ -329,15 +329,15 @@
 	<string name="Lbl_NoNotification_TitleText">No Notifications Yet</string>
 	<string name="Lbl_NoNotification_DescriptionText">We will display once you get your first activity here</string>
 	<string name="Lbl_NoMessage_TitleText">No More Messages</string>
-	<string name="Lbl_NoMessage_DescriptionText">No conversations yet in</string>
+	<string name="Lbl_NoMessage_DescriptionText">No conversations yet</string>
 	<string name="Lbl_NoBlockUsers">There are no users</string>
 	<string name="Lbl_NoComments_TitleText">No Comments Yet</string>
 	<string name="Lbl_NoComments_DescriptionText">Get the conversation started by leaving the first comment.</string>
 	<string name="Lbl_NoPlaylist_TitleText">User have no playlists yet</string>
-	<string name="Lbl_NoAlbums_TitleText">"User haven&apos;t any albums yet"</string>
+	<string name="Lbl_NoAlbums_TitleText">"User have no albums yet"</string>
 	<string name="Lbl_NoLiked_TitleText">User have not liked any song yet</string>
 	<string name="Lbl_NoRecentlyPlayed_TitleText">User have no listening history yet</string>
-	<string name="Lbl_NoFavorites_TitleText">User have not favorite any song yet</string>
+	<string name="Lbl_NoFavorites_TitleText">User have no favorite any song yet</string>
 	<string name="Lbl_NoArtists_TitleText">"don&apos;t have any artists yet"</string>
 	<string name="Lbl_NoDataUser_TitleText">Seems a little quiet over here</string>
 	<!--===============================================================-->
@@ -400,12 +400,12 @@
 	<string name="Lbl_Night_Mode">Night Mode</string>
 	<!--===============================================================-->
 	<!--Social Links-->
-	<string name="Lbl_Facebook">Facebook</string>
+	<string name="Lbl_Facebook">Kingschat</string>
 	<string name="Lbl_Twitter">Twitter</string>
 	<string name="Lbl_GooglePlus">Google Plus</string>
 	<string name="Lbl_Instagram">Instagram</string>
 	<string name="Lbl_LinkedIn">LinkedIn</string>
-	<string name="Lbl_Website">Kingschat Profile</string>
+	<string name="Lbl_Website">Website</string>
 	<!--===============================================================-->
 	<!--Block Users-->
 	<string name="Lbl_BlockedUsers">Blocked Users</string>
@@ -620,7 +620,7 @@
 
 	<!--InAppReview-->
 	<string name="Lbl_Rate">Rate</string>
-	<string name="Lbl_RateOurAppContent">If you love the app, please take a moment to rate it.</string>
+	<string name="Lbl_RateOurAppContent">If you love our app, please take a moment to rare it.</string>
 	<!--===============================================================-->
 
 	<!-- V1.7 String translate -->
@@ -887,5 +887,36 @@
 	<string name="Lbl_MyAffiliates">My Affiliates</string>
 	<string name="Lbl_EarnUpTo">Earn up to</string>
 	<string name="Lbl_forEachUserYourReferToUs">for each user your refer to us</string>
+
+	<!-- V2.8 String translate -->
+	<!--===============================================================-->
+	<string name="Lbl_Next">Next</string>
+	<string name="Lbl_SubTitleBecomeArtist">You can use those features once your account being artist.</string>
+	<string name="Lbl_YourPersonalPhoto">Your Personal Photo</string>
+	<string name="Lbl_PassportIdCard">Passport / ID card</string>
+	<string name="Lbl_SubTitleBecomeArtist_Review">We will review your request within 24 hours, you will be informed shortly.</string>
+	<string name="Lbl_BecomeAnArtist">Become an artist</string>
+
+	<!-- V2.9 String translate -->
+	<!--===============================================================-->
+	<string name="Lbl_CreateStory">Create Story</string>
+	<string name="Lbl_WhoCanSee">Who can see</string>
+	<string name="Lbl_PleaseChooseWhoCanSee">Please choose who can see</string>
+	<string name="Lbl_ShowToMyFollowers">Show To My Followers</string>
+	<string name="Lbl_ShowToAllUsers">Show To All Users (Promotion)</string>
+	<string name="Lbl_SelectImageToImport">Select image to import</string>
+	<string name="Lbl_SelectSongToImport">Select song to import</string>
+	<string name="Lbl_PleaseSelectSong">Please select song</string>
+	<string name="Lbl_MoreInfo">More Info</string>
+ 
+	<!-- V3.0 String translate -->
+	<!--===============================================================-->
+	<string name="Lbl_FlutterWave">FlutterWave</string>
+	<string name="Lbl_PointsAdded">Points added</string>
+
+	<!-- V3.1 String translate -->
+	<!--===============================================================-->
+	<string name="Lbl_ActivateWithUpgraded">To activate this service, the account must be upgraded</string>
+	<string name="Lbl_Downloading">Downloading...</string>
 
 </resources>

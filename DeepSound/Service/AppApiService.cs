@@ -19,7 +19,7 @@ using Exception = System.Exception;
 
 namespace DeepSound.Service
 {
-    [Service(Exported = false, Permission = "android.permission.BIND_JOB_SERVICE")]
+    [Service(Exported = true, Permission = "android.permission.BIND_JOB_SERVICE")]
     public class AppApiService : JobService
     {
         public static JobService Instance;

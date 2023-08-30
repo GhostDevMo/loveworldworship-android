@@ -1,5 +1,6 @@
 ﻿using Android;
 using Android.App;
+using Android.Content;
 using Android.Content.PM;
 using Android.OS;
 using AndroidX.Core.App;
@@ -25,7 +26,7 @@ namespace DeepSound.Helpers.Controller
             }
         }
 
-        public static bool CheckPermissionStorage(string type = "")
+        public static bool CheckPermissionStorage(Context context, string type = "")
         {
             //if (Build.VERSION.SdkInt >= BuildVersionCodes.R)
             //{
@@ -40,33 +41,31 @@ namespace DeepSound.Helpers.Controller
             {
 
                 if (type == "image" &&
-                    ContextCompat.CheckSelfPermission(Application.Context, Manifest.Permission.ReadExternalStorage) == Permission.Granted &&
-                    ContextCompat.CheckSelfPermission(Application.Context, Manifest.Permission.WriteExternalStorage) == Permission.Granted &&
-                    ContextCompat.CheckSelfPermission(Application.Context, Manifest.Permission.ReadMediaImages) == Permission.Granted)
+                    //ContextCompat.CheckSelfPermission(Context, Manifest.Permission.ReadExternalStorage) == Permission.Granted &&
+                    //ContextCompat.CheckSelfPermission(Context, Manifest.Permission.WriteExternalStorage) == Permission.Granted &&
+                    ContextCompat.CheckSelfPermission(context, Manifest.Permission.ReadMediaImages) == Permission.Granted)
                     return true;
 
                 if (type == "video" &&
-                    ContextCompat.CheckSelfPermission(Application.Context, Manifest.Permission.ReadExternalStorage) == Permission.Granted &&
-                    ContextCompat.CheckSelfPermission(Application.Context, Manifest.Permission.WriteExternalStorage) == Permission.Granted &&
-                    ContextCompat.CheckSelfPermission(Application.Context, Manifest.Permission.ReadMediaVideo) == Permission.Granted)
+                    //ContextCompat.CheckSelfPermission(Context, Manifest.Permission.ReadExternalStorage) == Permission.Granted &&
+                    // ContextCompat.CheckSelfPermission(Context, Manifest.Permission.WriteExternalStorage) == Permission.Granted &&
+                    ContextCompat.CheckSelfPermission(context, Manifest.Permission.ReadMediaVideo) == Permission.Granted)
                     return true;
 
                 if (type == "audio" &&
-                    ContextCompat.CheckSelfPermission(Application.Context, Manifest.Permission.ReadExternalStorage) == Permission.Granted &&
-                    ContextCompat.CheckSelfPermission(Application.Context, Manifest.Permission.WriteExternalStorage) == Permission.Granted &&
-                    ContextCompat.CheckSelfPermission(Application.Context, Manifest.Permission.ReadMediaAudio) == Permission.Granted)
+                    //ContextCompat.CheckSelfPermission(Context, Manifest.Permission.ReadExternalStorage) == Permission.Granted &&
+                    //ContextCompat.CheckSelfPermission(Context, Manifest.Permission.WriteExternalStorage) == Permission.Granted &&
+                    ContextCompat.CheckSelfPermission(context, Manifest.Permission.ReadMediaAudio) == Permission.Granted)
                     return true;
 
-                if (ContextCompat.CheckSelfPermission(Application.Context, Manifest.Permission.ReadExternalStorage) == Permission.Granted &&
-                    ContextCompat.CheckSelfPermission(Application.Context, Manifest.Permission.WriteExternalStorage) == Permission.Granted &&
-                    ContextCompat.CheckSelfPermission(Application.Context, Manifest.Permission.ReadMediaImages) == Permission.Granted &&
-                    ContextCompat.CheckSelfPermission(Application.Context, Manifest.Permission.ReadMediaVideo) == Permission.Granted &&
-                    ContextCompat.CheckSelfPermission(Application.Context, Manifest.Permission.ReadMediaAudio) == Permission.Granted)
+                if (ContextCompat.CheckSelfPermission(context, Manifest.Permission.ReadMediaImages) == Permission.Granted &&
+                    ContextCompat.CheckSelfPermission(context, Manifest.Permission.ReadMediaVideo) == Permission.Granted &&
+                    ContextCompat.CheckSelfPermission(context, Manifest.Permission.ReadMediaAudio) == Permission.Granted)
                     return true;
             }
 
-            if (ContextCompat.CheckSelfPermission(Application.Context, Manifest.Permission.ReadExternalStorage) == Permission.Granted &&
-                ContextCompat.CheckSelfPermission(Application.Context, Manifest.Permission.WriteExternalStorage) == Permission.Granted)
+            if (ContextCompat.CheckSelfPermission(context, Manifest.Permission.ReadExternalStorage) == Permission.Granted &&
+                ContextCompat.CheckSelfPermission(context, Manifest.Permission.WriteExternalStorage) == Permission.Granted)
                 return true;
 
             return false;
@@ -102,48 +101,37 @@ namespace DeepSound.Helpers.Controller
                                     case "image":
                                         ActivityCompat.RequestPermissions(Context, new[]
                                         {
-                                            Manifest.Permission.ReadExternalStorage,
-                                            Manifest.Permission.WriteExternalStorage,
-                                            Manifest.Permission.ManageExternalStorage,
-                                            Manifest.Permission.AccessMediaLocation,
                                             Manifest.Permission.ReadMediaImages,
+                                            Manifest.Permission.ReadExternalStorage,
+                                            Manifest.Permission.AccessMediaLocation,
                                         }, 100);
                                         break;
                                     case "video":
                                         ActivityCompat.RequestPermissions(Context, new[]
                                         {
-                                            Manifest.Permission.ReadExternalStorage,
-                                            Manifest.Permission.WriteExternalStorage,
-                                            Manifest.Permission.ManageExternalStorage,
-                                            Manifest.Permission.AccessMediaLocation,
                                             Manifest.Permission.ReadMediaVideo,
+                                            Manifest.Permission.ReadExternalStorage,
+                                            Manifest.Permission.AccessMediaLocation,
                                         }, 100);
                                         break;
                                     case "audio":
                                         ActivityCompat.RequestPermissions(Context, new[]
                                         {
-                                            Manifest.Permission.ReadExternalStorage,
-                                            Manifest.Permission.WriteExternalStorage,
-                                            Manifest.Permission.ManageExternalStorage,
-                                            Manifest.Permission.AccessMediaLocation,
                                             Manifest.Permission.ReadMediaAudio,
+                                            Manifest.Permission.ReadExternalStorage,
+                                            Manifest.Permission.AccessMediaLocation,
                                         }, 100);
                                         break;
                                     default:
                                         ActivityCompat.RequestPermissions(Context, new[]
                                         {
-                                            Manifest.Permission.ReadExternalStorage,
-                                            Manifest.Permission.WriteExternalStorage,
-                                            Manifest.Permission.ManageExternalStorage,
-                                            Manifest.Permission.AccessMediaLocation,
                                             Manifest.Permission.ReadMediaImages,
                                             Manifest.Permission.ReadMediaVideo,
                                             Manifest.Permission.ReadMediaAudio,
+                                            Manifest.Permission.ReadExternalStorage,
                                         }, 100);
                                         break;
                                 }
-                                //if (!Android.OS.Environment.IsExternalStorageManager)
-                                //    OpenDialog();
                             }
                             else if (Build.VERSION.SdkInt >= BuildVersionCodes.R)
                             {
@@ -155,9 +143,6 @@ namespace DeepSound.Helpers.Controller
                                     Manifest.Permission.ManageExternalStorage,
                                     Manifest.Permission.AccessMediaLocation,
                                 }, 100);
-
-                                //if (!Android.OS.Environment.IsExternalStorageManager)
-                                //    OpenDialog();
                             }
                             else
                             {
@@ -165,7 +150,6 @@ namespace DeepSound.Helpers.Controller
                                 {
                                     Manifest.Permission.ReadExternalStorage,
                                     Manifest.Permission.WriteExternalStorage,
-                                    Manifest.Permission.AccessMediaLocation,
                                 }, 100);
                             }
                             break;
@@ -235,51 +219,39 @@ namespace DeepSound.Helpers.Controller
                                         ActivityCompat.RequestPermissions(Context, new[]
                                         {
                                             Manifest.Permission.Camera,
-                                            Manifest.Permission.ReadExternalStorage,
-                                            Manifest.Permission.WriteExternalStorage,
-                                            Manifest.Permission.ManageExternalStorage,
-                                            Manifest.Permission.AccessMediaLocation,
                                             Manifest.Permission.ReadMediaImages,
+                                            Manifest.Permission.ReadExternalStorage,
+                                            Manifest.Permission.AccessMediaLocation,
                                         }, 108);
                                         break;
                                     case "video":
                                         ActivityCompat.RequestPermissions(Context, new[]
                                         {
                                             Manifest.Permission.Camera,
-                                            Manifest.Permission.ReadExternalStorage,
-                                            Manifest.Permission.WriteExternalStorage,
-                                            Manifest.Permission.ManageExternalStorage,
-                                            Manifest.Permission.AccessMediaLocation,
                                             Manifest.Permission.ReadMediaVideo,
+                                            Manifest.Permission.ReadExternalStorage,
+                                            Manifest.Permission.AccessMediaLocation,
                                         }, 108);
                                         break;
                                     case "audio":
                                         ActivityCompat.RequestPermissions(Context, new[]
                                         {
-                                            Manifest.Permission.ReadExternalStorage,
-                                            Manifest.Permission.WriteExternalStorage,
-                                            Manifest.Permission.ManageExternalStorage,
-                                            Manifest.Permission.AccessMediaLocation,
                                             Manifest.Permission.ReadMediaAudio,
+                                            Manifest.Permission.ReadExternalStorage,
+                                            Manifest.Permission.AccessMediaLocation,
                                         }, 108);
                                         break;
-                                    default://Read or Write file  
+                                    default:
                                         ActivityCompat.RequestPermissions(Context, new[]
                                         {
                                             Manifest.Permission.Camera,
-                                            Manifest.Permission.ReadExternalStorage,
-                                            Manifest.Permission.WriteExternalStorage,
-                                            Manifest.Permission.ManageExternalStorage,
-                                            Manifest.Permission.AccessMediaLocation,
                                             Manifest.Permission.ReadMediaImages,
                                             Manifest.Permission.ReadMediaVideo,
                                             Manifest.Permission.ReadMediaAudio,
+                                            Manifest.Permission.ReadExternalStorage,
                                         }, 108);
                                         break;
                                 }
-
-                                //if (!Android.OS.Environment.IsExternalStorageManager)
-                                //    OpenDialog();
                             }
                             else if (Build.VERSION.SdkInt >= BuildVersionCodes.R)
                             {
@@ -289,12 +261,8 @@ namespace DeepSound.Helpers.Controller
                                     Manifest.Permission.Camera,
                                     Manifest.Permission.ReadExternalStorage,
                                     Manifest.Permission.WriteExternalStorage,
-                                    Manifest.Permission.ManageExternalStorage,
                                     Manifest.Permission.AccessMediaLocation,
                                 }, 108);
-
-                                //if (!Android.OS.Environment.IsExternalStorageManager)
-                                //    OpenDialog();
                             }
                             else
                             {
@@ -329,16 +297,15 @@ namespace DeepSound.Helpers.Controller
                                 ActivityCompat.RequestPermissions(Context, new[]
                                 {
                                     Manifest.Permission.Camera,
-                                    Manifest.Permission.ReadExternalStorage,
-                                    Manifest.Permission.WriteExternalStorage,
-                                    Manifest.Permission.ManageExternalStorage,
-                                    Manifest.Permission.AccessMediaLocation,
-                                    Manifest.Permission.RecordAudio,
-                                    Manifest.Permission.ModifyAudioSettings,
                                     Manifest.Permission.ReadMediaImages,
                                     Manifest.Permission.ReadMediaVideo,
                                     Manifest.Permission.ReadMediaAudio,
-                                    Manifest.Permission.PostNotifications
+                                    Manifest.Permission.RecordAudio,
+                                    Manifest.Permission.ModifyAudioSettings,
+                                    Manifest.Permission.PostNotifications,
+                                    Manifest.Permission.ReadExternalStorage,
+                                    Manifest.Permission.WriteExternalStorage,
+                                    Manifest.Permission.AccessMediaLocation,
                                 }, 111);
 
                                 //if (!Android.OS.Environment.IsExternalStorageManager)
@@ -352,7 +319,6 @@ namespace DeepSound.Helpers.Controller
                                     Manifest.Permission.Camera,
                                     Manifest.Permission.ReadExternalStorage,
                                     Manifest.Permission.WriteExternalStorage,
-                                    Manifest.Permission.ManageExternalStorage,
                                     Manifest.Permission.AccessMediaLocation,
                                     Manifest.Permission.RecordAudio,
                                     Manifest.Permission.ModifyAudioSettings

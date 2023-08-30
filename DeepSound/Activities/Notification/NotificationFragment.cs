@@ -1,5 +1,4 @@
 ﻿using Android.Content;
-using Android.Gms.Ads;
 using Android.Graphics;
 using Android.OS;
 using Android.Util;
@@ -9,6 +8,7 @@ using AndroidX.Fragment.App;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
 using Bumptech.Glide.Util;
+using Com.Google.Android.Gms.Ads;
 using DeepSound.Activities.Notification.Adapters;
 using DeepSound.Activities.SettingsUser.General;
 using DeepSound.Activities.Tabbes;
@@ -106,7 +106,7 @@ namespace DeepSound.Activities.Notification
             try
             {
                 base.OnResume();
-                MAdView?.Resume();
+                AdsGoogle.LifecycleAdView(MAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -119,7 +119,7 @@ namespace DeepSound.Activities.Notification
             try
             {
                 base.OnPause();
-                MAdView?.Pause();
+                AdsGoogle.LifecycleAdView(MAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -131,7 +131,7 @@ namespace DeepSound.Activities.Notification
         {
             try
             {
-                MAdView?.Destroy();
+                AdsGoogle.LifecycleAdView(MAdView, "Destroy");
                 base.OnDestroy();
             }
             catch (Exception e)
@@ -218,7 +218,7 @@ namespace DeepSound.Activities.Notification
         {
             try
             {
-                Activity.StartActivity(new Intent(Activity, typeof(NotificationsSettingsActivity)));
+                StartActivity(new Intent(Activity, typeof(NotificationsSettingsActivity)));
             }
             catch (Exception exception)
             {

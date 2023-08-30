@@ -19,14 +19,18 @@ using Android.Widget;
 using AndroidX.Activity.Result;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Content.Res;
+using AndroidX.Core.App;
 using AndroidX.Core.Content;
+using AndroidX.Core.OS;
 using AndroidX.SlidingPaneLayout.Widget;
 using Bumptech.Glide;
 using Bumptech.Glide.Request;
 using Com.Canhub.Cropper;
 using Com.Google.Android.Play.Core.Install.Model;
 using Com.Sothree.Slidinguppanel;
+using DeepSound.Activities.Albums;
 using DeepSound.Activities.Artists;
+using DeepSound.Activities.Base;
 using DeepSound.Activities.Chat;
 using DeepSound.Activities.Library;
 using DeepSound.Activities.Library.Listeners;
@@ -50,6 +54,7 @@ using DeepSoundClient.Classes.Chat;
 using DeepSoundClient.Classes.Event;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Classes.Product;
+using DeepSoundClient.Classes.Story;
 using DeepSoundClient.Classes.Tracks;
 using DeepSoundClient.Classes.User;
 using DeepSoundClient.Requests;
@@ -63,8 +68,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using AndroidX.Core.OS;
-using DeepSound.Activities.Base;
 using ActivityResult = Com.Google.Android.Play.Core.Install.Model.ActivityResult;
 using Console = System.Console;
 using Exception = System.Exception;
@@ -111,7 +114,6 @@ namespace DeepSound.Activities.Tabbes
                 base.OnCreate(savedInstanceState);
                 Xamarin.Essentials.Platform.Init(this, savedInstanceState);
 
-                Task.Factory.StartNew(() => MainApplication.GetInstance()?.SecondRunExcite());
                 Methods.App.FullScreenApp(this);
 
                 Delegate.SetLocalNightMode(DeepSoundTools.IsTabDark() ? AppCompatDelegate.ModeNightYes : AppCompatDelegate.ModeNightNo);
@@ -131,13 +133,15 @@ namespace DeepSound.Activities.Tabbes
                 InitComponent();
                 SetupBottomNavigationView();
                 InitBackPressed("HomeActivity");
-                //if (BuildCompat.IsAtLeastT)
-                //    OnBackInvokedDispatcher.RegisterOnBackInvokedCallback((int)Priority.Default, new MyBackInvokedCallback(this));
 
                 SoundController = new SoundController(this);
                 SoundController.InitializeUi();
 
-                Task.Factory.StartNew(GetGeneralAppData);
+                Task.Factory.StartNew(() =>
+                {
+                    MainApplication.GetInstance()?.SecondRunExcite(this);
+                    GetGeneralAppData();
+                });
 
                 GetOneSignalNotification();
                 SetService();
@@ -398,7 +402,7 @@ namespace DeepSound.Activities.Tabbes
                     }
                     else
                     {
-                        RequestPermissions(new[]
+                        ActivityCompat.RequestPermissions(this, new[]
                         {
                             Manifest.Permission.PostNotifications
                         }, 16248);
@@ -420,6 +424,19 @@ namespace DeepSound.Activities.Tabbes
                     else if (type == "Track")
                     {
                         var (apiStatus, respond) = await RequestsAsync.Tracks.GetTrackInfoAsync(OneSignalNotification.TrackId);
+                        if (apiStatus.Equals(200))
+                        {
+                            if (respond is GetTrackInfoObject result)
+                            {
+                                Constant.PlayPos = 0;
+                                SoundController?.StartPlaySound(result.Data, new ObservableCollection<SoundDataObject> { result.Data });
+                            }
+                        }
+                    }
+                    else if (type == "RunSong")
+                    {
+                        var trackId = Intent?.GetStringExtra("TrackId");
+                        var (apiStatus, respond) = await RequestsAsync.Tracks.GetTrackInfoAsync(trackId);
                         if (apiStatus.Equals(200))
                         {
                             if (respond is GetTrackInfoObject result)
@@ -576,7 +593,7 @@ namespace DeepSound.Activities.Tabbes
         #endregion
 
         #region Event Back
-         
+
         public void BackPressed()
         {
             try
@@ -647,12 +664,14 @@ namespace DeepSound.Activities.Tabbes
         {
             try
             {
+                PermissionsType = "";
+
                 // Check if we're running on Android 5.0 or higher
                 if ((int)Build.VERSION.SdkInt < 23)
                     new IntentController(this).OpenIntentAudio(); //505
                 else
                 {
-                    if (PermissionsController.CheckPermissionStorage())
+                    if (PermissionsController.CheckPermissionStorage(this))
                         new IntentController(this).OpenIntentAudio(); //505
                     else
                         new PermissionsController(this).RequestPermission(100);
@@ -763,6 +782,7 @@ namespace DeepSound.Activities.Tabbes
             }
         }
 
+        public string PermissionsType = "";
         //Permissions
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
         {
@@ -780,16 +800,19 @@ namespace DeepSound.Activities.Tabbes
                         Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
                         break;
                     case 100 when grantResults.Length > 0 && grantResults[0] == Permission.Granted:
-                        new IntentController(this).OpenIntentAudio(); //505
+                        if (PermissionsType == "DownloadAlbum")
+                            OptionsAlbumBottomSheet.Instance?.SoundDownloadAlbum();
+                        else
+                            new IntentController(this).OpenIntentAudio(); //505
                         break;
                     case 100:
                         Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
                         break;
+                    case 1325 when grantResults.Length > 0 && grantResults[0] == Permission.Granted:
+                        SongOptionBottomDialogFragment.Instance?.SetRingtone();
+                        break;
                     case 1325:
                         Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
-                        break;
-                    case 1005 when grantResults.Length > 0 && grantResults[0] == Permission.Granted:
-                        SoundController?.SetDownload();
                         break;
                     case 1005:
                         Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
@@ -1006,17 +1029,12 @@ namespace DeepSound.Activities.Tabbes
 
         #endregion
 
-        #region Purchase the song Or album
-
-        private static SoundDataObject PaymentSoundObject;
-        private static DataAlbumsObject PaymentAlbumsObject;
+        #region Purchase the song Or album Or story
 
         public void OpenDialogPurchaseSound(SoundDataObject soundObject)
         {
             try
             {
-                PaymentSoundObject = soundObject;
-
                 var dialog = new MaterialAlertDialogBuilder(this);
                 dialog.SetTitle(Resource.String.Lbl_PurchaseRequired);
                 dialog.SetMessage(GetText(Resource.String.Lbl_PurchaseRequiredContent));
@@ -1028,15 +1046,15 @@ namespace DeepSound.Activities.Tabbes
                         {
                             if (Methods.CheckConnectivity())
                             {
-                                var (apiStatus, respond) = await RequestsAsync.Payments.PurchaseAsync("buy_song", PaymentSoundObject.AudioId);
+                                var (apiStatus, respond) = await RequestsAsync.Payments.PurchaseAsync("buy_song", soundObject.AudioId);
                                 if (apiStatus == 200)
                                 {
                                     if (respond is MessageObject result)
                                     {
                                         Console.WriteLine(result.Message);
-                                        PaymentSoundObject.IsPurchased = true;
-                                        Constant.PlayPos = Constant.ArrayListPlay.IndexOf(PaymentSoundObject);
-                                        SoundController?.StartPlaySound(PaymentSoundObject, Constant.ArrayListPlay);
+                                        soundObject.IsPurchased = true;
+                                        Constant.PlayPos = Constant.ArrayListPlay.IndexOf(soundObject);
+                                        SoundController?.StartPlaySound(soundObject, Constant.ArrayListPlay);
 
                                         Toast.MakeText(this, GetText(Resource.String.Lbl_PurchasedSuccessfully), ToastLength.Long)?.Show();
                                     }
@@ -1086,8 +1104,6 @@ namespace DeepSound.Activities.Tabbes
         {
             try
             {
-                PaymentAlbumsObject = albumsObject;
-
                 var dialog = new MaterialAlertDialogBuilder(this);
                 dialog.SetTitle(Resource.String.Lbl_PurchaseRequired);
                 dialog.SetMessage(GetText(Resource.String.Lbl_PurchaseRequiredContent));
@@ -1099,13 +1115,87 @@ namespace DeepSound.Activities.Tabbes
                         {
                             if (Methods.CheckConnectivity())
                             {
-                                var (apiStatus, respond) = await RequestsAsync.Payments.PurchaseAsync("buy_album", PaymentAlbumsObject.AlbumId);
+                                var (apiStatus, respond) = await RequestsAsync.Payments.PurchaseAsync("buy_album", albumsObject.AlbumId);
                                 if (apiStatus == 200)
                                 {
                                     if (respond is MessageObject result)
                                     {
                                         Console.WriteLine(result.Message);
-                                        PaymentAlbumsObject.IsPurchased = 1;
+                                        albumsObject.IsPurchased = 1;
+
+                                        Toast.MakeText(this, GetText(Resource.String.Lbl_PurchasedSuccessfully), ToastLength.Long)?.Show();
+                                    }
+                                }
+                                else Methods.DisplayReportResult(this, respond);
+                            }
+                            else
+                                Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
+                        }
+                        else
+                        {
+                            var dialogBuilder = new MaterialAlertDialogBuilder(this);
+                            dialogBuilder.SetTitle(GetText(Resource.String.Lbl_Wallet));
+                            dialogBuilder.SetMessage(GetText(Resource.String.Lbl_Error_NoWallet));
+                            dialogBuilder.SetPositiveButton(GetText(Resource.String.Lbl_AddWallet), (materialDialog, action) =>
+                            {
+                                try
+                                {
+                                    StartActivity(new Intent(this, typeof(WalletActivity)));
+                                }
+                                catch (Exception exception)
+                                {
+                                    Methods.DisplayReportResultTrack(exception);
+                                }
+                            });
+                            dialogBuilder.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+
+                            dialogBuilder.Show();
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Methods.DisplayReportResultTrack(e);
+                    }
+                });
+                dialog.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+
+                dialog.Show();
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        public void OpenDialogPurchaseStory(StoryDataObject storyObject)
+        {
+            try
+            {
+                var dialog = new MaterialAlertDialogBuilder(this);
+                dialog.SetTitle(Resource.String.Lbl_PurchaseRequired);
+                dialog.SetMessage(GetText(Resource.String.Lbl_PurchaseRequiredContent));
+                dialog.SetPositiveButton(GetText(Resource.String.Lbl_Purchase), async (materialDialog, action) =>
+                {
+                    try
+                    {
+                        if (DeepSoundTools.CheckWallet(storyObject.Paid))
+                        {
+                            if (Methods.CheckConnectivity())
+                            {
+                                var (apiStatus, respond) = await RequestsAsync.Story.PurchaseAsync(storyObject.Id);
+                                if (apiStatus == 200)
+                                {
+                                    if (respond is MessageObject result)
+                                    {
+                                        Console.WriteLine(result.Message);
+                                        storyObject.Active = 1;
+
+                                        var story = HomeFragment?.LatestHomeTab?.StoryAdapter?.StoryList?.FirstOrDefault(a => a.Id == storyObject.Id);
+                                        if (story != null)
+                                        {
+                                            story.Active = 1;
+                                            HomeFragment.LatestHomeTab.StoryAdapter.NotifyDataSetChanged();
+                                        }
 
                                         Toast.MakeText(this, GetText(Resource.String.Lbl_PurchasedSuccessfully), ToastLength.Long)?.Show();
                                     }
@@ -1223,7 +1313,7 @@ namespace DeepSound.Activities.Tabbes
                         var resultUri = result.UriContent;
                         var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
                         if (!string.IsNullOrEmpty(filepath))
-                        {  
+                        {
                             //Do something with your Uri
                             if (TypeImage == "Avatar")
                             {
@@ -1399,7 +1489,7 @@ namespace DeepSound.Activities.Tabbes
                 {
                     sqlEntity.GetDataMyInfo();
 
-                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => ApiRequest.GetSettings_Api(this), ApiRequest.GetMyPlaylist_Api, () => ApiRequest.GetInfoData(this, UserDetails.UserId.ToString()), ApiRequest.LoadFavorites, ApiRequest.LoadLiked, GetNotInterestedSounds });
+                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => ApiRequest.GetSettings_Api(this), () => ApiRequest.GetInfoData(this, UserDetails.UserId.ToString()), ApiRequest.GetMyPlaylist_Api, ApiRequest.LoadFavorites, ApiRequest.LoadLiked, GetNotInterestedSounds });
                 }
                 else
                 {
@@ -1464,7 +1554,7 @@ namespace DeepSound.Activities.Tabbes
                             try
                             {
                                 StoreReviewApp store = new StoreReviewApp();
-                                store.OpenStoreReviewPage(PackageName);
+                                store.OpenStoreReviewPage(this, PackageName);
                             }
                             catch (Exception e)
                             {

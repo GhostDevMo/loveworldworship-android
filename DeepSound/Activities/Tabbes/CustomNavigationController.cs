@@ -22,7 +22,7 @@ namespace DeepSound.Activities.Tabbes
         private readonly HomeActivity Context;
 
         private LinearLayout MainLayout;
-        private LinearLayout CustomButton0, CustomButton2, CustomButton3, CustomButton4, CustomButton5;
+        private LinearLayout CustomButton0, CustomButton3, CustomButton4, CustomButton5;
         private ImageView CustomImage0, CustomImage2, CustomImage3, CustomImage4, CustomImage5;
         private TextView CustomText0, CustomText2, CustomText3, CustomText4, CustomText5;
         public int PageNumber;
@@ -82,6 +82,12 @@ namespace DeepSound.Activities.Tabbes
                 CustomText0.SetTypeface(Typeface.Default, TypefaceStyle.Bold);
                 CustomText0.SetTextSize(ComplexUnitType.Sp, 14);
 
+                //CustomImage2.Background = null;
+                CustomImage2.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
+                CustomText2.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
+                CustomText2.SetTypeface(Typeface.Default, TypefaceStyle.Normal);
+                CustomText2.SetTextSize(ComplexUnitType.Sp, 13);
+
                 //CustomImage3.Background = null;
                 CustomImage3.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
                 CustomText3.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
@@ -118,6 +124,7 @@ namespace DeepSound.Activities.Tabbes
                         ShowFragment0();
                         AdsGoogle.Ad_AppOpenManager(MainContext);
                         break;
+
                     case Resource.Id.llcustom3:
 
                         if (!UserDetails.IsLogin)
@@ -197,6 +204,12 @@ namespace DeepSound.Activities.Tabbes
                 CustomText0.SetTypeface(Typeface.Default, TypefaceStyle.Normal);
                 CustomText0.SetTextSize(ComplexUnitType.Sp, 13);
 
+                //CustomImage2.Background = null;
+                CustomImage2.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
+                CustomText2.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
+                CustomText2.SetTypeface(Typeface.Default, TypefaceStyle.Normal);
+                CustomText2.SetTextSize(ComplexUnitType.Sp, 13);
+
                 //CustomImage3.Background = null;
                 CustomImage3.SetColorFilter(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
                 CustomText3.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.ParseColor("#9E9E9E"));
@@ -260,6 +273,13 @@ namespace DeepSound.Activities.Tabbes
                                 return currentFragment;
                             break;
                         }
+                    case 2:
+                        {
+                            var currentFragment = FragmentListTab2[FragmentListTab2.Count - 2];
+                            if (currentFragment != null)
+                                return currentFragment;
+                            break;
+                        }
                     case 3:
                         {
                             var currentFragment = FragmentListTab3[FragmentListTab3.Count - 2];
@@ -299,6 +319,8 @@ namespace DeepSound.Activities.Tabbes
                         return FragmentListTab0.Count > 1 ? FragmentListTab0.Count : 0;
                     case 1:
                         return FragmentListTab1.Count > 1 ? FragmentListTab1.Count : 0;
+                    case 2:
+                        return FragmentListTab2.Count > 1 ? FragmentListTab2.Count : 0;
                     case 3:
                         return FragmentListTab3.Count > 1 ? FragmentListTab4.Count : 0;
                     case 4:

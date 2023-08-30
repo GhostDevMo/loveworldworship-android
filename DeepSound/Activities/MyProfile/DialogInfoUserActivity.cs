@@ -4,7 +4,6 @@ using Android.Content.PM;
 using Android.OS;
 using Android.Views;
 using Android.Widget;
-using Com.Adcolony.Sdk;
 using DeepSound.Activities.Base;
 using DeepSound.Activities.MyContacts;
 using DeepSound.Activities.Tabbes;
@@ -25,14 +24,14 @@ using System.Threading.Tasks;
 
 namespace DeepSound.Activities.MyProfile
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class DialogInfoUserActivity : BaseActivity
     {
         #region Variables Basic
 
         private ImageView Image;
-        private TextView IconBack, Username, IconCountry, CountryText, CountTracks, CountFollowers, CountFollowing, IconEmail, EmailText, IconGender, GenderText, IconWebsite, WebsiteText;
-        private LinearLayout LayoutFollowing, LayoutFollowers, LayoutWebsite, LayoutEmail;
+        private TextView IconBack, Username, IconCountry, CountryText, CountTracks, CountFollowers, CountFollowing, IconEmail, EmailText, IconGender, GenderText, IconWebsite, WebsiteText, IconFacebook, FacebookText;
+        private LinearLayout LayoutFollowing, LayoutFollowers, LayoutWebsite, LayoutFacebook, LayoutEmail;
         private UserDataObject DataUser;
         private Details Details;
 
@@ -141,15 +140,23 @@ namespace DeepSound.Activities.MyProfile
                 LayoutWebsite = FindViewById<LinearLayout>(Resource.Id.LayoutWebsite);
                 IconWebsite = FindViewById<TextView>(Resource.Id.IconWebsite);
                 WebsiteText = FindViewById<TextView>(Resource.Id.WebsiteText);
+                LayoutFacebook = FindViewById<LinearLayout>(Resource.Id.LayoutFacebook);
+                IconFacebook = FindViewById<TextView>(Resource.Id.IconFacebook);
+                FacebookText = FindViewById<TextView>(Resource.Id.FacebookText);
 
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, IconBack, IonIconsFonts.IosArrowBack);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, IconCountry, IonIconsFonts.Pin);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, IconEmail, IonIconsFonts.Mail);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, IconWebsite, IonIconsFonts.Globe);
+                FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, IconFacebook, IonIconsFonts.LogoFacebook);
 
                 var nativeAdLayout = FindViewById<LinearLayout>(Resource.Id.native_ad_container);
                 nativeAdLayout.Visibility = ViewStates.Gone;
 
+                if (AppSettings.ShowFbNativeAds)
+                    AdsFacebook.InitNative(this, nativeAdLayout, null);
+                else if (AppSettings.ShowAppLovinBannerAds)
+                    AdsAppLovin.InitBannerAd(this, nativeAdLayout, null);
             }
             catch (Exception e)
             {
@@ -166,6 +173,7 @@ namespace DeepSound.Activities.MyProfile
                 {
                     IconBack.Click += IconBackOnClick;
                     LayoutWebsite.Click += LayoutWebsiteOnClick;
+                    LayoutFacebook.Click += LayoutFacebookOnClick;
                     LayoutFollowers.Click += LayoutFollowersOnClick;
                     LayoutFollowing.Click += LayoutFollowingOnClick;
                 }
@@ -173,6 +181,7 @@ namespace DeepSound.Activities.MyProfile
                 {
                     IconBack.Click -= IconBackOnClick;
                     LayoutWebsite.Click -= LayoutWebsiteOnClick;
+                    LayoutFacebook.Click -= LayoutFacebookOnClick;
                 }
             }
             catch (Exception e)
@@ -191,6 +200,26 @@ namespace DeepSound.Activities.MyProfile
             try
             {
                 Finish();
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
+        //open Facebook
+        private void LayoutFacebookOnClick(object sender, EventArgs e)
+        {
+            try
+            {
+                if (Methods.CheckConnectivity())
+                {
+                    new IntentController(this).OpenFacebookIntent(DataUser.Facebook);
+                }
+                else
+                {
+                    Toast.MakeText(this, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
+                }
             }
             catch (Exception exception)
             {
@@ -306,6 +335,16 @@ namespace DeepSound.Activities.MyProfile
                     else
                     {
                         LayoutWebsite.Visibility = ViewStates.Gone;
+                    }
+
+                    if (!string.IsNullOrEmpty(DataUser.Facebook))
+                    {
+                        LayoutFacebook.Visibility = ViewStates.Visible;
+                        FacebookText.Text = DataUser.Facebook;
+                    }
+                    else
+                    {
+                        LayoutFacebook.Visibility = ViewStates.Gone;
                     }
                 }
             }

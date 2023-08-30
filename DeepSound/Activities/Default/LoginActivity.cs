@@ -15,7 +15,11 @@ using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
+using AndroidX.Core.App;
 using AndroidX.Core.Content;
+using Com.Facebook;
+using Com.Facebook.Login;
+using Com.Facebook.Login.Widget;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Model;
@@ -32,16 +36,13 @@ using Org.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Xamarin.Facebook;
-using Xamarin.Facebook.Login;
-using Xamarin.Facebook.Login.Widget;
 using Exception = System.Exception;
 using Object = Java.Lang.Object;
 using Task = System.Threading.Tasks.Task;
 
 namespace DeepSound.Activities.Default
 {
-    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
+    [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
     public class LoginActivity : AppCompatActivity, IFacebookCallback, GraphRequest.IGraphJSONObjectCallback, IOnSuccessListener, IOnFailureListener
     {
         #region Variables Basic
@@ -94,7 +95,7 @@ namespace DeepSound.Activities.Default
                     }
                     else
                     {
-                        RequestPermissions(new[]
+                        ActivityCompat.RequestPermissions(this, new[]
                         {
                             Manifest.Permission.PostNotifications
                         }, 16248);
@@ -273,13 +274,13 @@ namespace DeepSound.Activities.Default
                     FbLoginButton.Click += FbLoginButtonOnClick;
 
                     ProfileTracker.MOnProfileChanged += ProfileTrackerOnMOnProfileChanged;
-                    loginButton.SetPermissions(new List<string>
+                    loginButton.SetPermissions(new string[]
                     {
                         "email",
                         "public_profile"
                     });
 
-                    MFbCallManager = CallbackManagerFactory.Create();
+                    MFbCallManager = ICallbackManager.Factory.Create();
                     LoginManager.Instance.RegisterCallback(MFbCallManager, this);
 
                     //FB accessToken

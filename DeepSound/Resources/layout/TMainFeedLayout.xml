@@ -34,6 +34,13 @@
                     android:layout_height="wrap_content"
                     layout="@layout/ViewModel_Alert" />
                 <ViewStub
+	                android:id="@+id/viewStubStory"
+	                android:inflatedId="@+id/stubViewStory"
+	                android:layout_width="match_parent"
+	                android:layout_height="wrap_content"
+	                android:layout_marginBottom="10dp"
+	                android:layout="@layout/TemplateRecyclerViewLayout" />
+                <ViewStub
 	                android:id="@+id/viewStubTopSongs"
 	                android:inflatedId="@+id/stubViewTopSongs"
 	                android:layout_width="match_parent"
