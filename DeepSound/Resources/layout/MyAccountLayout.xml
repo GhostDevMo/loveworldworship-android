@@ -209,38 +209,6 @@
                         android:textSize="15sp"
                         android:layout_marginStart="3dp" />
                 </LinearLayout>
-                <!--PaypalEmail Section -->
-                <LinearLayout
-                    android:id="@+id/LayoutPaypalEmail"
-                    android:paddingTop="5dp"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginEnd="10dp"
-                    android:layout_width="match_parent"
-                    android:orientation="horizontal"
-                    android:layout_height="wrap_content">
-                    <TextView
-                        android:id="@+id/IconPaypalEmail"
-                        android:layout_width="40dp"
-                        android:layout_height="wrap_content"
-                        android:layout_centerVertical="true"
-                        android:text="#"
-                        android:textSize="20sp"
-                        
-                        android:gravity="center"
-                        android:layout_gravity="center"
-                        android:layout_marginStart="5dp" />
-                    <EditText
-                        android:id="@+id/PaypalEmailEditText"
-                        style="@style/EditTextNormalStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="50dp"
-                        android:background="@drawable/EditTextStyleOne"
-                        android:layout_alignParentEnd="true"
-                        android:hint="@string/Lbl_PayPalEmail"
-						android:inputType="textEmailAddress"
-                        android:textSize="15sp"
-                        android:layout_marginStart="3dp" />
-                </LinearLayout>
                 <!--Buttons Section -->
                 <LinearLayout
                     android:paddingTop="5dp"

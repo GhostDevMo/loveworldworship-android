@@ -160,7 +160,7 @@
 	<string name="Lbl_FullName">Full Name</string>
 	<string name="Lbl_NoMoreUser">No more user found</string>
 	<string name="Lbl_ChangeCoverImage">Change cover image</string>
-	<string name="Lbl_HasNotAnyInfo">Has not any info</string>
+	<string name="Lbl_HasNotAnyInfo">.</string>
 	<!--===============================================================-->
 	<!--Time-->
 	<string name="Lbl_justNow">Just now</string>
@@ -192,7 +192,7 @@
 	<string name="Lbl_Permission_is_denied">"Sorry: You cannot proceed with your action if you don&apos;t allow"</string>
 	<string name="Lbl_something_went_wrong">Check your credentials something went wrong</string>
 	<string name="Lbl_CheckYourInternetConnection">Please check your internet connection</string>
-	<string name="Lbl_VerificationFailed">Verification failed</string>
+	<string name="Lbl_VerificationFailed">Reset Email Sent</string>
 	<string name="Lbl_You_will_be_logged">You will be logged out now, see you later</string>
 	<string name="Lbl_Are_you_logout">Are you sure you went to log out?</string>
 	<string name="Lbl_Text_copied">Text copied to clipboard</string>
@@ -405,7 +405,7 @@
 	<string name="Lbl_GooglePlus">Google Plus</string>
 	<string name="Lbl_Instagram">Instagram</string>
 	<string name="Lbl_LinkedIn">LinkedIn</string>
-	<string name="Lbl_Website">Website</string>
+	<string name="Lbl_Website">Kingschat Username</string>
 	<!--===============================================================-->
 	<!--Block Users-->
 	<string name="Lbl_BlockedUsers">Blocked Users</string>

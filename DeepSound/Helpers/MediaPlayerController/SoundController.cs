@@ -41,11 +41,11 @@ namespace DeepSound.Helpers.MediaPlayerController
         public FloatingActionButton BtPlay;
         private TextView TvTitleSound, TvDescriptionSound;
         private TextView TvSongCurrentDuration, TvSongTotalDuration, TxtArtistName, TxtArtistAbout, TxtPlaybackSpeed;
-        private ImageView BtnIconComments, BtnIconFavorite, BtnIconLike, BtnIconDislike;
+        private ImageView BtnIconComments, BtnIconFavorite, BtnIconLike;
         public ImageView BtnIconDownload;
         public ProgressBar ProgressBarDownload;
         private ImageView BtnIconAddTo, BtnIconShare, IconInfo;
-        private FrameLayout LinearAddTo, LinearShare, LinearComments, LinearFavorite, LinearLike, LinearDislike;
+        private FrameLayout LinearAddTo, LinearShare, LinearComments, LinearFavorite, LinearLike;
         private RelativeLayout LinearDownload;
         private ImageView ImageCover, ImageToolbar;
         public ImageView BackIcon, CloseIcon, BtnPlayImage, BtnNextImage;
@@ -142,8 +142,6 @@ namespace DeepSound.Helpers.MediaPlayerController
                 BtnIconFavorite = ActivityContext.FindViewById<ImageView>(Resource.Id.icon_fav);
                 LinearLike = ActivityContext.FindViewById<FrameLayout>(Resource.Id.ll_like);
                 BtnIconLike = ActivityContext.FindViewById<ImageView>(Resource.Id.icon_like);
-                LinearDislike = ActivityContext.FindViewById<FrameLayout>(Resource.Id.ll_Dislike);
-                BtnIconDislike = ActivityContext.FindViewById<ImageView>(Resource.Id.icon_Dislike);
                 IconInfo = ActivityContext.FindViewById<ImageView>(Resource.Id.info);
                 TvTitleSound = ActivityContext.FindViewById<TextView>(Resource.Id.titleSound);
                 TvDescriptionSound = ActivityContext.FindViewById<TextView>(Resource.Id.descriptionSound);
@@ -187,7 +185,6 @@ namespace DeepSound.Helpers.MediaPlayerController
                     LinearDownload.Click += LinearDownloadOnClick;
                     LinearFavorite.Click += LinearFavoriteOnClick;
                     LinearLike.Click += LinearLikeOnClick;
-                    LinearDislike.Click += LinearDislikeOnClick;
                     TxtPlaybackSpeed.Click += TxtPlaybackSpeedOnClick;
 
                     if (AppSettings.PlayerTheme == PlayerTheme.Theme2)
@@ -510,23 +507,6 @@ namespace DeepSound.Helpers.MediaPlayerController
                 if (item != null)
                 {
                     ClickListeners.OnLikeSongsClick(new MoreClickEventArgs { Button = BtnIconLike, SongsClass = item });
-                }
-            }
-            catch (Exception exception)
-            {
-                Methods.DisplayReportResultTrack(exception);
-            }
-        }
-
-        //Change Dislike
-        private void LinearDislikeOnClick(object sender, EventArgs e)
-        {
-            try
-            {
-                var item = Constant.ArrayListPlay[Constant.PlayPos];
-                if (item != null)
-                {
-                    ClickListeners.OnDislikeSongsClick(new MoreClickEventArgs { Button = BtnIconDislike, SongsClass = item });
                 }
             }
             catch (Exception exception)
@@ -1086,9 +1066,6 @@ namespace DeepSound.Helpers.MediaPlayerController
 
                         BtnIconLike.Tag = soundObject.IsLiked != null && soundObject.IsLiked.Value ? "Like" : "Liked" ?? "Liked";
                         ClickListeners.SetLike(BtnIconLike);
-
-                        BtnIconDislike.Tag = soundObject.IsDisLiked != null && soundObject.IsDisLiked.Value ? "Dislike" : "Disliked" ?? "Disliked";
-                        ClickListeners.SetDislike(BtnIconDislike);
 
                         BtnIconFavorite.Tag = soundObject.IsFavoriated != null && soundObject.IsFavoriated.Value ? "Add" : "Added";
                         ClickListeners.SetFav(BtnIconFavorite);

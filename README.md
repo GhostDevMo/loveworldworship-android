@@ -1,6 +1,20 @@
-August 24 2023 Update
+# loveworldworship-android
+Default language - en-US
 
+New UI
 
-Login and Session management Bugs Fixed
+Improved Functionalities
 
-Offline network dummy error immage fixed
+Push Notification
+
+Bugs Fixed
+
+Shuffle and Repeat Features
+
+Lyrics
+
+Dark/Light Mode Feature
+
+Playlist Feature
+
+Favorites songs option

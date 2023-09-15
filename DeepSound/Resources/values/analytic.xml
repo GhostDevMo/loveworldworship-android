@@ -2,8 +2,8 @@
 <resources>
 
   <!--add your website without http >> demo.deepsoundscript.com-->
-  <string name="ApplicationUrlWeb">demo.deepsoundscript.com</string>
-  <string name="ApplicationShortUrl">dsound.app</string>
+  <string name="ApplicationUrlWeb">loveworldworship.com/worship</string>
+  <string name="ApplicationShortUrl">loveworldworship.com/worship</string>
 
 	<!-- #warning about new privacy on google AdMob...
 	should add file app-ads.txt in the server >>this content file text https://prnt.sc/vm086w

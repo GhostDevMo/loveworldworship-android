@@ -24503,34 +24503,25 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Busayo Omoniyi\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {},
-    "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder": {}
+    "/Users/ojo/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Busayo Omoniyi\\OneDrive\\Work\\deepsound\\DeepSound_V3.2\\DeepSound\\DeepSound.csproj",
+      "projectUniqueName": "/Users/ojo/Downloads/loveworldworship-android-main/DeepSound/DeepSound.csproj",
       "projectName": "DeepSound",
-      "projectPath": "C:\\Users\\Busayo Omoniyi\\OneDrive\\Work\\deepsound\\DeepSound_V3.2\\DeepSound\\DeepSound.csproj",
-      "packagesPath": "C:\\Users\\Busayo Omoniyi\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Busayo Omoniyi\\OneDrive\\Work\\deepsound\\DeepSound_V3.2\\DeepSound\\obj\\",
+      "projectPath": "/Users/ojo/Downloads/loveworldworship-android-main/DeepSound/DeepSound.csproj",
+      "packagesPath": "/Users/ojo/.nuget/packages/",
+      "outputPath": "/Users/ojo/Downloads/loveworldworship-android-main/DeepSound/obj/",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
-        "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
-      ],
       "configFilePaths": [
-        "C:\\Users\\Busayo Omoniyi\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+        "/Users/ojo/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net7.0-android"
       ],
       "sources": {
-        "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
-        "C:\\Program Files\\dotnet\\library-packs": {},
+        "/usr/local/share/dotnet/library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
@@ -25389,7 +25380,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/7.0.307/RuntimeIdentifierGraph.json"
       }
     },
     "runtimes": {

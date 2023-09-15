@@ -31,8 +31,8 @@ namespace DeepSound.Activities.SettingsUser.General
     {
         #region Variables Basic
 
-        private TextView UsernameIcon, EmailIcon, GenderIcon, AgeIcon, CountryIcon, PaypalEmailIcon;
-        private EditText EdtUsername, EdtEmail, EdtAge, EdtCountry, EdtPaypalEmail;
+        private TextView UsernameIcon, EmailIcon, GenderIcon, AgeIcon, CountryIcon;
+        private EditText EdtUsername, EdtEmail, EdtAge, EdtCountry;
         private RadioButton RadioMale, RadioFemale;
         private AppCompatButton BtnSave;
         private Toolbar Toolbar;
@@ -174,16 +174,12 @@ namespace DeepSound.Activities.SettingsUser.General
                 CountryIcon = FindViewById<TextView>(Resource.Id.IconCountry);
                 EdtCountry = FindViewById<EditText>(Resource.Id.CountryEditText);
 
-                PaypalEmailIcon = FindViewById<TextView>(Resource.Id.IconPaypalEmail);
-                EdtPaypalEmail = FindViewById<EditText>(Resource.Id.PaypalEmailEditText);
-
                 BtnSave = FindViewById<AppCompatButton>(Resource.Id.ApplyButton);
 
                 Methods.SetColorEditText(EdtUsername, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(EdtEmail, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(EdtAge, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 Methods.SetColorEditText(EdtCountry, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
-                Methods.SetColorEditText(EdtPaypalEmail, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
 
                 RadioMale.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
                 RadioFemale.SetTextColor(DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
@@ -193,7 +189,6 @@ namespace DeepSound.Activities.SettingsUser.General
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeRegular, EmailIcon, FontAwesomeIcon.At);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeRegular, AgeIcon, FontAwesomeIcon.BirthdayCake);
                 FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeLight, CountryIcon, FontAwesomeIcon.Flag);
-                FontUtils.SetTextViewIcon(FontsIconFrameWork.FontAwesomeLight, PaypalEmailIcon, FontAwesomeIcon.Paypal);
 
                 Methods.SetFocusable(EdtCountry);
             }
@@ -313,7 +308,6 @@ namespace DeepSound.Activities.SettingsUser.General
                         {"gender",IdGender},
                         {"country",Country},
                         {"age", EdtAge.Text},
-                        {"paypal_email", EdtPaypalEmail.Text},
                     };
 
                     var (apiStatus, respond) = await RequestsAsync.User.UpdateGeneralAsync(UserDetails.UserId.ToString(), dictionary);
@@ -403,7 +397,6 @@ namespace DeepSound.Activities.SettingsUser.General
                 {
                     EdtUsername.Text = dataUser.Username;
                     EdtEmail.Text = dataUser.Email;
-                    EdtPaypalEmail.Text = dataUser.PaypalEmail;
 
                     if (dataUser.Age != 0)
                         EdtAge.Text = dataUser.Age.ToString();

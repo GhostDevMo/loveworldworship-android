@@ -103,7 +103,7 @@
                     android:orientation="horizontal"
                     android:layout_height="wrap_content">
                     <TextView
-                        android:id="@+id/IconFacebook"
+                        android:id="@+id/IconEmail"
                         android:layout_width="40dp"
                         android:layout_height="wrap_content"
                         android:layout_centerVertical="true"

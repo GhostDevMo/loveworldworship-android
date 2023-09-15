@@ -437,26 +437,6 @@
 					android:id="@+id/icon_like"
 					android:src="@drawable/icon_player2_heart" />
 			</FrameLayout>
-			<FrameLayout
-				android:id="@+id/ll_Dislike"
-				android:layout_width="0dp"
-				android:layout_height="match_parent"
-				android:layout_weight="1"
-				android:gravity="center"
-				android:clickable="true"
-				android:focusable="true"
-				android:background="@drawable/custom_ripple"
-				android:orientation="vertical">
-				<ImageView
-					android:layout_width="32dp"
-					android:layout_height="32dp"
-					android:padding="6dp"
-					android:gravity="center"
-					android:tint="?attr/colorSecondaryExtra"
-					android:layout_gravity="center"
-					android:id="@+id/icon_Dislike"
-					android:src="@drawable/icon_player2_dislike" />
-			</FrameLayout>
 			<RelativeLayout
 				android:id="@+id/ll_download"
 				android:layout_width="0dp"
