@@ -22,7 +22,7 @@ namespace DeepSound.Activities.SettingsUser.Adapters
         {
             try
             {
-                //HasStableIds = true;
+                HasStableIds = true;
                 ActivityContext = context;
             }
             catch (Exception e)

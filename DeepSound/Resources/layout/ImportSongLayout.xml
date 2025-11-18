@@ -66,6 +66,8 @@
                 android:background="@drawable/EditTextStyleOne"
                 android:layout_marginTop="20dp"
                 android:hint="@string/Lbl_EmbedSoundUrl"
+                android:singleLine="true"
+				android:gravity="start|center"
                 android:textSize="15sp" />
             <TextView
                 android:layout_width="wrap_content"
@@ -77,7 +79,8 @@
                 android:clickable="false"
                 android:text="@string/Lbl_PasteYourUrl"
                 android:layout_alignParentStart="true"
-                android:gravity="start"
+                android:singleLine="true"
+				android:gravity="start|center"
                 android:textSize="11dp"
                 android:textColor="#888888"
                 android:textAlignment="textStart" />

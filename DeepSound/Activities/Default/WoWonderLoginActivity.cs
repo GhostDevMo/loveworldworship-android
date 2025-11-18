@@ -205,6 +205,8 @@ namespace DeepSound.Activities.Default
 
                                 dialog.SetPositiveButton(GetText(Resource.String.Lbl_Send), (o, args) =>
                                 {
+                                    if (input.Text.Length <= 0) return;
+                                    CodeName = input.Text;
                                     SendButtonOnClick();
                                 });
                                 dialog.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());

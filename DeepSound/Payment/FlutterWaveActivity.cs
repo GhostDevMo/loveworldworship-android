@@ -16,8 +16,10 @@ using Com.Flutterwave.Raveandroid.Rave_presentation;
 using Com.Flutterwave.Raveandroid.Rave_presentation.Card;
 using Com.Flutterwave.Raveandroid.Rave_presentation.Data;
 using Com.Flutterwave.Raveutils.Verification;
+using Com.Google.Android.Gms.Ads.Admanager;
 using Com.Stripe.Android.View;
 using DeepSound.Activities.Base;
+using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Requests;
@@ -42,6 +44,7 @@ namespace DeepSound.Payment
 
         private string Price;
         private CardPaymentManager CardPayManager;
+        private AdManagerAdView AdManagerAdView;
 
         #endregion
 
@@ -78,6 +81,7 @@ namespace DeepSound.Payment
             {
                 base.OnResume();
                 AddOrRemoveEvent(true);
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -91,6 +95,7 @@ namespace DeepSound.Payment
             {
                 base.OnPause();
                 AddOrRemoveEvent(false);
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -121,6 +126,19 @@ namespace DeepSound.Payment
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        protected override void OnDestroy()
+        {
+            try
+            {
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Destroy");
+                base.OnDestroy();
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
             }
         }
 
@@ -159,6 +177,9 @@ namespace DeepSound.Payment
                 BtnApply = (AppCompatButton)FindViewById(Resource.Id.ApplyButton);
 
                 Methods.SetColorEditText(EtName, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
+
+                AdManagerAdView = FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
             }
             catch (Exception e)
             {
@@ -220,7 +241,7 @@ namespace DeepSound.Payment
 
         #region Events
 
-        private void CvcEditTextOnAfterTextChanged(object sender, AfterTextChangedEventArgs e)
+        private void CvcEditTextOnAfterTextChanged(object sender, StripeEditText.AfterTextChangedEventArgs e)
         {
             try
             {
@@ -329,7 +350,7 @@ namespace DeepSound.Payment
             }
             catch (Exception exception)
             {
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
                 Methods.DisplayReportResultTrack(exception);
             }
         }
@@ -478,7 +499,7 @@ namespace DeepSound.Payment
         {
             try
             {
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
                 Toast.MakeText(this, errorMessage, ToastLength.Short)?.Show();
             }
             catch (Exception e)
@@ -501,7 +522,7 @@ namespace DeepSound.Payment
                     if (apiStatus == 200)
                     {
                         Toast.MakeText(this, GetText(Resource.String.Lbl_PaymentSuccessfully), ToastLength.Long)?.Show();
-                        AndHUD.Shared.Dismiss(this);
+                        AndHUD.Shared.Dismiss();
                         Finish();
                     }
                     else
@@ -543,7 +564,7 @@ namespace DeepSound.Payment
                 }
                 else
                 {
-                    AndHUD.Shared.Dismiss(this);
+                    AndHUD.Shared.Dismiss();
                 }
             }
             catch (Exception e)

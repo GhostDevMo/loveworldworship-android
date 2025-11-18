@@ -70,7 +70,7 @@
 			android:layout_alignParentEnd="true"
 			android:hint="@string/Lbl_PriceMin"
 			android:textSize="15sp"
-			android:maxLines="1"
+			android:singleLine="true"  
 			android:gravity="start|center"
 			android:inputType="number"
 			android:layout_marginStart="3dp" />
@@ -85,7 +85,7 @@
 			android:layout_alignParentEnd="true"
 			android:hint="@string/Lbl_PriceMax"
 			android:textSize="15sp"
-			android:maxLines="1"
+			android:singleLine="true"  
 			android:gravity="start|center"
 			android:inputType="number"
 			android:layout_marginStart="3dp" />
@@ -116,6 +116,8 @@
 			android:layout_height="40dp"
 			android:hint="@string/Lbl_Category"
 			android:textSize="15sp"
+			android:singleLine="true"  
+			android:inputType="text"
 			android:gravity="start|center"
 			android:background="@drawable/EditTextStyleOne"
 			android:layout_alignParentEnd="true"

@@ -42,7 +42,6 @@ namespace DeepSound.Activities.SettingsUser.General
         private ViewStub EmptyStateLayout;
         private View Inflated;
         private RecyclerViewOnScrollListener MainScrollEvent;
-        private int Position;
 
         private AdView MAdView;
 
@@ -290,7 +289,6 @@ namespace DeepSound.Activities.SettingsUser.General
         {
             try
             {
-                Position = e.Position;
                 var dialog = new MaterialAlertDialogBuilder(this);
                 dialog.SetTitle(Resource.String.Lbl_Warning);
                 dialog.SetMessage(GetText(Resource.String.Lbl_DoYouWantUnblock));
@@ -300,7 +298,7 @@ namespace DeepSound.Activities.SettingsUser.General
                     {
                         if (Methods.CheckConnectivity())
                         {
-                            var itemUser = MAdapter.GetItem(Position);
+                            var itemUser = MAdapter.GetItem(e.Position);
                             if (itemUser != null)
                             {
                                 var index = MAdapter.BlockedUsersList.IndexOf(itemUser);

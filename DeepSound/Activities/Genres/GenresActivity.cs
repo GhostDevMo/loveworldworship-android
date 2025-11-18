@@ -285,7 +285,7 @@ namespace DeepSound.Activities.Genres
                                 {
                                     try
                                     {
-                                        //AndHUD.Shared.Dismiss(this);
+                                        //AndHUD.Shared.Dismiss();
                                         // Toast.MakeText(this, "Subscription has been updated in" + " " + list?.Count + " " + "interests", ToastLength.Long)?.Show();
 
                                         switch (TypeBtn)
@@ -319,7 +319,7 @@ namespace DeepSound.Activities.Genres
             }
             catch (Exception exception)
             {
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
                 Methods.DisplayReportResultTrack(exception);
             }
         }

@@ -312,6 +312,8 @@ namespace DeepSound.Activities.Advertise
             {
                 if (e?.Event?.Action != MotionEventActions.Up) return;
 
+                Methods.HideKeyboard(this);
+
                 TypeDialog = "Type";
 
                 var arrayAdapter = new List<string>();
@@ -337,6 +339,8 @@ namespace DeepSound.Activities.Advertise
             try
             {
                 if (e?.Event?.Action != MotionEventActions.Up) return;
+
+                Methods.HideKeyboard(this);
 
                 TypeDialog = "Pricing";
 
@@ -364,6 +368,8 @@ namespace DeepSound.Activities.Advertise
             {
                 if (e?.Event?.Action != MotionEventActions.Up) return;
 
+                Methods.HideKeyboard(this);
+
                 TypeDialog = "Placement";
 
                 var arrayAdapter = new List<string>();
@@ -389,6 +395,9 @@ namespace DeepSound.Activities.Advertise
             try
             {
                 if (e?.Event?.Action != MotionEventActions.Up) return;
+
+                Methods.HideKeyboard(this);
+
                 TypeDialog = "Audience";
 
                 var countriesArray = DeepSoundTools.GetCountryList(this);
@@ -552,6 +561,7 @@ namespace DeepSound.Activities.Advertise
                         {"cost",PricingStatus},
                         {"placement", PlacementStatus},
                         {"type", TypeStatus},
+                        {"day_limit", TxtSpending.Text},
                     };
 
                     var (apiStatus, respond) = await RequestsAsync.Advertise.CreateAdvertiseAsync(dictionary, TypeStatus, PathFile);
@@ -559,7 +569,7 @@ namespace DeepSound.Activities.Advertise
                     {
                         if (respond is CreateAdvertiseObject result)
                         {
-                            AndHUD.Shared.Dismiss(this);
+                            AndHUD.Shared.Dismiss();
                             Toast.MakeText(this, GetString(Resource.String.Lbl_CreatedSuccessfully), ToastLength.Short)?.Show();
 
                             Finish();
@@ -571,7 +581,7 @@ namespace DeepSound.Activities.Advertise
             }
             catch (Exception exception)
             {
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
                 Methods.DisplayReportResultTrack(exception);
             }
         }
@@ -707,7 +717,7 @@ namespace DeepSound.Activities.Advertise
                     if (result.IsSuccessful)
                     {
                         var resultUri = result.UriContent;
-                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        string filepath = Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu ? result.GetUriFilePath(this, true) : Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
                         if (!string.IsNullOrEmpty(filepath))
                         {
                             //Do something with your Uri

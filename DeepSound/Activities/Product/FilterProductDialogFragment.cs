@@ -155,6 +155,8 @@ namespace DeepSound.Activities.Product
             {
                 if (e.Event?.Action != MotionEventActions.Up) return;
 
+                Methods.HideKeyboard(Activity);
+
                 TypeDialog = "Category";
 
                 var dialogList = new MaterialAlertDialogBuilder(Context);

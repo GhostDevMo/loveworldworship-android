@@ -1,25 +1,25 @@
 ﻿using Android.App;
 using Android.Content;
-using Android.Widget;
 using Com.Onesignal;
+using Com.Onesignal.Debug;
+using Com.Onesignal.InAppMessages;
+using Com.Onesignal.Notifications;
+using Com.Onesignal.User.Subscriptions;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSound.Library.OneSignalNotif.Models;
-using DeepSoundClient.Classes.Global;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
+using Object = Java.Lang.Object;
 
 namespace DeepSound.Library.OneSignalNotif
 {
-    public class OneSignalNotification : Java.Lang.Object, OneSignal.IOSNotificationWillShowInForegroundHandler, OneSignal.IOSNotificationOpenedHandler, IOSSubscriptionObserver
+    public class OneSignalNotification : Java.Lang.Object, Java.Util.Functions.IConsumer, INotificationLifecycleListener, INotificationClickListener, IPushSubscriptionObserver, IInAppMessageLifecycleListener
     {
         //Force your app to Register Notification directly without loading it from server (For Best Result)
 
-        public static string Type;
-        public static string Userid, TrackId, TypeText = "User";
-        public static UserDataObject UserData;
+        private OsObject.OsNotificationObject DataNotification;
 
         private static volatile OneSignalNotification InstanceRenamed;
         public static OneSignalNotification Instance
@@ -53,35 +53,31 @@ namespace DeepSound.Library.OneSignalNotif
                     {
                         //The following options are available with increasingly more information:
                         //NONE, FATAL, ERROR, WARN, INFO, DEBUG, VERBOSE
-                        OneSignal.SetLogLevel(OneSignal.LOG_LEVEL.Verbose, OneSignal.LOG_LEVEL.None);
+                        OneSignal.Debug.LogLevel = LogLevel.Verbose;
+                        OneSignal.Debug.AlertLevel = LogLevel.None;
 
-                        // OneSignal Initialization
-                        OneSignal.SetAppId(AppSettings.OneSignalAppId);
-                        OneSignal.InitWithContext(context);
+                        // OneSignal Initialization  
+                        OneSignal.InitWithContext(context, AppSettings.OneSignalAppId);
 
                         // OneSignal Methods
-                        OneSignal.SetNotificationWillShowInForegroundHandler(this);
-                        OneSignal.SetNotificationOpenedHandler(this);
+                        OneSignal.Notifications.RequestPermission(true, Continue.With(this));
+                        OneSignal.Notifications.AddForegroundLifecycleListener(this);
+                        OneSignal.Notifications.AddClickListener(this);
+                        //OneSignal.Notifications.AddPermissionObserver(this);
 
-                        OneSignal.UnsubscribeWhenNotificationsAreDisabled(true);
-                        OneSignal.PauseInAppMessages(true);
-                        OneSignal.LocationShared = false;
+                        OneSignal.InAppMessages.AddLifecycleListener(this);
 
-                        if (!string.IsNullOrEmpty(UserDetails.UserId.ToString()))
-                            OneSignal.SetExternalUserId(UserDetails.UserId.ToString());
+                        OneSignal.Login(UserDetails.UserId.ToString());
 
-                        // OneSignal Register
-                        OneSignal.AddSubscriptionObserver(this);
-                        OneSignal.DisablePush(false);
+                        OneSignal.ConsentRequired = true;
+                        OneSignal.ConsentGiven = true;
 
-                        // promptForPushNotifications will show the native Android notification permission prompt.
-                        // We recommend removing the following code and instead using an In-App Message to prompt for notification permission
-                        OneSignal.PromptForPushNotifications();
+                        OneSignal.InAppMessages.Paused = true;
+                        OneSignal.Location.Shared = true;
+
+                        OneSignal.User.PushSubscription.AddObserver(this);
+                        IdsAvailable();
                     }
-                }
-                else
-                {
-                    UnRegisterNotificationDevice();
                 }
             }
             catch (Exception ex)
@@ -94,14 +90,16 @@ namespace DeepSound.Library.OneSignalNotif
         {
             try
             {
-                OneSignal.RemoveExternalUserId();
+                OneSignal.Notifications.ClearAllNotifications();
 
-                OneSignal.ClearOneSignalNotifications();
-                OneSignal.DisablePush(true);
-                OneSignal.UnsubscribeWhenNotificationsAreDisabled(false);
-                OneSignal.RemoveExternalUserId();
+                OneSignal.Notifications.RemoveForegroundLifecycleListener(this);
+                OneSignal.Notifications.RemoveClickListener(this);
 
-                AppSettings.ShowNotification = false;
+                OneSignal.User.PushSubscription.RemoveObserver(this);
+
+                OneSignal.Logout();
+
+                //AppSettings.ShowNotification = false;
             }
             catch (Exception ex)
             {
@@ -113,17 +111,17 @@ namespace DeepSound.Library.OneSignalNotif
         {
             try
             {
-                OSDeviceState device = OneSignal.DeviceState;
+                var device = OneSignal.User.PushSubscription;
 
                 if (device != null)
                 {
                     //string email = device.EmailAddress;
                     //string emailId = device.EmailUserId;
-                    //string pushToken = device.PushToken;
-                    string userId = device.UserId;
+                    string pushToken = device.Token;
+                    string userId = device.Id;
 
                     //bool enabled = device.AreNotificationsEnabled();
-                    bool subscribed = device.IsSubscribed;
+                    bool subscribed = device.OptedIn;
                     //bool subscribedToOneSignal = device.IsEmailSubscribed;
 
                     if (subscribed && !string.IsNullOrEmpty(userId))
@@ -136,101 +134,86 @@ namespace DeepSound.Library.OneSignalNotif
             }
         }
 
-        public void NotificationWillShowInForeground(OSNotificationReceivedEvent result)
+        /// <summary>
+        /// NotificationWillShowInForeground
+        /// Adds a listener to run before whenever a notification lifecycle event occurs.
+        /// </summary>
+        /// <param name="result"></param>
+        public void OnWillDisplay(INotificationWillDisplayEvent result)
         {
             try
             {
-                //var jsonObject = result.ToJSONObject().ToString();
-                //Console.WriteLine(jsonObject);
+                var notification = result;
 
-                //var notification = JsonConvert.DeserializeObject<OsObject.OsNotificationReceivedObject>(jsonObject);
-
-                //string title = notification.Notification.Title;
-                //string message = notification.Notification.Body;
-                //Dictionary<string, object> RawPayload = notification.Notification.AdditionalData;
-
-                // OneSignal.ClearOneSignalNotifications();    
+                string title = notification.Notification.Title;
+                string message = notification.Notification.Body;
+                var additionalData = notification.Notification.AdditionalData?.ToString();
+                DataNotification = JsonConvert.DeserializeObject<OsObject.OsNotificationObject>(additionalData);
             }
             catch (Exception ex)
             {
-                Toast.MakeText(Application.Context, ex.ToString(), ToastLength.Long)?.Show(); //Allen
                 Methods.DisplayReportResultTrack(ex);
             }
         }
 
-        public void NotificationOpened(OSNotificationOpenedResult result)
+        /// <summary>
+        /// NotificationOpened
+        /// Adds a listener that will run whenever a notification is clicked on by the user.
+        /// </summary>
+        /// <param name="result"></param>
+        public void OnClick(INotificationClickEvent result)
         {
             try
             {
-                //string actionId = result.Action.ActionId;
-                //OSNotificationAction.ActionType type = result.Action.Type; // "ActionTaken" | "Opened"
-
-                var jsonObject = result.ToJSONObject().ToString();
-                Console.WriteLine(jsonObject);
-                var notification = JsonConvert.DeserializeObject<OsObject.OsNotificationReceivedObject>(jsonObject);
+                var notification = result;
 
                 string title = notification.Notification.Title;
                 string message = notification.Notification.Body;
-                Dictionary<string, object> additionalData = notification.Notification.AdditionalData;
+                var additionalData = notification.Notification.AdditionalData?.ToString();
+                DataNotification = JsonConvert.DeserializeObject<OsObject.OsNotificationObject>(additionalData);
 
-                if (additionalData?.Count > 0)
+                DataNotification.Type = "user";
+                if (string.IsNullOrEmpty(DataNotification.TrackId))
                 {
-                    TypeText = "User";
-                    foreach (var item in additionalData)
-                    {
-                        switch (item.Key)
-                        {
-                            case "user_id":
-                                Userid = item.Value.ToString();
-                                break;
-                            case "track":
-                                {
-                                    TrackId = item.Value.ToString();
-                                    if (!string.IsNullOrEmpty(TrackId))
-                                        TypeText = "Track";
-                                    break;
-                                }
-                            case "user_data":
-                                UserData = JsonConvert.DeserializeObject<UserDataObject>(item.Value.ToString());
-                                break;
-                            case "url":
-                                {
-                                    string url = item.Value.ToString();
-                                    Console.WriteLine(url);
-                                    break;
-                                }
-                        }
-                    }
+                    DataNotification.Type = "track";
                 }
 
-                //to : do
-                //go to activity or fragment depending on data 
+                EventClickNotification();
+            }
+            catch (Exception ex)
+            {
+                Methods.DisplayReportResultTrack(ex);
+            }
+        }
+
+        public void EventClickNotification()
+        {
+            try
+            {
                 Intent intent = new Intent(Application.Context, typeof(HomeActivity));
                 intent.SetFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);
                 intent.AddFlags(ActivityFlags.SingleTop);
                 intent.SetAction(Intent.ActionView);
-                intent.PutExtra("TypeNotification", Type);
+                intent.PutExtra("OsNotificationObject", JsonConvert.SerializeObject(DataNotification));
                 Application.Context.StartActivity(intent);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                Methods.DisplayReportResultTrack(ex);
+                Methods.DisplayReportResultTrack(exception);
             }
         }
 
-        public void OnOSSubscriptionChanged(OSSubscriptionStateChanges p0)
+        /// <summary>
+        /// respond to permission state change
+        /// </summary>
+        /// <param name="state"></param>
+        public void OnPushSubscriptionChange(PushSubscriptionChangedState state)
         {
             try
             {
-                var jsonObject = p0.ToJSONObject().ToString();
-                var notification = JsonConvert.DeserializeObject<OsObject.OsNotificationObject>(jsonObject);
-                Console.WriteLine(notification);
-
-                if (notification?.To.IsSubscribed != null && notification.To.IsSubscribed.Value && !string.IsNullOrEmpty(notification.To.UserId))
-                {
-                    UserDetails.DeviceId = notification.To.UserId;
-                    UserDetails.AndroidId = UserDetails.UserId + "_" + notification.To.UserId.Replace("-", "");
-                }
+                //wael check  
+                if (state.Current.OptedIn && !string.IsNullOrEmpty(state.Current.Token))
+                    UserDetails.DeviceId = state.Current.Token;
 
                 IdsAvailable();
             }
@@ -238,6 +221,31 @@ namespace DeepSound.Library.OneSignalNotif
             {
                 Methods.DisplayReportResultTrack(ex);
             }
+        }
+
+        public void OnDidDismiss(IInAppMessageDidDismissEvent e)
+        {
+
+        }
+
+        public void OnDidDisplay(IInAppMessageDidDisplayEvent e)
+        {
+
+        }
+
+        public void OnWillDismiss(IInAppMessageWillDismissEvent e)
+        {
+
+        }
+
+        public void OnWillDisplay(IInAppMessageWillDisplayEvent e)
+        {
+
+        }
+
+        public void Accept(Object t)
+        {
+
         }
     }
 }

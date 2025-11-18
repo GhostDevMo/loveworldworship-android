@@ -15,6 +15,7 @@ using AndroidX.Lifecycle;
 using Bumptech.Glide;
 using DeepSound.Activities;
 using DeepSound.Activities.SettingsUser;
+using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
@@ -23,7 +24,6 @@ using DeepSoundClient;
 using Firebase;
 using Java.Lang;
 using Newtonsoft.Json;
-using Plugin.CurrentActivity;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -70,13 +70,13 @@ namespace DeepSound
 
                 JsonConvert.DefaultSettings = () => UserDetails.JsonSettings;
 
-                InitializeDeepSound.Initialize(AppSettings.Cert, PackageName, AppSettings.TurnSecurityProtocolType3072On, AppSettings.SetApisReportMode);
+                InitializeDeepSound.Initialize(AppSettings.Cert, PackageName, AppSettings.TurnSecurityProtocolType3072On, new MyReportModeApp());
 
                 var sqLiteDatabase = new SqLiteDatabase();
                 sqLiteDatabase.CheckTablesStatus();
                 sqLiteDatabase.Get_data_Login_Credentials();
 
-                new Handler(Looper.MainLooper).Post(new Runnable(FirstRunExcite));
+                FirstRunExcite();
             }
             catch (Exception exception)
             {
@@ -106,10 +106,9 @@ namespace DeepSound
             {
                 AdsGoogle.InitializeAdsGoogle.Initialize(context);
 
-                if (AppSettings.ShowFbBannerAds || AppSettings.ShowFbInterstitialAds || AppSettings.ShowFbRewardVideoAds)
-                    InitializeFacebook.Initialize(this);
+                InitializeFacebook.Initialize(context);
 
-                AdsAppLovin.Initialize(this);
+                AdsAppLovin.Initialize(context);
 
                 ClassMapper.SetMappers();
 
@@ -204,7 +203,6 @@ namespace DeepSound
             try
             {
                 Activity = activity;
-                CrossCurrentActivity.Current.Activity = activity;
             }
             catch (Exception exception)
             {
@@ -227,7 +225,6 @@ namespace DeepSound
             try
             {
                 Activity = activity;
-                CrossCurrentActivity.Current.Activity = activity;
             }
             catch (Exception exception)
             {
@@ -245,7 +242,6 @@ namespace DeepSound
             try
             {
                 Activity = activity;
-                CrossCurrentActivity.Current.Activity = activity;
             }
             catch (Exception exception)
             {
@@ -346,9 +342,38 @@ namespace DeepSound
         {
             try
             {
-                GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+                //GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced); 
                 base.OnTrimMemory(level);
                 Glide.With(this).OnTrimMemory(level);
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+    }
+
+    public class MyReportModeApp : IReportModeCallBack
+    {
+        public void OnErrorReportMode(ReportModeObject modeObject)
+        {
+            try
+            {
+                if (AppSettings.SetApisReportMode)
+                {
+                    if (modeObject.Type == "Error")
+                    {
+                        Methods.DisplayReportResultTrack(modeObject.Exception);
+                    }
+                    else
+                    {
+                        string text = "ReportMode >> Member name: " + modeObject.MemberName;
+                        text += "\n \n ReportMode >> Parameters Request : " + modeObject.RequestApi;
+                        text += "\n \n ReportMode >> Response Api : " + modeObject.ResponseJson;
+
+                        Methods.DialogPopup.InvokeAndShowDialog(HomeActivity.GetInstance(), "ReportMode", text, "Close");
+                    }
+                }
             }
             catch (Exception exception)
             {

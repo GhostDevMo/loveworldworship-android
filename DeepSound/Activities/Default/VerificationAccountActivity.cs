@@ -222,7 +222,7 @@ namespace DeepSound.Activities.Default
                         {
                             if (respond is LoginObject auth)
                             {
-                                AndHUD.Shared.Dismiss(this);
+                                AndHUD.Shared.Dismiss();
 
                                 SetDataLogin(auth);
 
@@ -252,7 +252,7 @@ namespace DeepSound.Activities.Default
                     //            if (respond is LoginObject auth)
                     //            {
                     //                SetDataLogin(auth);
-                    //                AndHUD.Shared.Dismiss(this);
+                    //                AndHUD.Shared.Dismiss();
 
                     //                StartActivity(AppSettings.ShowWalkTroutPage ? new Intent(this, typeof(HomeActivity)) : new Intent(this, typeof(HomeActivity)));
                     //                Finish();
@@ -283,7 +283,7 @@ namespace DeepSound.Activities.Default
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
             }
         }
 
@@ -300,7 +300,7 @@ namespace DeepSound.Activities.Default
         //            if (apiStatus != 200)
         //                Methods.DisplayReportResult(this, respond);
 
-        //            AndHUD.Shared.Dismiss(this);
+        //            AndHUD.Shared.Dismiss();
         //        }
         //        else
         //        {
@@ -310,7 +310,7 @@ namespace DeepSound.Activities.Default
         //    catch (Exception exception)
         //    {
         //        Methods.DisplayReportResultTrack(exception);
-        //        AndHUD.Shared.Dismiss(this);
+        //        AndHUD.Shared.Dismiss();
         //    }
         //}
 

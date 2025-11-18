@@ -1,5 +1,5 @@
 ﻿using Android.Content;
-using Com.Google.Android.Exoplayer2;
+using Androidx.Media3.Exoplayer;
 using DeepSoundClient.Classes.Global;
 using System;
 using System.Collections.ObjectModel;

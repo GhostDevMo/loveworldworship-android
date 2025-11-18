@@ -14,7 +14,7 @@
 		android:layout_height="55dp"
 		android:visibility="gone"
 		android:layout_alignParentTop="true">
-
+		 
 		<TextView
 			android:id="@+id/textView_songname"
 			android:layout_width="wrap_content"
@@ -38,7 +38,6 @@
 			android:ellipsize="end"
 			android:maxLines="1"
 			android:textStyle="bold"
-			android:text="Ascending"
 			android:textColor="@color/accent"
 			android:layout_alignParentEnd="true"
 			android:layout_centerVertical="true"
@@ -66,13 +65,22 @@
 	<androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 		android:id="@+id/swipeRefreshLayout"
 		android:layout_width="match_parent"
-		android:paddingBottom="0dp"
+		android:paddingBottom="55dp"
 		android:layout_below="@+id/Toplayout"
 		android:layout_height="wrap_content">
 
 		<RelativeLayout
 			android:layout_width="match_parent"
 			android:layout_height="match_parent">
+			<ViewStub
+				android:id="@+id/viewStubShimmer"
+				android:inflatedId="@+id/subViewShimmer"
+				android:layout="@layout/ShimmerLoadPageLayout"
+				android:layout_centerInParent="true"
+				android:layout_gravity="center"
+				android:gravity="center"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent" />
 			<androidx.recyclerview.widget.RecyclerView
 				android:id="@+id/recyler"
 				android:clickable="true"
@@ -80,8 +88,9 @@
 				android:focusableInTouchMode="true"
 				android:layout_width="match_parent"
 				android:layout_height="wrap_content"
-				android:layout_marginBottom="35dp"
-				android:scrollbars="vertical"  />
+				app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+				android:scrollbars="vertical"
+				android:layout_marginBottom="50dp" />
 
 			<LinearLayout
 				android:id="@+id/bannerContainer"

@@ -89,50 +89,6 @@
 
 					</LinearLayout>
 
-				</FrameLayout>
-				 
-				<FrameLayout
-					android:layout_width="wrap_content"
-					android:layout_height="150dp"
-					android:layout_weight="1"
-					android:background="@drawable/EditTextStyleOne"
-					android:layout_margin="10dp">
-
-					<ImageView
-						android:id="@+id/imageSong"
-						android:layout_width="match_parent"
-						android:layout_height="150dp"
-						android:gravity="center"
-						android:layout_gravity="center"
-						android:scaleType="centerCrop" />
-
-					<LinearLayout
-						android:id="@+id/btn_SelectSong"
-						android:layout_width="match_parent"
-						android:layout_height="match_parent"
-						android:layout_gravity="center"
-						android:gravity="center"
-						android:orientation="vertical">
-						 
-						<ImageView
-							android:layout_width="30dp"
-							android:layout_height="30dp"
-							android:src="@drawable/icon_microphone_vector"
-							android:tint="@color/accent"
-							android:layout_gravity="center" />
-
-						<TextView
-							android:layout_width="wrap_content"
-							android:layout_height="wrap_content"
-							android:text="@string/Lbl_SelectSongToImport"
-							android:layout_marginTop="10dp"
-							android:layout_gravity="center"
-							android:gravity="center"
-							android:textSize="16sp"
-							android:textColor="@color/accent"/>
-
-					</LinearLayout>
-
 				</FrameLayout>				 
 
 			</LinearLayout>
@@ -165,6 +121,8 @@
 					android:layout_alignParentEnd="true"
 					android:hint="@string/Lbl_WhoCanSee"
 					android:textSize="15sp"
+					android:singleLine="true"
+					android:gravity="start|center"
 					android:layout_marginStart="3dp" />
 			</LinearLayout>
 		
@@ -196,6 +154,8 @@
 					android:layout_alignParentEnd="true"
 					android:hint="@string/Lbl_Url"
 					android:textSize="15sp"
+					android:singleLine="true"
+					android:gravity="start|center"
 					android:layout_marginStart="3dp"
 					android:inputType="textWebEmailAddress"/>
 			</LinearLayout>

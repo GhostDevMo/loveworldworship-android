@@ -222,7 +222,7 @@ namespace DeepSound.Activities.Default
             }
         }
 
-        //Register QuickDate
+        //Register 
         private async void RegisterButtonOnClick(object sender, EventArgs e)
         {
             try
@@ -249,6 +249,8 @@ namespace DeepSound.Activities.Default
                             {
                                 ProgressBar.Visibility = ViewStates.Visible;
                                 RegisterButton.Visibility = ViewStates.Gone;
+
+                                Methods.HideKeyboard(this);
 
                                 var (apiStatus, respond) = await RequestsAsync.Auth.RegisterAsync(UsernameEditText.Text.Replace(" ", ""), EmailEditText.Text.Replace(" ", ""), UsernameEditText.Text.Replace(" ", ""), PasswordEditText.Text, ConfirmPasswordEditText.Text, UserDetails.DeviceId, Referral);
                                 if (apiStatus == 200)

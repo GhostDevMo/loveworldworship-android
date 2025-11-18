@@ -7,7 +7,6 @@ using DeepSound.Activities.Search;
 using DeepSound.Activities.Songs;
 using DeepSound.Activities.Tabbes.HomePages;
 using DeepSound.Adapters;
-using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
@@ -146,43 +145,38 @@ namespace DeepSound.Activities.Tabbes.Fragments
         {
             try
             {
+                Adapter = new MainTabAdapter(this);
+
                 LatestHomeTab = new LatestHomeFragment();
+                Adapter.AddFragment(LatestHomeTab, GetText(Resource.String.Lbl_Suggestion));
 
                 Bundle bundleTopSongsTab = new Bundle();
                 bundleTopSongsTab.PutString("SongsType", "BrowseTopSongs");
                 TopSongsTab = new SongsByTypeFragment() { Arguments = bundleTopSongsTab };
+                Adapter.AddFragment(TopSongsTab, GetText(Resource.String.Lbl_TopSongs_Title));
 
                 Bundle bundleLatestSongsTab = new Bundle();
                 bundleLatestSongsTab.PutString("SongsType", "NewReleases");
                 LatestSongsTab = new SongsByTypeFragment() { Arguments = bundleLatestSongsTab };
+                Adapter.AddFragment(LatestSongsTab, GetText(Resource.String.Lbl_LatestSongs_Title));
 
                 if (UserDetails.IsLogin)
                 {
                     Bundle bundleRecentlyPlayedTab = new Bundle();
                     bundleRecentlyPlayedTab.PutString("SongsType", "RecentlyPlayed");
                     RecentlyPlayedTab = new SongsByTypeFragment() { Arguments = bundleRecentlyPlayedTab };
+                    Adapter.AddFragment(RecentlyPlayedTab, GetText(Resource.String.Lbl_RecentlyPlayed));
                 }
+
+                TopAlbumsTab = new TopAlbumsFragment();
+                Adapter.AddFragment(TopAlbumsTab, GetText(Resource.String.Lbl_TopAlbums_Title));
 
                 Bundle bundlePopularSongsTab = new Bundle();
                 bundlePopularSongsTab.PutString("SongsType", "Popular");
                 PopularSongsTab = new SongsByTypeFragment() { Arguments = bundlePopularSongsTab };
-
-                TopAlbumsTab = new TopAlbumsFragment();
+                Adapter.AddFragment(PopularSongsTab, GetText(Resource.String.Lbl_Popular_Title));
 
                 ArtistsTab = new TabArtistsFragment();
-
-                Adapter = new MainTabAdapter(this);
-
-                Adapter.AddFragment(LatestHomeTab, GetText(Resource.String.Lbl_Suggestion));
-
-                Adapter.AddFragment(TopSongsTab, GetText(Resource.String.Lbl_TopSongs_Title));
-                Adapter.AddFragment(LatestSongsTab, GetText(Resource.String.Lbl_LatestSongs_Title));
-
-                if (UserDetails.IsLogin)
-                    Adapter.AddFragment(RecentlyPlayedTab, GetText(Resource.String.Lbl_RecentlyPlayed));
-
-                Adapter.AddFragment(TopAlbumsTab, GetText(Resource.String.Lbl_TopAlbums_Title));
-                Adapter.AddFragment(PopularSongsTab, GetText(Resource.String.Lbl_Popular_Title));
                 Adapter.AddFragment(ArtistsTab, GetText(Resource.String.Lbl_Artists));
 
                 viewPager.UserInputEnabled = false;
@@ -237,7 +231,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                     base.OnPageSelected(position);
                     if (position % 3 == 0)
                     {
-                        AdsGoogle.Ad_Interstitial(Fragment.Activity);
+                        //AdsGoogle.Ad_Interstitial(Fragment.Activity);
                     }
                 }
                 catch (Exception exception)

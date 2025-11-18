@@ -447,7 +447,7 @@ namespace DeepSound.Activities.Artists
                         id = PlaylistAdapter.PlaylistList.LastOrDefault()?.Id.ToString();
                         break;
                     default:
-                        id = SoundAdapter.SoundsList.LastOrDefault()?.Id.ToString();
+                        id = SoundAdapter.SoundsList.LastOrDefault(a => a.TypeView != "Ads")?.Id.ToString();
                         break;
                 }
 
@@ -506,7 +506,22 @@ namespace DeepSound.Activities.Artists
                             {
                                 if (ArtistsProfileFragment?.LatestSongsAdapter?.SoundsList?.Count > 0)
                                 {
-                                    SoundAdapter.SoundsList = ArtistsProfileFragment?.LatestSongsAdapter?.SoundsList;
+                                    foreach (var item in ArtistsProfileFragment.LatestSongsAdapter.SoundsList)
+                                    {
+                                        var check = SoundAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id);
+                                        if (check == null)
+                                        {
+                                            SoundAdapter.SoundsList.Add(item);
+
+                                            if (SoundAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                            {
+                                                SoundAdapter.SoundsList.Add(new SoundDataObject()
+                                                {
+                                                    TypeView = "Ads"
+                                                });
+                                            }
+                                        }
+                                    }
                                     SoundAdapter.NotifyDataSetChanged();
                                 }
                                 break;
@@ -515,7 +530,22 @@ namespace DeepSound.Activities.Artists
                             {
                                 if (ArtistsProfileFragment?.TopSongsAdapter?.SoundsList?.Count > 0)
                                 {
-                                    SoundAdapter.SoundsList = ArtistsProfileFragment?.TopSongsAdapter?.SoundsList;
+                                    foreach (var item in ArtistsProfileFragment.TopSongsAdapter.SoundsList)
+                                    {
+                                        var check = SoundAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id);
+                                        if (check == null)
+                                        {
+                                            SoundAdapter.SoundsList.Add(item);
+
+                                            if (SoundAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                            {
+                                                SoundAdapter.SoundsList.Add(new SoundDataObject()
+                                                {
+                                                    TypeView = "Ads"
+                                                });
+                                            }
+                                        }
+                                    }
                                     SoundAdapter.NotifyDataSetChanged();
                                 }
                                 break;
@@ -533,7 +563,22 @@ namespace DeepSound.Activities.Artists
                             {
                                 if (ArtistsProfileFragment?.StoreAdapter?.SoundsList?.Count > 0)
                                 {
-                                    SoundAdapter.SoundsList = ArtistsProfileFragment?.StoreAdapter?.SoundsList;
+                                    foreach (var item in ArtistsProfileFragment.StoreAdapter.SoundsList)
+                                    {
+                                        var check = SoundAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id);
+                                        if (check == null)
+                                        {
+                                            SoundAdapter.SoundsList.Add(item);
+
+                                            if (SoundAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                            {
+                                                SoundAdapter.SoundsList.Add(new SoundDataObject()
+                                                {
+                                                    TypeView = "Ads"
+                                                });
+                                            }
+                                        }
+                                    }
                                     SoundAdapter.NotifyDataSetChanged();
                                 }
                                 break;
@@ -542,7 +587,22 @@ namespace DeepSound.Activities.Artists
                             {
                                 if (ArtistsProfileFragment?.StationsAdapter?.StationsList?.Count > 0)
                                 {
-                                    SoundAdapter.SoundsList = ArtistsProfileFragment?.StationsAdapter?.StationsList;
+                                    foreach (var item in ArtistsProfileFragment.StationsAdapter.StationsList)
+                                    {
+                                        var check = SoundAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id);
+                                        if (check == null)
+                                        {
+                                            SoundAdapter.SoundsList.Add(item);
+
+                                            if (SoundAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                            {
+                                                SoundAdapter.SoundsList.Add(new SoundDataObject()
+                                                {
+                                                    TypeView = "Ads"
+                                                });
+                                            }
+                                        }
+                                    }
                                     SoundAdapter.NotifyDataSetChanged();
                                 }
                                 break;
@@ -785,18 +845,25 @@ namespace DeepSound.Activities.Artists
                         {
                             result.Data = DeepSoundTools.ListFilter(result.Data);
 
+                            foreach (var item in from item in result.Data let check = SoundAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
+                            {
+                                SoundAdapter.SoundsList.Add(item);
+
+                                if (SoundAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                {
+                                    SoundAdapter.SoundsList.Add(new SoundDataObject()
+                                    {
+                                        TypeView = "Ads"
+                                    });
+                                }
+                            }
+
                             if (countList > 0)
                             {
-                                foreach (var item in from item in result.Data let check = SoundAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
-                                {
-                                    SoundAdapter.SoundsList.Add(item);
-                                }
-
                                 Activity?.RunOnUiThread(() => { SoundAdapter.NotifyItemRangeInserted(countList, SoundAdapter.SoundsList.Count - countList); });
                             }
                             else
                             {
-                                SoundAdapter.SoundsList = new ObservableCollection<SoundDataObject>(result.Data);
                                 Activity?.RunOnUiThread(() => { SoundAdapter.NotifyDataSetChanged(); });
                             }
                         }
@@ -852,18 +919,25 @@ namespace DeepSound.Activities.Artists
                         {
                             result.Data = DeepSoundTools.ListFilter(result.Data);
 
+                            foreach (var item in from item in result.Data let check = SoundAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
+                            {
+                                SoundAdapter.SoundsList.Add(item);
+
+                                if (SoundAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                {
+                                    SoundAdapter.SoundsList.Add(new SoundDataObject()
+                                    {
+                                        TypeView = "Ads"
+                                    });
+                                }
+                            }
+
                             if (countList > 0)
                             {
-                                foreach (var item in from item in result.Data let check = SoundAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
-                                {
-                                    SoundAdapter.SoundsList.Add(item);
-                                }
-
                                 Activity?.RunOnUiThread(() => { SoundAdapter.NotifyItemRangeInserted(countList, SoundAdapter.SoundsList.Count - countList); });
                             }
                             else
                             {
-                                SoundAdapter.SoundsList = new ObservableCollection<SoundDataObject>(result.Data);
                                 Activity?.RunOnUiThread(() => { SoundAdapter.NotifyDataSetChanged(); });
                             }
                         }
@@ -912,25 +986,32 @@ namespace DeepSound.Activities.Artists
                 var (apiStatus, respond) = await RequestsAsync.User.GetUserTopSongAsync(UserId, "15", offset);
                 if (apiStatus == 200)
                 {
-                    if (respond is GetSoundObject result)
+                    if (respond is GetSoundDataObject result)
                     {
-                        var respondList = result.Data?.SoundList?.Count;
+                        var respondList = result.Data?.Count;
                         if (respondList > 0)
                         {
-                            result.Data.SoundList = DeepSoundTools.ListFilter(result.Data.SoundList);
+                            result.Data = DeepSoundTools.ListFilter(result.Data);
+
+                            foreach (var item in from item in result.Data let check = SoundAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
+                            {
+                                SoundAdapter.SoundsList.Add(item);
+
+                                if (SoundAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                {
+                                    SoundAdapter.SoundsList.Add(new SoundDataObject()
+                                    {
+                                        TypeView = "Ads"
+                                    });
+                                }
+                            }
 
                             if (countList > 0)
                             {
-                                foreach (var item in from item in result.Data.SoundList let check = SoundAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
-                                {
-                                    SoundAdapter.SoundsList.Add(item);
-                                }
-
                                 Activity?.RunOnUiThread(() => { SoundAdapter.NotifyItemRangeInserted(countList, SoundAdapter.SoundsList.Count - countList); });
                             }
                             else
                             {
-                                SoundAdapter.SoundsList = new ObservableCollection<SoundDataObject>(result.Data.SoundList);
                                 Activity?.RunOnUiThread(() => { SoundAdapter.NotifyDataSetChanged(); });
                             }
                         }
@@ -986,18 +1067,25 @@ namespace DeepSound.Activities.Artists
                         {
                             result.Data = DeepSoundTools.ListFilter(result.Data);
 
+                            foreach (var item in from item in result.Data let check = SoundAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
+                            {
+                                SoundAdapter.SoundsList.Add(item);
+
+                                if (SoundAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                {
+                                    SoundAdapter.SoundsList.Add(new SoundDataObject()
+                                    {
+                                        TypeView = "Ads"
+                                    });
+                                }
+                            }
+
                             if (countList > 0)
                             {
-                                foreach (var item in from item in result.Data let check = SoundAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
-                                {
-                                    SoundAdapter.SoundsList.Add(item);
-                                }
-
                                 Activity?.RunOnUiThread(() => { SoundAdapter.NotifyItemRangeInserted(countList, SoundAdapter.SoundsList.Count - countList); });
                             }
                             else
                             {
-                                SoundAdapter.SoundsList = new ObservableCollection<SoundDataObject>(result.Data);
                                 Activity?.RunOnUiThread(() => { SoundAdapter.NotifyDataSetChanged(); });
                             }
                         }

@@ -32,7 +32,7 @@ namespace DeepSound.SQLite
     public class SqLiteDatabase
     {
         //############# DON'T MODIFY HERE #############
-        private static readonly string Folder = Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+        private static readonly string Folder = AppDomain.CurrentDomain.BaseDirectory; //Environment.GetFolderPath(Environment.SpecialFolder.Personal);
 
         public static readonly string PathCombine = Path.Combine(Folder, AppSettings.DatabaseName + "_.db");
 
@@ -74,8 +74,6 @@ namespace DeepSound.SQLite
                 connection.CreateTable<DataTables.LatestDownloadsTb>();
                 connection.CreateTable<DataTables.LastChatTb>();
                 connection.CreateTable<DataTables.MessageTb>();
-                //Connection.Dispose();
-                //Connection.Close();
             }
             catch (Exception e)
             {
@@ -256,13 +254,16 @@ namespace DeepSound.SQLite
 
                     Current.AccessToken = dataUser.AccessToken;
 
-                    ListUtils.DataUserLoginList.Clear();
-                    ListUtils.DataUserLoginList.Add(dataUser);
+                    ListUtils.DataUserLoginList = new ObservableCollection<DataTables.LoginTb>() { dataUser };
+
+                    if (!string.IsNullOrEmpty(Current.AccessToken))
+                        UserDetails.IsLogin = true;
 
                     return dataUser;
                 }
                 else
                 {
+                    UserDetails.IsLogin = false;
                     return null;
                 }
             }
@@ -399,6 +400,23 @@ namespace DeepSound.SQLite
             }
         }
 
+        //remove Settings
+        public void remove_Settings()
+        {
+            try
+            {
+                var connection = OpenConnection();
+                connection.DeleteAll<DataTables.SettingsTb>();
+            }
+            catch (Exception e)
+            {
+                if (e.Message.Contains("database is locked"))
+                    remove_Settings();
+                else
+                    Methods.DisplayReportResultTrack(e);
+            }
+        }
+
         #endregion
 
         #region Genres
@@ -529,6 +547,7 @@ namespace DeepSound.SQLite
                         resultInfoTb.Stations = JsonConvert.SerializeObject(info.Stations);
                         resultInfoTb.Events = JsonConvert.SerializeObject(info.Events);
                         resultInfoTb.EmailPrivacy = JsonConvert.SerializeObject(info.EmailPrivacy);
+                        resultInfoTb.Details = JsonConvert.SerializeObject(info.Details);
 
                         connection.Update(resultInfoTb);
                     }
@@ -551,6 +570,7 @@ namespace DeepSound.SQLite
                         db.Stations = JsonConvert.SerializeObject(info.Stations);
                         db.Events = JsonConvert.SerializeObject(info.Events);
                         db.EmailPrivacy = JsonConvert.SerializeObject(info.EmailPrivacy);
+                        db.Details = JsonConvert.SerializeObject(info.Details);
 
                         connection.Insert(db);
                     }
@@ -601,6 +621,7 @@ namespace DeepSound.SQLite
                         asd.Stations = new List<SoundDataObject>();
                         asd.Events = new List<EventDataObject>();
                         asd.EmailPrivacy = new EmailPrivacyObject();
+                        asd.Details = new Details();
 
                         if (!string.IsNullOrEmpty(info.Followers))
                             asd.Followers = JsonConvert.DeserializeObject<List<List<UserDataObject>>>(info.Followers);
@@ -640,6 +661,9 @@ namespace DeepSound.SQLite
 
                         if (!string.IsNullOrEmpty(info.EmailPrivacy))
                             asd.EmailPrivacy = JsonConvert.DeserializeObject<EmailPrivacyObject>(info.EmailPrivacy);
+
+                        if (!string.IsNullOrEmpty(info.Details))
+                            asd.Details = JsonConvert.DeserializeObject<Details>(info.Details);
 
                         UserDetails.Avatar = asd.Avatar;
                         UserDetails.Cover = asd.Cover;
@@ -1256,7 +1280,7 @@ namespace DeepSound.SQLite
             try
             {
                 using var connection = OpenConnection();
-                var user = connection.Table<DataTables.LastChatTb>().FirstOrDefault(c => c.Id.ToString() == userId);
+                var user = connection.Table<DataTables.LastChatTb>().FirstOrDefault(c => c.Id == userId);
                 if (user != null)
                 {
                     connection.Delete(user);

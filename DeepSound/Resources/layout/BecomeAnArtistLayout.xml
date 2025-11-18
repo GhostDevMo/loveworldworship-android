@@ -176,6 +176,9 @@
 					android:layout_height="50dp"
 					android:background="@drawable/EditTextStyleOne"
 					android:layout_alignParentEnd="true"
+					android:singleLine="true"
+					android:inputType="text"
+					android:gravity="start|center_vertical"
 					android:hint="@string/Lbl_Name"
 					android:textSize="15sp"
 					android:layout_marginStart="3dp" />
@@ -209,7 +212,8 @@
 					android:background="@drawable/EditTextStyleOne"
 					android:hint="@string/Lbl_Description"
 					android:textSize="15sp"
-					android:gravity="start"
+					android:inputType="textMultiLine"
+					android:gravity="start|center_vertical"
 					android:layout_alignParentEnd="true"
 					android:layout_marginStart="3dp" />
 			</LinearLayout>
@@ -241,6 +245,9 @@
 					android:background="@drawable/EditTextStyleOne"
 					android:layout_alignParentEnd="true"
 					android:hint="@string/Lbl_Genres"
+					android:singleLine="true"
+					android:inputType="text"
+					android:gravity="start|center_vertical"
 					android:textSize="15sp"
 					android:layout_marginStart="3dp" />
 			</LinearLayout>
@@ -272,6 +279,8 @@
 					android:background="@drawable/EditTextStyleOne"
 					android:layout_alignParentEnd="true"
 					android:hint="@string/Lbl_Website"
+					android:singleLine="true" 
+					android:gravity="start|center_vertical"
 					android:textSize="15sp"
 					android:layout_marginStart="3dp"
 					android:inputType="textWebEmailAddress"/>

@@ -8,6 +8,7 @@ using DeepSound.Activities.Upgrade;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Global;
 using Google.Android.Material.Dialog;
+using Java.Util;
 using System;
 using Exception = System.Exception;
 
@@ -106,12 +107,14 @@ namespace DeepSound.Helpers.Controller
         {
             // TAG can be any string of your choice.
             public new static readonly string Tag = "X:" + nameof(DatePickerFragment)?.ToUpper();
+            public static string Type = "";
 
             // Initialize this value to prevent NullReferenceExceptions.
             Action<DateTime> DateSelectedHandler = delegate { };
 
-            public static DatePickerFragment NewInstance(Action<DateTime> onDateSelected)
+            public static DatePickerFragment NewInstance(Action<DateTime> onDateSelected, string type = "")
             {
+                Type = type;
                 DatePickerFragment frag = new DatePickerFragment { DateSelectedHandler = onDateSelected };
                 return frag;
             }
@@ -120,6 +123,22 @@ namespace DeepSound.Helpers.Controller
             {
                 DateTime currently = DateTime.Now;
                 DatePickerDialog dialog = new DatePickerDialog(Activity, this, currently.Year, currently.Month - 1, currently.Day);
+
+                if (Type == "Birthday")
+                {
+                    // https://www.geeksforgeeks.org/how-to-disable-previous-or-future-dates-in-datepicker-in-android/
+                    // initialise the calendar
+                    Calendar calendar = Calendar.Instance;
+                    dialog.DatePicker.MaxDate = calendar.TimeInMillis;
+                }
+                else if (Type == "StartDate")
+                {
+                    // https://www.geeksforgeeks.org/how-to-disable-previous-or-future-dates-in-datepicker-in-android/
+                    // initialise the calendar
+                    Calendar calendar = Calendar.Instance;
+                    dialog.DatePicker.MinDate = calendar.TimeInMillis;
+                }
+
                 return dialog;
             }
 
@@ -130,6 +149,5 @@ namespace DeepSound.Helpers.Controller
                 DateSelectedHandler(selectedDate);
             }
         }
-
     }
 }

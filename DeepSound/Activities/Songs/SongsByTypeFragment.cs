@@ -13,6 +13,7 @@ using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.MediaPlayerController;
 using DeepSound.Helpers.Model;
+using DeepSound.Helpers.ShimmerUtils;
 using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Global;
@@ -37,8 +38,9 @@ namespace DeepSound.Activities.Songs
         private SwipeRefreshLayout SwipeRefreshLayout;
         private RecyclerView MRecycler;
         private LinearLayoutManager LayoutManager;
-        private ViewStub EmptyStateLayout;
-        private View Inflated;
+        private ViewStub EmptyStateLayout, ShimmerPageLayout;
+        private View Inflated, InflatedShimmer;
+        private TemplateShimmerInflater ShimmerInflater;
         private string SongsType, UserId;
         private RecyclerViewOnScrollListener MainScrollEvent;
         private bool MIsVisibleToUser;
@@ -82,6 +84,7 @@ namespace DeepSound.Activities.Songs
                 UserId = Arguments?.GetString("UserId") ?? "";
 
                 InitComponent(view);
+                InitShimmer(view);
                 SetRecyclerViewAdapters();
 
                 PopupFilterList = new PopupFilterList(view, Activity, MAdapter);
@@ -175,6 +178,8 @@ namespace DeepSound.Activities.Songs
                     BannerAd = AdsFacebook.InitAdView(Activity, adContainer, MRecycler);
                 else if (AppSettings.ShowAppLovinBannerAds)
                     AdsAppLovin.InitBannerAd(Activity, adContainer, MRecycler);
+                else
+                    AdsGoogle.InitBannerAdView(Activity, adContainer, MRecycler);
             }
             catch (Exception e)
             {
@@ -182,6 +187,22 @@ namespace DeepSound.Activities.Songs
             }
         }
 
+        private void InitShimmer(View view)
+        {
+            try
+            {
+                ShimmerPageLayout = view.FindViewById<ViewStub>(Resource.Id.viewStubShimmer);
+                InflatedShimmer ??= ShimmerPageLayout.Inflate();
+
+                ShimmerInflater = new TemplateShimmerInflater();
+                ShimmerInflater.InflateLayout(Activity, InflatedShimmer, ShimmerTemplateStyle.SongRowTemplate);
+                ShimmerInflater.Show();
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
         private void InitToolbar(View view)
         {
             try
@@ -227,6 +248,7 @@ namespace DeepSound.Activities.Songs
             {
                 MAdapter = new RowSoundAdapter(Activity, "SongsByTypeFragment") { SoundsList = new ObservableCollection<SoundDataObject>() };
                 MAdapter.ItemClick += MAdapterItemClick;
+                MRecycler.SetItemAnimator(null);
                 LayoutManager = new LinearLayoutManager(Activity);
                 MRecycler.SetLayoutManager(LayoutManager);
                 MRecycler.HasFixedSize = true;
@@ -304,7 +326,7 @@ namespace DeepSound.Activities.Songs
             try
             {
                 //Code get last id where LoadMore >>
-                var item = MAdapter.SoundsList.LastOrDefault();
+                var item = MAdapter.SoundsList.LastOrDefault(a => a.TypeView != "Ads");
                 if (item != null && !string.IsNullOrEmpty(item.Id.ToString()) && !MainScrollEvent.IsLoading)
                 {
                     if (!Methods.CheckConnectivity())
@@ -353,13 +375,30 @@ namespace DeepSound.Activities.Songs
             {
                 if (Methods.CheckConnectivity())
                 {
+                    ShimmerInflater?.Show();
+
                     switch (SongsType)
                     {
                         case "Popular":
                             {
                                 if (GlobalContext?.HomeFragment?.LatestHomeTab?.PopularSoundAdapter?.SoundsList?.Count > 0)
                                 {
-                                    MAdapter.SoundsList = GlobalContext?.HomeFragment?.LatestHomeTab?.PopularSoundAdapter?.SoundsList;
+                                    foreach (var item in GlobalContext.HomeFragment.LatestHomeTab.PopularSoundAdapter.SoundsList)
+                                    {
+                                        var check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id);
+                                        if (check == null)
+                                        {
+                                            MAdapter.SoundsList.Add(item);
+
+                                            if (MAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                            {
+                                                MAdapter.SoundsList.Add(new SoundDataObject()
+                                                {
+                                                    TypeView = "Ads"
+                                                });
+                                            }
+                                        }
+                                    }
                                     MAdapter.NotifyDataSetChanged();
                                 }
                                 break;
@@ -368,7 +407,22 @@ namespace DeepSound.Activities.Songs
                             {
                                 if (GlobalContext?.HomeFragment?.LatestHomeTab?.RecentlyPlayedSoundAdapter?.SoundsList?.Count > 0)
                                 {
-                                    MAdapter.SoundsList = GlobalContext?.HomeFragment?.LatestHomeTab?.RecentlyPlayedSoundAdapter?.SoundsList;
+                                    foreach (var item in GlobalContext.HomeFragment.LatestHomeTab.RecentlyPlayedSoundAdapter.SoundsList)
+                                    {
+                                        var check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id);
+                                        if (check == null)
+                                        {
+                                            MAdapter.SoundsList.Add(item);
+
+                                            if (MAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                            {
+                                                MAdapter.SoundsList.Add(new SoundDataObject()
+                                                {
+                                                    TypeView = "Ads"
+                                                });
+                                            }
+                                        }
+                                    }
                                     MAdapter.NotifyDataSetChanged();
                                 }
                                 break;
@@ -377,7 +431,22 @@ namespace DeepSound.Activities.Songs
                             {
                                 if (GlobalContext?.HomeFragment?.LatestHomeTab?.NewReleasesSoundAdapter?.SoundsList?.Count > 0)
                                 {
-                                    MAdapter.SoundsList = GlobalContext?.HomeFragment?.LatestHomeTab?.NewReleasesSoundAdapter?.SoundsList;
+                                    foreach (var item in GlobalContext.HomeFragment.LatestHomeTab.NewReleasesSoundAdapter.SoundsList)
+                                    {
+                                        var check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id);
+                                        if (check == null)
+                                        {
+                                            MAdapter.SoundsList.Add(item);
+
+                                            if (MAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                            {
+                                                MAdapter.SoundsList.Add(new SoundDataObject()
+                                                {
+                                                    TypeView = "Ads"
+                                                });
+                                            }
+                                        }
+                                    }
                                     MAdapter.NotifyDataSetChanged();
                                 }
                                 break;
@@ -386,7 +455,22 @@ namespace DeepSound.Activities.Songs
                             {
                                 if (GlobalContext?.HomeFragment?.LatestHomeTab?.TopSongsSoundAdapter?.SoundsList?.Count > 0)
                                 {
-                                    MAdapter.SoundsList = GlobalContext?.HomeFragment?.LatestHomeTab?.TopSongsSoundAdapter?.SoundsList;
+                                    foreach (var item in GlobalContext.HomeFragment.LatestHomeTab.TopSongsSoundAdapter.SoundsList)
+                                    {
+                                        var check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id);
+                                        if (check == null)
+                                        {
+                                            MAdapter.SoundsList.Add(item);
+
+                                            if (MAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                            {
+                                                MAdapter.SoundsList.Add(new SoundDataObject()
+                                                {
+                                                    TypeView = "Ads"
+                                                });
+                                            }
+                                        }
+                                    }
                                     MAdapter.NotifyDataSetChanged();
                                 }
                                 break;
@@ -435,18 +519,25 @@ namespace DeepSound.Activities.Songs
                         {
                             result.Data = DeepSoundTools.ListFilter(result.Data);
 
+                            foreach (var item in from item in result.Data let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
+                            {
+                                MAdapter.SoundsList.Add(item);
+
+                                if (MAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                {
+                                    MAdapter.SoundsList.Add(new SoundDataObject()
+                                    {
+                                        TypeView = "Ads"
+                                    });
+                                }
+                            }
+
                             if (countList > 0)
                             {
-                                foreach (var item in from item in result.Data let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
-                                {
-                                    MAdapter.SoundsList.Add(item);
-                                }
-
                                 Activity?.RunOnUiThread(() => { MAdapter.NotifyItemRangeInserted(countList, MAdapter.SoundsList.Count - countList); });
                             }
                             else
                             {
-                                MAdapter.SoundsList = new ObservableCollection<SoundDataObject>(result.Data);
                                 Activity?.RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); });
                             }
                         }
@@ -484,6 +575,9 @@ namespace DeepSound.Activities.Songs
 
         private async Task LoadNewReleases(string offset = "0")
         {
+            if (!UserDetails.IsLogin)
+                return;
+
             if (MainScrollEvent.IsLoading)
                 return;
 
@@ -502,18 +596,25 @@ namespace DeepSound.Activities.Songs
                         {
                             result.Data = DeepSoundTools.ListFilter(result.Data);
 
+                            foreach (var item in from item in result.Data let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
+                            {
+                                MAdapter.SoundsList.Add(item);
+
+                                if (MAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                {
+                                    MAdapter.SoundsList.Add(new SoundDataObject()
+                                    {
+                                        TypeView = "Ads"
+                                    });
+                                }
+                            }
+
                             if (countList > 0)
                             {
-                                foreach (var item in from item in result.Data let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
-                                {
-                                    MAdapter.SoundsList.Add(item);
-                                }
-
                                 Activity?.RunOnUiThread(() => { MAdapter.NotifyItemRangeInserted(countList, MAdapter.SoundsList.Count - countList); });
                             }
                             else
                             {
-                                MAdapter.SoundsList = new ObservableCollection<SoundDataObject>(result.Data);
                                 Activity?.RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); });
                             }
                         }
@@ -569,18 +670,25 @@ namespace DeepSound.Activities.Songs
                         {
                             result.Data.SoundList = DeepSoundTools.ListFilter(result.Data?.SoundList);
 
+                            foreach (var item in from item in result.Data?.SoundList let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
+                            {
+                                MAdapter.SoundsList.Add(item);
+
+                                if (MAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                {
+                                    MAdapter.SoundsList.Add(new SoundDataObject()
+                                    {
+                                        TypeView = "Ads"
+                                    });
+                                }
+                            }
+
                             if (countList > 0)
                             {
-                                foreach (var item in from item in result.Data?.SoundList let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
-                                {
-                                    MAdapter.SoundsList.Add(item);
-                                }
-
                                 Activity?.RunOnUiThread(() => { MAdapter.NotifyItemRangeInserted(countList, MAdapter.SoundsList.Count - countList); });
                             }
                             else
                             {
-                                MAdapter.SoundsList = new ObservableCollection<SoundDataObject>(result.Data?.SoundList);
                                 Activity?.RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); });
                             }
                         }
@@ -620,6 +728,7 @@ namespace DeepSound.Activities.Songs
         {
             try
             {
+                ShimmerInflater?.Hide();
 
                 MainScrollEvent.IsLoading = false;
                 SwipeRefreshLayout.Refreshing = false;
@@ -651,6 +760,9 @@ namespace DeepSound.Activities.Songs
             }
             catch (Exception e)
             {
+                ShimmerInflater?.Hide();
+                MainScrollEvent.IsLoading = false;
+
                 SwipeRefreshLayout.Enabled = false;
                 SwipeRefreshLayout.Refreshing = false;
                 Methods.DisplayReportResultTrack(e);

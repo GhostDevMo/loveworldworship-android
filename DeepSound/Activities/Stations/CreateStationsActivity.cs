@@ -164,6 +164,7 @@ namespace DeepSound.Activities.Stations
                 SearchView.QueryTextChange += SearchViewOnQueryTextChange;
                 SearchView.QueryTextSubmit += SearchViewOnQueryTextSubmit;
                 //SearchView.ClearFocus();
+                SearchView.QueryHint = GetText(Resource.String.Lbl_SearchForStation);
 
                 //Change text colors
                 var editText = (EditText)SearchView?.FindViewById(Resource.Id.search_src_text);
@@ -200,7 +201,7 @@ namespace DeepSound.Activities.Stations
                 Inflated ??= EmptyStateLayout.Inflate();
 
                 EmptyStateInflater x = new EmptyStateInflater();
-                x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSearchResult);
+                x.InflateLayout(Inflated, EmptyStateInflater.Type.NoStations);
 
                 x.EmptyStateButton.Visibility = ViewStates.Invisible;
                 if (!x.EmptyStateButton.HasOnClickListeners)
@@ -369,7 +370,7 @@ namespace DeepSound.Activities.Stations
                     Inflated ??= EmptyStateLayout?.Inflate();
 
                     EmptyStateInflater x = new EmptyStateInflater();
-                    x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSearchResult);
+                    x.InflateLayout(Inflated, EmptyStateInflater.Type.NoStations);
                     if (!x.EmptyStateButton.HasOnClickListeners)
                     {
                         x.EmptyStateButton.Click -= EmptyStateButtonOnClick;
@@ -452,7 +453,7 @@ namespace DeepSound.Activities.Stations
                     Inflated ??= EmptyStateLayout.Inflate();
 
                     EmptyStateInflater x = new EmptyStateInflater();
-                    x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSearchResult);
+                    x.InflateLayout(Inflated, EmptyStateInflater.Type.NoStations);
                     if (!x.EmptyStateButton.HasOnClickListeners)
                     {
                         x.EmptyStateButton.Click -= EmptyStateButtonOnClick;
@@ -492,7 +493,7 @@ namespace DeepSound.Activities.Stations
                     Inflated ??= EmptyStateLayout.Inflate();
 
                     EmptyStateInflater x = new EmptyStateInflater();
-                    x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSearchResult);
+                    x.InflateLayout(Inflated, EmptyStateInflater.Type.NoStations);
                     if (!x.EmptyStateButton.HasOnClickListeners)
                     {
                         x.EmptyStateButton.Click -= EmptyStateButtonOnClick;

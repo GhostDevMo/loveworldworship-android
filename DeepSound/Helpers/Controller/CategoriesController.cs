@@ -1,9 +1,11 @@
 ﻿using Android.App;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
+using DeepSoundClient.Classes.Common;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace DeepSound.Helpers.Controller
 {
@@ -60,5 +62,56 @@ namespace DeepSound.Helpers.Controller
                 return textCategory;
             }
         }
+
+        public static void SetListCategories(OptionsObject result)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    //Blog Categories
+                    var listBlog = result.DataOptions.BlogCategories?.Select(cat => new Classes.Categories
+                    {
+                        CategoriesId = cat.Key,
+                        CategoriesName = Methods.FunString.DecodeString(cat.Value),
+                        CategoriesColor = "#ffffff",
+                    }).ToList();
+
+                    ListCategoriesBlog.Clear();
+                    if (listBlog?.Count > 0)
+                        ListCategoriesBlog = new ObservableCollection<Classes.Categories>(listBlog);
+
+                    //Products Categories
+                    var listProducts = result.DataOptions.ProductsCategories?.Select(cat => new Classes.Categories
+                    {
+                        CategoriesId = cat.Key,
+                        CategoriesName = Methods.FunString.DecodeString(cat.Value),
+                        CategoriesColor = "#ffffff",
+                    }).ToList();
+
+                    ListCategoriesProducts.Clear();
+                    if (listProducts?.Count > 0)
+                        ListCategoriesProducts = new ObservableCollection<Classes.Categories>(listProducts);
+                }
+                catch (Exception e)
+                {
+                    Methods.DisplayReportResultTrack(e);
+                }
+            });
+        }
+
+        public static void ResetListCategories()
+        {
+            try
+            {
+                ListCategoriesBlog.Clear();
+                ListCategoriesProducts.Clear();
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
     }
 }

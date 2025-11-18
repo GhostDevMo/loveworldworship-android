@@ -293,7 +293,7 @@ namespace DeepSound.Activities.Artists
                         {
                             Toast.MakeText(this, result.Message, ToastLength.Short)?.Show();
 
-                            AndHUD.Shared.Dismiss(this);
+                            AndHUD.Shared.Dismiss();
 
                             Finish();
                         }
@@ -306,7 +306,7 @@ namespace DeepSound.Activities.Artists
             }
             catch (Exception exception)
             {
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
                 Methods.DisplayReportResultTrack(exception);
             }
         }
@@ -345,6 +345,8 @@ namespace DeepSound.Activities.Artists
             try
             {
                 if (e.Event?.Action != MotionEventActions.Up) return;
+
+                Methods.HideKeyboard(this);
 
                 TypeDialog = "Genres";
 
@@ -428,7 +430,7 @@ namespace DeepSound.Activities.Artists
                     if (result.IsSuccessful)
                     {
                         var resultUri = result.UriContent;
-                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        string filepath = Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu ? result.GetUriFilePath(this, true) : Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
                         if (!string.IsNullOrEmpty(filepath))
                         {
                             switch (ImageType)

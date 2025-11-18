@@ -15,6 +15,7 @@ using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Fonts;
+using DeepSound.Helpers.ShimmerUtils;
 using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Common;
@@ -37,8 +38,9 @@ namespace DeepSound.Activities.Notification
         private SwipeRefreshLayout SwipeRefreshLayout;
         private RecyclerView MRecycler;
         private LinearLayoutManager LayoutManager;
-        private ViewStub EmptyStateLayout;
-        private View Inflated;
+        private ViewStub EmptyStateLayout, ShimmerPageLayout;
+        private View Inflated, InflatedShimmer;
+        private TemplateShimmerInflater ShimmerInflater;
         private AdView MAdView;
         private TextView SettingsButton;
 
@@ -76,6 +78,7 @@ namespace DeepSound.Activities.Notification
 
                 InitComponent(view);
                 InitToolbar(view);
+                InitShimmer(view);
                 SetRecyclerViewAdapters();
 
                 StartApiService();
@@ -187,6 +190,23 @@ namespace DeepSound.Activities.Notification
             }
         }
 
+        private void InitShimmer(View view)
+        {
+            try
+            {
+                ShimmerPageLayout = view.FindViewById<ViewStub>(Resource.Id.viewStubShimmer);
+                InflatedShimmer ??= ShimmerPageLayout.Inflate();
+
+                ShimmerInflater = new TemplateShimmerInflater();
+                ShimmerInflater.InflateLayout(Activity, InflatedShimmer, ShimmerTemplateStyle.NotificationTemplate);
+                ShimmerInflater.Show();
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
         private void SetRecyclerViewAdapters()
         {
             try
@@ -248,6 +268,8 @@ namespace DeepSound.Activities.Notification
         {
             try
             {
+                ShimmerInflater?.Show();
+
                 MAdapter.NotificationsList.Clear();
                 MAdapter.NotifyDataSetChanged();
 
@@ -332,6 +354,8 @@ namespace DeepSound.Activities.Notification
         {
             try
             {
+                ShimmerInflater?.Hide();
+
                 SwipeRefreshLayout.Refreshing = false;
 
                 if (MAdapter.NotificationsList.Count > 0)
@@ -357,6 +381,8 @@ namespace DeepSound.Activities.Notification
             }
             catch (Exception e)
             {
+                ShimmerInflater?.Hide();
+
                 SwipeRefreshLayout.Refreshing = false;
                 Methods.DisplayReportResultTrack(e);
             }

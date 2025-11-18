@@ -1,4 +1,5 @@
 ﻿using Android.Content;
+using Android.Content.PM;
 using Android.Gms.Common;
 using Android.Locations;
 using Android.OS;
@@ -12,6 +13,9 @@ using Java.IO;
 using Java.Text;
 using Java.Util;
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using Environment = Android.OS.Environment;
 using Uri = Android.Net.Uri;
 
 namespace DeepSound.Helpers.Controller
@@ -49,13 +53,19 @@ namespace DeepSound.Helpers.Controller
         {
             try
             {
+                if (!DeepSoundTools.CheckAllowedFileUpload())
+                {
+                    Methods.DialogPopup.InvokeAndShowDialog(Context, Context.GetText(Resource.String.Lbl_Security), Context.GetText(Resource.String.Lbl_Error_AllowedFileUpload), Context.GetText(Resource.String.Lbl_Ok));
+                    return;
+                }
+
                 Methods.Path.Chack_MyFolder();
 
                 Intent intent;
                 if ((int)Build.VERSION.SdkInt <= 25)
                     intent = new Intent(Intent.ActionPick, MediaStore.Images.Media.ExternalContentUri);
                 else
-                    intent = Android.OS.Environment.GetExternalStorageState(null)!.Equals(Android.OS.Environment.MediaMounted) ? new Intent(Intent.ActionPick, MediaStore.Images.Media.ExternalContentUri) : new Intent(Intent.ActionPick, MediaStore.Images.Media.InternalContentUri);
+                    intent = Environment.GetExternalStorageState(null)!.Equals(Environment.MediaMounted) ? new Intent(Intent.ActionPick, MediaStore.Images.Media.ExternalContentUri) : new Intent(Intent.ActionPick, MediaStore.Images.Media.InternalContentUri);
 
                 intent.SetType("image/*");
                 intent.PutExtra("return-data", true); //added snippet
@@ -97,6 +107,11 @@ namespace DeepSound.Helpers.Controller
         {
             try
             {
+                if (!DeepSoundTools.CheckAllowedFileUpload())
+                {
+                    Methods.DialogPopup.InvokeAndShowDialog(Context, Context.GetText(Resource.String.Lbl_Security), Context.GetText(Resource.String.Lbl_Error_AllowedFileUpload), Context.GetText(Resource.String.Lbl_Ok));
+                    return;
+                }
                 Methods.Path.Chack_MyFolder();
 
                 //var intent = new Intent(Intent.ActionPick, MediaStore.Video.Media.ExternalContentUri);
@@ -108,7 +123,7 @@ namespace DeepSound.Helpers.Controller
                 if ((int)Build.VERSION.SdkInt <= 25)
                     intent = new Intent(Intent.ActionPick, MediaStore.Video.Media.ExternalContentUri);
                 else
-                    intent = Android.OS.Environment.GetExternalStorageState(null)!.Equals(Android.OS.Environment.MediaMounted) ? new Intent(Intent.ActionPick, MediaStore.Video.Media.ExternalContentUri) : new Intent(Intent.ActionPick, MediaStore.Video.Media.InternalContentUri);
+                    intent = Environment.GetExternalStorageState(null)!.Equals(Environment.MediaMounted) ? new Intent(Intent.ActionPick, MediaStore.Video.Media.ExternalContentUri) : new Intent(Intent.ActionPick, MediaStore.Video.Media.InternalContentUri);
 
                 //  In this example we will set the type to video
                 intent.SetType("video/*");
@@ -199,6 +214,11 @@ namespace DeepSound.Helpers.Controller
         {
             try
             {
+                if (!DeepSoundTools.CheckAllowedFileUpload())
+                {
+                    Methods.DialogPopup.InvokeAndShowDialog(Context, Context.GetText(Resource.String.Lbl_Security), Context.GetText(Resource.String.Lbl_Error_AllowedFileUpload), Context.GetText(Resource.String.Lbl_Ok));
+                    return;
+                }
                 Methods.Path.Chack_MyFolder();
 
                 if (Methods.MultiMedia.IsCameraAvailable())
@@ -264,6 +284,11 @@ namespace DeepSound.Helpers.Controller
         {
             try
             {
+                if (!DeepSoundTools.CheckAllowedFileUpload())
+                {
+                    Methods.DialogPopup.InvokeAndShowDialog(Context, Context.GetText(Resource.String.Lbl_Security), Context.GetText(Resource.String.Lbl_Error_AllowedFileUpload), Context.GetText(Resource.String.Lbl_Ok));
+                    return;
+                }
                 Methods.Path.Chack_MyFolder();
 
                 if (Methods.MultiMedia.IsCameraAvailable())
@@ -301,10 +326,18 @@ namespace DeepSound.Helpers.Controller
         /// Open intent File when the request code of result is 504
         /// </summary>
         /// <param name="title"></param>
+        /// <summary>
+        /// Open intent File when the request code of result is 504
+        /// </summary>
         public void OpenIntentFile(string title)
         {
             try
             {
+                if (!DeepSoundTools.CheckAllowedFileUpload())
+                {
+                    Methods.DialogPopup.InvokeAndShowDialog(Context, Context.GetText(Resource.String.Lbl_Security), Context.GetText(Resource.String.Lbl_Error_AllowedFileUpload), Context.GetText(Resource.String.Lbl_Ok));
+                    return;
+                }
                 Methods.Path.Chack_MyFolder();
 
                 Intent intent;
@@ -325,11 +358,17 @@ namespace DeepSound.Helpers.Controller
                             "application/pdf",
                             "application/zip", "application/vnd.android.package-archive"};
 
-                            intent = new Intent(Intent.ActionGetContent); // or ACTION_OPEN_DOCUMENT
+                            intent = new Intent(Intent.ActionOpenDocument); // or ACTION_OPEN_DOCUMENT ActionGetContent
                             intent.SetType("*/*");
-                            intent.PutExtra(Intent.ExtraMimeTypes, mimeTypes);
+                            //intent.PutExtra(Intent.ExtraMimeTypes, mimeTypes);
                             intent.AddCategory(Intent.CategoryOpenable);
-                            //intent.PutExtra(Intent.ExtraLocalOnly, true);
+
+                            if ((int)Build.VERSION.SdkInt >= 26)
+                            {
+                                // intent.SetAction(Intent.ActionCreateDocument);
+                                intent.SetFlags(ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission | ActivityFlags.GrantPersistableUriPermission);
+                            }
+
                             break;
                         }
                 }
@@ -354,17 +393,33 @@ namespace DeepSound.Helpers.Controller
         {
             try
             {
+                if (!DeepSoundTools.CheckAllowedFileUpload())
+                {
+                    Methods.DialogPopup.InvokeAndShowDialog(Context, Context.GetText(Resource.String.Lbl_Security), Context.GetText(Resource.String.Lbl_Error_AllowedFileUpload), Context.GetText(Resource.String.Lbl_Ok));
+                    return;
+                }
                 Methods.Path.Chack_MyFolder();
 
-                Intent intent = (int)Build.VERSION.SdkInt switch
-                {
-                    <= 25 => new Intent(Intent.ActionPick, MediaStore.Audio.Media.ExternalContentUri),
-                    _ => Android.OS.Environment.GetExternalStorageState(null)!.Equals(Android.OS.Environment
-                        .MediaMounted)
-                        ? new Intent(Intent.ActionPick, MediaStore.Audio.Media.ExternalContentUri)
-                        : new Intent(Intent.ActionPick, MediaStore.Audio.Media.InternalContentUri)
-                };
+                //Intent intent = (int)Build.VERSION.SdkInt switch
+                //{
+                //    <= 25 => new Intent(Intent.ActionPick, MediaStore.Audio.Media.ExternalContentUri),
+                //    _ => Environment.GetExternalStorageState(null)!.Equals(Environment
+                //        .MediaMounted)
+                //        ? new Intent(Intent.ActionPick, MediaStore.Audio.Media.ExternalContentUri)
+                //        : new Intent(Intent.ActionPick, MediaStore.Audio.Media.InternalContentUri)
+                //};
                 //intent.SetType("audio/*");
+
+                Intent intent = new Intent(Intent.ActionOpenDocument); // or ACTION_OPEN_DOCUMENT ActionGetContent
+                intent.SetType("audio/*");
+                //intent.PutExtra(Intent.ExtraMimeTypes, mimeTypes);
+                intent.AddCategory(Intent.CategoryOpenable);
+
+                if ((int)Build.VERSION.SdkInt >= 26)
+                {
+                    // intent.SetAction(Intent.ActionCreateDocument);
+                    intent.SetFlags(ActivityFlags.GrantReadUriPermission | ActivityFlags.GrantWriteUriPermission | ActivityFlags.GrantPersistableUriPermission);
+                }
 
                 if (intent.ResolveActivity(Context.PackageManager) != null)
                     Context.StartActivityForResult(intent, 505);
@@ -755,6 +810,41 @@ namespace DeepSound.Helpers.Controller
                     Methods.DisplayReportResultTrack(e);
                     var intent = new Intent(Intent.ActionView, Uri.Parse("https://telegram.me/" + friendId));
                     Context.StartActivity(intent);
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        public void OpenConversationMailListIntent()
+        {
+            try
+            {
+                var emailIntent = new Intent(Intent.ActionView, Uri.Parse("mailto:"));
+                IList<ResolveInfo> resInfo = Context.PackageManager.QueryIntentActivities(emailIntent, 0);
+                if (resInfo.Count > 0)
+                {
+                    // First create an intent with only the package name of the first registered email app
+                    // and build a picker based on it
+                    var intentChooser = Context.PackageManager.GetLaunchIntentForPackage(resInfo.FirstOrDefault()?.ActivityInfo?.PackageName ?? "");
+                    var openInChooser = Intent.CreateChooser(intentChooser, "Open E-mail");
+                    // Then create a list of LabeledIntent for the rest of the registered email apps
+                    var packageManager = Context.PackageManager;
+
+                    ArrayList array = new ArrayList();
+                    foreach (var info in resInfo)
+                    {
+                        var packageName = info.ActivityInfo.PackageName;
+                        var intent = packageManager.GetLaunchIntentForPackage(packageName);
+                        array.Add(new LabeledIntent(intent, packageName, info.LoadLabel(packageManager), info.Icon));
+                    }
+
+                    // Add the rest of the email apps to the picker selection
+                    openInChooser.PutExtra(Intent.ExtraInitialIntents, array);
+                    openInChooser.AddFlags(ActivityFlags.NewTask);
+                    Context.StartActivity(openInChooser);
                 }
             }
             catch (Exception e)

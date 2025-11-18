@@ -192,7 +192,6 @@ namespace DeepSound.Activities.Address.Adapters
                 Methods.DisplayReportResultTrack(e);
             }
         }
-
     }
 
     public class AddressAdapterClickEventArgs : EventArgs

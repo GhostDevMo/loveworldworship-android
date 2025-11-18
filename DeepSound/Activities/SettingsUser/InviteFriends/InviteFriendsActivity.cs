@@ -302,7 +302,8 @@ namespace DeepSound.Activities.SettingsUser.InviteFriends
                 MAdapter.NotifyDataSetChanged();
 
                 InviteSmsText = GetText(Resource.String.Lbl_InviteSMSText_1) + " " + AppSettings.ApplicationName + " " +
-                                GetText(Resource.String.Lbl_InviteSMSText_2);
+                                GetText(Resource.String.Lbl_InviteSMSText_2)
+                                + "\n" + "https://play.google.com/store/apps/details?id=" + PackageName;
 
                 SwipeRefreshLayout.Refreshing = false;
                 SwipeRefreshLayout.Enabled = false;

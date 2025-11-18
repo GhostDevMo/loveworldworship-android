@@ -63,7 +63,7 @@ namespace DeepSound.Activities.SettingsUser.Adapters
                     var item = BlockedUsersList[position];
                     if (item != null)
                     {
-                        GlideImageLoader.LoadImage(ActivityContext, item.Avatar, holder.Image, ImageStyle.CircleCrop, ImagePlaceholders.Drawable);
+                        GlideImageLoader.LoadImage(ActivityContext, item.Avatar, holder.Image, ImageStyle.CircleCrop, ImagePlaceholders.DrawableUser);
                         holder.Name.Text = Methods.FunString.SubStringCutOf(Methods.FunString.DecodeString(item.Name), 25);
                     }
                 }

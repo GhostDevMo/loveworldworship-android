@@ -12,7 +12,7 @@ namespace DeepSound.Library.Anjo.Share
         /// <summary>
         /// Gets if the plugin is supported on the current platform.
         /// </summary>
-        public static bool IsSupported => implementation.Value != null;
+        public static bool IsSupported => implementation.Value == null ? false : true;
 
         /// <summary>
         /// Current plugin implementation to use
@@ -22,11 +22,11 @@ namespace DeepSound.Library.Anjo.Share
             get
             {
                 var ret = implementation.Value;
-                if (ret == null)
+                return ret switch
                 {
-                    throw NotImplementedInReferenceAssembly();
-                }
-                return ret;
+                    null => throw NotImplementedInReferenceAssembly(),
+                    _ => ret
+                };
             }
         }
 

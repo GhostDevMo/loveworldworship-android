@@ -1,33 +1,41 @@
 {
   "project_info": {
-    "project_number": "671233648860",
-    "project_id": "loveworldnotification",
-    "storage_bucket": "loveworldnotification.appspot.com"
+    "project_number": "730099487924",
+    "project_id": "loveworldnotifi",
+    "storage_bucket": "loveworldnotifi.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:671233648860:android:54d5d59f5c427e4bb8ac19",
+        "mobilesdk_app_id": "1:730099487924:android:da99f542b60758137cf3e1",
         "android_client_info": {
           "package_name": "com.loveworld.worship"
         }
       },
       "oauth_client": [
         {
-          "client_id": "671233648860-3evev11rotk68lm678fhs00m11jli7qt.apps.googleusercontent.com",
+          "client_id": "730099487924-ool985hbtm8bvdvicm8ak7e8flkbmhkv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.loveworld.worship",
+            "certificate_hash": "2cc122cf0e09d154fae387e78a8bfb2c114bec65"
+          }
+        },
+        {
+          "client_id": "730099487924-k5lna1uju8fbju7g31uhe7atffh2jnv1.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBFd4y7EjeVs0v_gl6CS_VUVCBSBHcr-GM"
+          "current_key": "AIzaSyCRwt4k8ChTh7Op_zVAedJDktjcypp-VoA"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "671233648860-3evev11rotk68lm678fhs00m11jli7qt.apps.googleusercontent.com",
+              "client_id": "730099487924-69d1132dfdll4umtv0gu40puln4t8npf.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

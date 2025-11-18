@@ -19,7 +19,7 @@
 
         /// <summary>
         /// iOS: Gets or sets the UIActivityTypes that should not be displayed.
-        /// If null (default) the value of <see cref="Plugin.Share.ShareImplementation.ExcludedUIActivityTypes"/> is used.
+        /// If null (default) the value of <see cref="ExcludedUIActivityTypes"/> is used.
         /// </summary>
         public ShareUIActivityType[] ExcludedUIActivityTypes { get; set; } = null;
 

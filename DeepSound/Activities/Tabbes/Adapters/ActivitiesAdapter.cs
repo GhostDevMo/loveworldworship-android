@@ -4,12 +4,12 @@ using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using Bumptech.Glide;
 using Bumptech.Glide.Request;
+using DE.Hdodenhof.CircleImageViewLib;
 using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.MediaPlayerController;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.User;
 using Java.Util;
-using Refractored.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -83,7 +83,11 @@ namespace DeepSound.Activities.Tabbes.Adapters
                             holder.TxtTime.Text = item.TrackData?.TrackDataClass.Duration;
 
                             if (!holder.MoreButton.HasOnClickListeners)
-                                holder.MoreButton.Click += (sender, e) => ClickListeners.OnMoreClick(new MoreClickEventArgs { View = holder.MainView, SongsClass = item.TrackData?.TrackDataClass });
+                                holder.MoreButton.Click += (sender, e) =>
+                                {
+                                    var item = ActivityList[holder.BindingAdapterPosition];
+                                    ClickListeners.OnMoreClick(new MoreClickEventArgs { View = holder.MainView, SongsClass = item.TrackData?.TrackDataClass });
+                                };
                         }
                         else
                         {
@@ -92,7 +96,11 @@ namespace DeepSound.Activities.Tabbes.Adapters
                         }
 
                         if (!holder.TxtTitle.HasOnClickListeners)
-                            holder.TxtTitle.Click += (sender, e) => { GlobalContext?.OpenProfile(item.UserData.Id, item.UserData); };
+                            holder.TxtTitle.Click += (sender, e) =>
+                            {
+                                var item = ActivityList[holder.BindingAdapterPosition];
+                                GlobalContext?.OpenProfile(item.UserData.Id, item.UserData);
+                            };
                     }
                 }
             }

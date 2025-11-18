@@ -1,5 +1,4 @@
 ﻿using Android.App;
-using Android.BillingClient.Api;
 using Android.Content;
 using Android.Content.PM;
 using Android.Graphics;
@@ -10,19 +9,18 @@ using AndroidX.AppCompat.Content.Res;
 using AndroidX.AppCompat.Widget;
 using DeepSound.Activities.SettingsUser;
 using DeepSound.Activities.SettingsUser.General;
+using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Fonts;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
-using DeepSound.PaymentGoogle;
 using DeepSound.SQLite;
-using DeepSoundClient;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Requests;
 using Google.Android.Material.Dialog;
-using InAppBilling.Lib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using BaseActivity = DeepSound.Activities.Base.BaseActivity;
 using Exception = System.Exception;
 using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
@@ -30,7 +28,7 @@ using Toolbar = AndroidX.AppCompat.Widget.Toolbar;
 namespace DeepSound.Activities.Upgrade
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Keyboard | ConfigChanges.Orientation | ConfigChanges.KeyboardHidden | ConfigChanges.ScreenLayout | ConfigChanges.ScreenSize | ConfigChanges.SmallestScreenSize | ConfigChanges.UiMode | ConfigChanges.Locale)]
-    public class GoProActivity : BaseActivity, IBillingPaymentListener, IDialogListCallBack
+    public class GoProActivity : BaseActivity
     {
         #region Variables Basic
 
@@ -39,7 +37,6 @@ namespace DeepSound.Activities.Upgrade
         private TextView PriceText;
 
         private TextDecorator TextDecorator;
-        private BillingSupport BillingSupport;
 
         #endregion
 
@@ -58,9 +55,6 @@ namespace DeepSound.Activities.Upgrade
                 SetContentView(Resource.Layout.Go_Pro_Layout);
 
                 TextDecorator = new TextDecorator();
-
-                if (AppSettings.ShowInAppBilling && InitializeDeepSound.IsExtended)
-                    BillingSupport = new BillingSupport(this, AppSettings.Cert, InAppBillingGoogle.ListProductSku, this);
 
                 //Get Value And Set Toolbar
                 InitComponent();
@@ -128,9 +122,6 @@ namespace DeepSound.Activities.Upgrade
         {
             try
             {
-                if (AppSettings.ShowInAppBilling && InitializeDeepSound.IsExtended)
-                    BillingSupport?.Destroy();
-
                 base.OnDestroy();
             }
             catch (Exception exception)
@@ -272,18 +263,64 @@ namespace DeepSound.Activities.Upgrade
         {
             try
             {
-                var arrayAdapter = new List<string>();
-                var dialogList = new MaterialAlertDialogBuilder(this);
+                var dialog = new MaterialAlertDialogBuilder(this);
+                dialog.SetTitle(Resource.String.Lbl_PurchaseRequired);
+                dialog.SetMessage(GetText(Resource.String.Lbl_Go_Pro));
+                dialog.SetPositiveButton(GetText(Resource.String.Lbl_Purchase), async (materialDialog, action) =>
+                {
+                    try
+                    {
+                        var price = long.Parse(ListUtils.SettingsSiteList?.ProPrice ?? "0");
+                        if (DeepSoundTools.CheckWallet(price))
+                        {
+                            if (Methods.CheckConnectivity())
+                            {
+                                var (apiStatus, respond) = await RequestsAsync.Payments.PurchaseAsync("go_pro", "");
+                                if (apiStatus == 200)
+                                {
+                                    if (respond is MessageObject result)
+                                    {
+                                        Console.WriteLine(result.Message);
 
-                arrayAdapter.Add(GetString(Resource.String.Lbl_Wallet));
-                if (AppSettings.ShowInAppBilling && InitializeDeepSound.IsExtended)
-                    arrayAdapter.Add(GetString(Resource.String.Btn_GooglePlay));
+                                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { SetProApi });
+                                    }
+                                }
+                                else Methods.DisplayReportResult(this, respond);
+                            }
+                            else
+                                Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
+                        }
+                        else
+                        {
+                            var dialogBuilder = new MaterialAlertDialogBuilder(this);
+                            dialogBuilder.SetTitle(GetText(Resource.String.Lbl_Wallet));
+                            dialogBuilder.SetMessage(GetText(Resource.String.Lbl_Error_NoWallet));
+                            dialogBuilder.SetPositiveButton(GetText(Resource.String.Lbl_AddWallet), (materialDialog, action) =>
+                            {
+                                try
+                                {
+                                    var intent = new Intent(this, typeof(WalletActivity));
+                                    intent.PutExtra("Type", "GoPro");
+                                    StartActivity(intent);
+                                }
+                                catch (Exception exception)
+                                {
+                                    Methods.DisplayReportResultTrack(exception);
+                                }
+                            });
+                            dialogBuilder.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
 
-                dialogList.SetTitle(GetText(Resource.String.Lbl_Go_Pro));
-                dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
-                dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
+                            dialogBuilder.Show();
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        Methods.DisplayReportResultTrack(exception);
+                    }
+                });
+                dialog.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
 
-                dialogList.Show();
+                dialog.Show();
             }
             catch (Exception exception)
             {
@@ -293,135 +330,54 @@ namespace DeepSound.Activities.Upgrade
 
         #endregion
 
-        #region MaterialDialog
-
-        public async void OnSelection(IDialogInterface dialog, int position, string text)
+        public async Task SetProApi()
         {
-            try
+            if (Methods.CheckConnectivity())
             {
-                if (text == GetString(Resource.String.Lbl_Wallet))
+                var (apiStatus, respond) = await RequestsAsync.User.UpgradeMembershipAsync(UserDetails.UserId.ToString());
+                if (apiStatus == 200)
                 {
-                    var price = long.Parse(ListUtils.SettingsSiteList?.ProPrice ?? "0");
-                    if (DeepSoundTools.CheckWallet(price))
+                    if (respond is MessageObject result)
                     {
-                        if (Methods.CheckConnectivity())
-                        {
-                            var (apiStatus, respond) = await RequestsAsync.Payments.PurchaseAsync("go_pro", "");
-                            if (apiStatus == 200)
-                            {
-                                if (respond is MessageObject result)
-                                {
-                                    Console.WriteLine(result.Message);
-
-                                    var dataUser = ListUtils.MyUserInfoList?.FirstOrDefault();
-                                    if (dataUser != null)
-                                    {
-                                        dataUser.IsPro = 1;
-
-                                        var sqlEntity = new SqLiteDatabase();
-                                        sqlEntity.InsertOrUpdate_DataMyInfo(dataUser);
-
-                                        SettingsActivity.Instance.GoProLayout.Visibility = ViewStates.Gone;
-
-                                        //var HomeFragmentProIcon = HomeActivity.GetInstance()?.HomeFragment?.ProIcon;
-                                        //if (HomeFragmentProIcon != null)
-                                        //    HomeFragmentProIcon.Visibility = ViewStates.Gone;
-                                    }
-
-                                    Toast.MakeText(this, GetText(Resource.String.Lbl_Upgraded), ToastLength.Long)?.Show();
-                                    Finish();
-                                }
-                            }
-                            else Methods.DisplayReportResult(this, respond);
-                        }
-                        else
-                            Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
-                    }
-                    else
-                    {
-                        var dialogBuilder = new MaterialAlertDialogBuilder(this);
-                        dialogBuilder.SetTitle(GetText(Resource.String.Lbl_Wallet));
-                        dialogBuilder.SetMessage(GetText(Resource.String.Lbl_Error_NoWallet));
-                        dialogBuilder.SetPositiveButton(GetText(Resource.String.Lbl_AddWallet), (materialDialog, action) =>
+                        Console.WriteLine(result.Message);
+                        RunOnUiThread(() =>
                         {
                             try
                             {
-                                StartActivity(new Intent(this, typeof(WalletActivity)));
+                                var dataUser = ListUtils.MyUserInfoList?.FirstOrDefault();
+                                if (dataUser != null)
+                                {
+                                    dataUser.IsPro = 1;
+
+                                    var sqlEntity = new SqLiteDatabase();
+                                    sqlEntity.InsertOrUpdate_DataMyInfo(dataUser);
+                                }
+
+                                if (SettingsActivity.Instance?.GoProLayout != null)
+                                    SettingsActivity.Instance.GoProLayout.Visibility = ViewStates.Gone;
+
+                                //var HomeFragmentProIcon = HomeActivity.GetInstance()?.HomeFragment?.ProIcon;
+                                //if (HomeFragmentProIcon != null)
+                                //    HomeFragmentProIcon.Visibility = ViewStates.Gone;
+
+                                Toast.MakeText(this, GetText(Resource.String.Lbl_Upgraded), ToastLength.Long)?.Show();
+                                Finish();
                             }
-                            catch (Exception exception)
+                            catch (Exception e)
                             {
-                                Methods.DisplayReportResultTrack(exception);
+                                Methods.DisplayReportResultTrack(e);
                             }
                         });
-                        dialogBuilder.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
-
-                        dialogBuilder.Show();
                     }
                 }
-                else if (text == GetString(Resource.String.Btn_GooglePlay))
-                {
-                    BillingSupport?.PurchaseNow(InAppBillingGoogle.Membership);
-                }
+                else Methods.DisplayReportResult(this, respond);
             }
-            catch (Exception exception)
+            else
             {
-                Methods.DisplayReportResultTrack(exception);
+                Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
             }
         }
 
-        #endregion
-
-        #region Billing
-
-        public void OnPaymentError(string error)
-        {
-            Console.WriteLine(error);
-        }
-
-        public async void OnPaymentSuccess(IList<Purchase> result)
-        {
-            try
-            {
-                if (Methods.CheckConnectivity())
-                {
-                    var (apiStatus, respond) = await RequestsAsync.User.UpgradeMembershipAsync(UserDetails.UserId.ToString());
-                    if (apiStatus == 200)
-                    {
-                        var dataUser = ListUtils.MyUserInfoList?.FirstOrDefault();
-                        if (dataUser != null)
-                        {
-                            dataUser.IsPro = 1;
-
-                            var sqlEntity = new SqLiteDatabase();
-                            sqlEntity.InsertOrUpdate_DataMyInfo(dataUser);
-
-                            //var HomeFragmentProIcon = HomeActivity.GetInstance()?.HomeFragment?.ProIcon;
-                            //if (HomeFragmentProIcon != null)
-                            //    HomeFragmentProIcon.Visibility = ViewStates.Gone;
-                        }
-
-                        Toast.MakeText(this, GetText(Resource.String.Lbl_Done), ToastLength.Long)?.Show();
-                        Finish();
-                    }
-                    else Methods.DisplayReportResult(this, respond);
-                }
-                else
-                {
-                    Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
-                }
-            }
-            catch (Exception exception)
-            {
-                Methods.DisplayReportResultTrack(exception);
-            }
-        }
-
-        public void GetPurchase(IList<Purchase> result)
-        {
-
-        }
-
-        #endregion
     }
 
 }

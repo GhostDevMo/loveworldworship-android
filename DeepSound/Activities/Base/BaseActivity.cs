@@ -7,7 +7,6 @@ using Android.Views;
 using Android.Window;
 using AndroidX.Activity;
 using AndroidX.AppCompat.App;
-using AndroidX.Core.OS;
 using DeepSound.Activities.SettingsUser;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Utils;
@@ -25,7 +24,7 @@ namespace DeepSound.Activities.Base
         {
             try
             {
-                if (BuildCompat.IsAtLeastT && Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
                 {
                     OnBackInvokedDispatcher.RegisterOnBackInvokedCallback(0, new BackCallAppBase2(this, pageName));
                 }

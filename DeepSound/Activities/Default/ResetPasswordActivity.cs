@@ -266,7 +266,7 @@ namespace DeepSound.Activities.Default
 
                     Toast.MakeText(this, GetText(Resource.String.Lbl_YourDetailsWasUpdated), ToastLength.Long)?.Show();
 
-                    AndHUD.Shared.Dismiss(this);
+                    AndHUD.Shared.Dismiss();
 
                     Finish();
                 }

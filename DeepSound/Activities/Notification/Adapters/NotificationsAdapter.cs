@@ -44,7 +44,7 @@ namespace DeepSound.Activities.Notification.Adapters
             try
             {
                 //Setup your layout here >> Notifications_view
-                View itemView = LayoutInflater.From(parent.Context)?.Inflate(Resource.Layout.Style_NotificationView, parent, false);
+                View itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.Style_NotificationView, parent, false);
                 var vh = new NotificationsAdapterViewHolder(itemView, Click, LongClick);
                 return vh;
             }

@@ -266,7 +266,7 @@ namespace DeepSound.Activities.SettingsUser.Security
                         }
 
                         Toast.MakeText(this, GetText(Resource.String.Lbl_TwoFactorOn), ToastLength.Short)?.Show();
-                        AndHUD.Shared.Dismiss(this);
+                        AndHUD.Shared.Dismiss();
 
                         Finish();
                     }
@@ -278,7 +278,7 @@ namespace DeepSound.Activities.SettingsUser.Security
             }
             catch (Exception exception)
             {
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
                 Methods.DisplayReportResultTrack(exception);
             }
         }
@@ -288,6 +288,8 @@ namespace DeepSound.Activities.SettingsUser.Security
             try
             {
                 if (e.Event?.Action != MotionEventActions.Up) return;
+
+                Methods.HideKeyboard(this);
 
                 TypeDialog = "Confirmation";
 
@@ -337,7 +339,7 @@ namespace DeepSound.Activities.SettingsUser.Security
                                     {
                                         Toast.MakeText(this, GetText(Resource.String.Lbl_ConfirmationCodeSent), ToastLength.Short)?.Show();
 
-                                        AndHUD.Shared.Dismiss(this);
+                                        AndHUD.Shared.Dismiss();
 
                                         TypeDialog = "ConfirmationCode";
 
@@ -379,7 +381,7 @@ namespace DeepSound.Activities.SettingsUser.Security
             }
             catch (Exception exception)
             {
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
                 Methods.DisplayReportResultTrack(exception);
             }
         }

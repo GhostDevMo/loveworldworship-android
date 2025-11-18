@@ -64,6 +64,8 @@ namespace DeepSound.SQLite
             public new string Events { get; set; }
             public new string EmailPrivacy { get; set; }
 
+            public new string Details { get; set; }
+
         }
 
         [Table("GenresTb")]

@@ -46,8 +46,7 @@
 				android:textSize="16dp"
 				android:maxLength="25"
 				android:lines="1"
-				android:layout_gravity="center_vertical"
-				android:text="Loveworld Singers - Worship"/>
+				android:layout_gravity="center_vertical"/>
 
 			<View
 				android:layout_width="0dp"
@@ -182,7 +181,6 @@
 			android:layout_marginTop="15dp"
 			android:gravity="center"
 			android:textSize="20dp"
-			android:text="Offline"
 			android:layout_marginStart="20dp"
 			android:layout_marginEnd="20dp"
 			android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
@@ -198,7 +196,6 @@
 			android:layout_centerHorizontal="true"
 			android:id="@+id/descriptionSound"
 			android:layout_width="match_parent"
-			android:text="Offline, Check Connection"
 			android:textAlignment="center"
 			android:layout_height="wrap_content"
 			android:layout_marginTop="10dp"
@@ -247,7 +244,7 @@
 				android:id="@+id/tv_song_current_duration"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:text="0:00"
+				android:text="00:00"
 				android:textSize="16dp"
 				android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
 
@@ -260,7 +257,7 @@
 				android:id="@+id/tv_song_total_duration"
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
-				android:text="0:00"
+				android:text="00:00"
 				android:textSize="16dp"
 				android:textAppearance="@style/TextAppearance.MaterialComponents.Caption" />
 
@@ -436,6 +433,26 @@
 					android:layout_gravity="center"
 					android:id="@+id/icon_like"
 					android:src="@drawable/icon_player2_heart" />
+			</FrameLayout>
+			<FrameLayout
+				android:id="@+id/ll_Dislike"
+				android:layout_width="0dp"
+				android:layout_height="match_parent"
+				android:layout_weight="1"
+				android:gravity="center"
+				android:clickable="true"
+				android:focusable="true"
+				android:background="@drawable/custom_ripple"
+				android:orientation="vertical">
+				<ImageView
+					android:layout_width="32dp"
+					android:layout_height="32dp"
+					android:padding="6dp"
+					android:gravity="center"
+					android:tint="?attr/colorSecondaryExtra"
+					android:layout_gravity="center"
+					android:id="@+id/icon_Dislike"
+					android:src="@drawable/icon_player2_dislike" />
 			</FrameLayout>
 			<RelativeLayout
 				android:id="@+id/ll_download"

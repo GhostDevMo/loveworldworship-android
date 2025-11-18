@@ -41,6 +41,7 @@ namespace DeepSound.Helpers.Utils
             NoEvents,
             NoCarts,
             NoAddress,
+            NoAdvertising,
         }
 
         public void InflateLayout(View inflated, Type type)
@@ -233,6 +234,14 @@ namespace DeepSound.Helpers.Utils
                     //FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, EmptyStateIcon, IonIconsFonts.Pin);
                     //EmptyStateIcon.SetTextSize(ComplexUnitType.Dip, 45f);
                     TitleText.Text = Application.Context.GetText(Resource.String.Lbl_Empty_Address);
+                    DescriptionText.Text = " ";
+                    EmptyStateButton.Visibility = ViewStates.Gone;
+                }
+                else if (type == Type.NoAdvertising)
+                {
+                    //FontUtils.SetTextViewIcon(FontsIconFrameWork.IonIcons, EmptyStateIcon, IonIconsFonts.Pin);
+                    //EmptyStateIcon.SetTextSize(ComplexUnitType.Dip, 45f);
+                    TitleText.Text = Application.Context.GetText(Resource.String.Lbl_Empty_Advertising);
                     DescriptionText.Text = " ";
                     EmptyStateButton.Visibility = ViewStates.Gone;
                 }

@@ -5,9 +5,8 @@
         Example: Let's get started! >> "Let&apos;s get started!"  -->
 	<!-- - If the text is marked & Please replace with the symbol &amp; 
         Example. Movies & Animation >> Movies &amp; Animation   -->
-	<!--supportsRtl-->
-	<bool name="Is_arabic">false</bool>
 	<!--===============================================================-->
+	
 	<!--most used-->
 	<string name="video">Video</string>
 	<string name="audio">Audio</string>
@@ -87,8 +86,8 @@
 	<string name="Lbl_Music">Music</string>
 	<!--===============================================================-->
 	<!--First Page -->
-	<string name="Lbl_FirstTitle">Listen to the best worship songs with Loveworld Worship</string>
-	<string name="Lbl_FirstSubTitle">Enjoy Every Moment Of Worship</string>
+	<string name="Lbl_FirstTitle">Experience the best of Worship Only On The Loveworld Music App</string>
+	<string name="Lbl_FirstSubTitle">A Plethora Of New Testament Songs,Experience True Worship!</string>
 	<!--===============================================================-->
 	<!--Login && Register -->
 	<string name="Lbl_FirstName">First Name</string>
@@ -160,7 +159,7 @@
 	<string name="Lbl_FullName">Full Name</string>
 	<string name="Lbl_NoMoreUser">No more user found</string>
 	<string name="Lbl_ChangeCoverImage">Change cover image</string>
-	<string name="Lbl_HasNotAnyInfo">.</string>
+	<string name="Lbl_HasNotAnyInfo">Has not any info</string>
 	<!--===============================================================-->
 	<!--Time-->
 	<string name="Lbl_justNow">Just now</string>
@@ -192,7 +191,7 @@
 	<string name="Lbl_Permission_is_denied">"Sorry: You cannot proceed with your action if you don&apos;t allow"</string>
 	<string name="Lbl_something_went_wrong">Check your credentials something went wrong</string>
 	<string name="Lbl_CheckYourInternetConnection">Please check your internet connection</string>
-	<string name="Lbl_VerificationFailed">Reset Email Sent</string>
+	<string name="Lbl_VerificationFailed">Verification failed</string>
 	<string name="Lbl_You_will_be_logged">You will be logged out now, see you later</string>
 	<string name="Lbl_Are_you_logout">Are you sure you went to log out?</string>
 	<string name="Lbl_Text_copied">Text copied to clipboard</string>
@@ -237,8 +236,8 @@
 	<string name="Lbl_NoMoreAlbums">No more Albums found</string>
 	<!--===============================================================-->
 	<!--Artists-->
-	<string name="Lbl_Artists">Artist</string>
-	<string name="Lbl_NoMoreArtists">No more artist found</string>
+	<string name="Lbl_Artists">Artists</string>
+	<string name="Lbl_NoMoreArtists">No more artists found</string>
 	<!--===============================================================-->
 	<!--Filter-->
 	<string name="Lbl_Filter">Filter</string>
@@ -279,7 +278,7 @@
 	<string name="Lbl_PleaseEnterTitleSong">Error, Please Write title song</string>
 	<string name="Lbl_PleaseEnterDescriptionSong">Error, Please Write description song</string>
 	<string name="Lbl_PleaseEnterTags">Error, Please Write tags</string>
-	<string name="Lbl_PleaseChooseGenres">Error, Please choose categories</string>
+	<string name="Lbl_PleaseChooseGenres">Error, Please choose a category</string>
 	<string name="Lbl_PleaseChooseAgeRestriction">Error, Please choose age restriction</string>
 	<!--===============================================================-->
 	<!--Upload Album-->
@@ -302,7 +301,7 @@
 	<string name="Lbl_See_Less">See Less</string>
 	<!--===============================================================-->
 	<!--Title List-->
-	<string name="Lbl_Browse_Description">Explore by categories and mood</string>
+	<string name="Lbl_Browse_Description">Explore by genre and mood</string>
 	<string name="Lbl_Popular_Title">Popular</string>
 	<string name="Lbl_Store_Title">Store</string>
 	<string name="Lbl_Activities_Title">Activities</string>
@@ -321,7 +320,7 @@
 	<string name="Lbl_NoConnection_DescriptionText">We could not establish a connection with our servers please try again later.</string>
 	<string name="Lbl_NoConnection_Button">Try Again</string>
 	<string name="Lbl_NoSearchResult_TitleText">Sad no result!</string>
-	<string name="Lbl_NoSearchResult_DescriptionText">We cannot find the keyword you are searching for maybe a little spelling mistake ?</string>
+	<string name="Lbl_NoSearchResult_DescriptionText">We cannot find the keyword you are searching form maybe a little spelling mistake ?</string>
 	<string name="Lbl_NoSearchResult_Button">Search Random</string>
 	<string name="Lbl_SomThingWentWrong_TitleText">Something Went Wrong</string>
 	<string name="Lbl_SomThingWentWrong_DescriptionText">Server respond</string>
@@ -329,15 +328,15 @@
 	<string name="Lbl_NoNotification_TitleText">No Notifications Yet</string>
 	<string name="Lbl_NoNotification_DescriptionText">We will display once you get your first activity here</string>
 	<string name="Lbl_NoMessage_TitleText">No More Messages</string>
-	<string name="Lbl_NoMessage_DescriptionText">No conversations yet</string>
+	<string name="Lbl_NoMessage_DescriptionText">No conversations yet in</string>
 	<string name="Lbl_NoBlockUsers">There are no users</string>
 	<string name="Lbl_NoComments_TitleText">No Comments Yet</string>
 	<string name="Lbl_NoComments_DescriptionText">Get the conversation started by leaving the first comment.</string>
-	<string name="Lbl_NoPlaylist_TitleText">User have no playlists yet</string>
-	<string name="Lbl_NoAlbums_TitleText">"User have no albums yet"</string>
+	<string name="Lbl_NoPlaylist_TitleText">You have no playlists yet</string>
+	<string name="Lbl_NoAlbums_TitleText">"You do not have any albums"</string>
 	<string name="Lbl_NoLiked_TitleText">User have not liked any song yet</string>
-	<string name="Lbl_NoRecentlyPlayed_TitleText">User have no listening history yet</string>
-	<string name="Lbl_NoFavorites_TitleText">User have no favorite any song yet</string>
+	<string name="Lbl_NoRecentlyPlayed_TitleText">You have no listening history yet</string>
+	<string name="Lbl_NoFavorites_TitleText">You have not favorited any song yet</string>
 	<string name="Lbl_NoArtists_TitleText">"don&apos;t have any artists yet"</string>
 	<string name="Lbl_NoDataUser_TitleText">Seems a little quiet over here</string>
 	<!--===============================================================-->
@@ -383,7 +382,7 @@
 	<string name="Lbl_Favorites">Favorites</string>
 	<string name="Lbl_LatestDownloads">Latest Downloads</string>
 	<string name="Lbl_Shared">Shared</string>
-	<string name="Lbl_NoMoreFavorites">No more favorites songs found</string>
+	<string name="Lbl_NoMoreFavorites">No more favorite songs found</string>
 	<string name="Lbl_NoMoreLiked">No more liked songs found</string>
 	<string name="Lbl_NoMoreRecentlyPlayed">No more recently played songs found</string>
 	<!--===============================================================-->
@@ -400,12 +399,12 @@
 	<string name="Lbl_Night_Mode">Night Mode</string>
 	<!--===============================================================-->
 	<!--Social Links-->
-	<string name="Lbl_Facebook">Kingschat</string>
+	<string name="Lbl_Facebook">Facebook</string>
 	<string name="Lbl_Twitter">Twitter</string>
 	<string name="Lbl_GooglePlus">Google Plus</string>
 	<string name="Lbl_Instagram">Instagram</string>
 	<string name="Lbl_LinkedIn">LinkedIn</string>
-	<string name="Lbl_Website">Kingschat Username</string>
+	<string name="Lbl_Website">Website</string>
 	<!--===============================================================-->
 	<!--Block Users-->
 	<string name="Lbl_BlockedUsers">Blocked Users</string>
@@ -589,7 +588,7 @@
 	<string name="Lbl_AccountName">Account name</string>
 	<string name="Lbl_RoutingCode">Routing code</string>
 	<string name="Lbl_ErrorPleaseSelectImage">Error, please select image</string>
-	<string name="Btn_Paypal">Paypal</string>
+	<string name="Lbl_Paypal">Paypal</string>
 	<string name="Btn_GooglePlay">Google Play</string>
 
 	<string name="Lbl_ImportFromItunesy">Import From Itunes</string>
@@ -918,5 +917,36 @@
 	<!--===============================================================-->
 	<string name="Lbl_ActivateWithUpgraded">To activate this service, the account must be upgraded</string>
 	<string name="Lbl_Downloading">Downloading...</string>
+
+	<!-- V3.3 String translate -->
+	<!--===============================================================-->
+	<string name="Lbl_AddNewStation">Add New Station</string>
+	<string name="Lbl_Song_Favorite">Song Favorite</string>
+	<string name="Lbl_Remove_Song_Favorite">Remove favorite song</string>
+	<string name="Lbl_Song_Liked">Song Liked</string>
+	<string name="Lbl_Remove_Song_Liked">Remove the song you liked</string>
+	<string name="Lbl_Song_UnLiked">Song disliked</string>
+	<string name="Lbl_Remove_Song_UnLiked">Remove the song you disliked</string>
+
+	<!-- V3.4 String translate -->
+	<!--===============================================================-->
+	<string name="Lbl_Language">Language</string>
+	<string name="Lbl_Display_your_app_Language">Display your app Language</string>
+	<string name="Lbl_SelectYourPaymentMethod">Select Your Payment Method</string>
+	<string name="Lbl_PayFast">PayFast</string>
+	<string name="Lbl_Bank">Bank</string>
+	<string name="Lbl_GooglePay">Google Pay</string>
+ 
+	<!-- V3.5 String translate -->
+	<!--===============================================================-->
+	<string name="Lbl_Advertising">Advertising</string>
+	<string name="Lbl_EditAdvertise">Edit Advertise</string>
+	<string name="Lbl_DeleteAdvertise">Delete Advertise</string>
+	<string name="Lbl_AreYouSureDeleteAdvertise">Are You Sure Delete Advertise</string>
+	<string name="Lbl_NoAds">No more advertise to show</string>
+	<string name="Lbl_Empty_Advertising">No Advertising</string>
+	<string name="Lbl_Active">Active</string>
+	<string name="Lbl_Inactive">Inactive</string>
+	<string name="Lbl_CantChangeType">"you can&apos;t change the type now"</string>
 
 </resources>

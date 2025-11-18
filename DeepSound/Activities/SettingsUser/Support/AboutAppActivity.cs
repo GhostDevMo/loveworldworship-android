@@ -195,6 +195,8 @@ namespace DeepSound.Activities.SettingsUser.Support
                     AdsFacebook.InitNative(this, nativeAdLayout, null);
                 else if (AppSettings.ShowAppLovinBannerAds)
                     AdsAppLovin.InitBannerAd(this, nativeAdLayout, null);
+                else
+                    AdsGoogle.InitBannerAdView(this, nativeAdLayout, null);
             }
             catch (Exception e)
             {

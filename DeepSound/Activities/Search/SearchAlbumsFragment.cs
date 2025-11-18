@@ -10,6 +10,7 @@ using DeepSound.Activities.Albums;
 using DeepSound.Activities.Albums.Adapters;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Model;
+using DeepSound.Helpers.ShimmerUtils;
 using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Albums;
@@ -31,8 +32,9 @@ namespace DeepSound.Activities.Search
         public RecyclerView MRecycler;
         public ProgressBar ProgressBarLoader;
         private LinearLayoutManager LayoutManager;
-        public ViewStub EmptyStateLayout;
-        public View Inflated;
+        public ViewStub EmptyStateLayout, ShimmerPageLayout;
+        public View Inflated, InflatedShimmer;
+        public TemplateShimmerInflater ShimmerInflater;
         public RecyclerViewOnScrollListener MainScrollEvent;
         private AlbumsFragment AlbumsFragment;
         #endregion
@@ -54,6 +56,7 @@ namespace DeepSound.Activities.Search
                 View view = inflater.Inflate(Resource.Layout.SearchSongsLayout, container, false);
 
                 InitComponent(view);
+                InitShimmer(view);
                 SetRecyclerViewAdapters();
                 return view;
             }
@@ -96,6 +99,23 @@ namespace DeepSound.Activities.Search
                 SwipeRefreshLayout.Refreshing = false;
                 SwipeRefreshLayout.Enabled = false;
                 SwipeRefreshLayout.SetProgressBackgroundColorSchemeColor(DeepSoundTools.IsTabDark() ? Color.ParseColor("#424242") : Color.ParseColor("#f7f7f7"));
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        private void InitShimmer(View view)
+        {
+            try
+            {
+                ShimmerPageLayout = view.FindViewById<ViewStub>(Resource.Id.viewStubShimmer);
+                InflatedShimmer ??= ShimmerPageLayout.Inflate();
+
+                ShimmerInflater = new TemplateShimmerInflater();
+                ShimmerInflater.InflateLayout(Activity, InflatedShimmer, ShimmerTemplateStyle.SongRowTemplate);
+                ShimmerInflater.Hide();
             }
             catch (Exception e)
             {

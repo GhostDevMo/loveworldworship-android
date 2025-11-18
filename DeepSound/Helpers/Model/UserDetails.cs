@@ -1,4 +1,5 @@
-﻿using DeepSound.Helpers.Utils;
+﻿using DeepSound.Helpers.MediaPlayerController;
+using DeepSound.Helpers.Utils;
 using DeepSoundClient;
 using Newtonsoft.Json;
 using System;
@@ -59,6 +60,12 @@ namespace DeepSound.Helpers.Model
                 LangName = string.Empty;
 
                 Current.AccessToken = string.Empty;
+
+                Constant.IsRepeat = false;
+                Constant.IsPlayed = false;
+                Constant.IsSuffle = false;
+                Constant.IsOnline = true;
+                Constant.IsNewSong = false;
             }
             catch (Exception e)
             {

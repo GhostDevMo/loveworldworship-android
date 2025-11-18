@@ -335,7 +335,7 @@
                                 android:id="@+id/FacebookText"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:text="@string/Lbl_Website"
+                                android:text="@string/Lbl_Facebook"
                                 android:gravity="start"
                                 android:layout_gravity="center"
                                 android:textSize="15sp"

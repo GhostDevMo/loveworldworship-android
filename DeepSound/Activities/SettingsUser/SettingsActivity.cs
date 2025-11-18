@@ -2,7 +2,6 @@
 using Android.App;
 using Android.Content;
 using Android.Content.PM;
-using Android.Content.Res;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -12,6 +11,7 @@ using AndroidX.AppCompat.Content.Res;
 using AndroidX.CardView.Widget;
 using AndroidX.Core.Content;
 using DeepSound.Activities.Address;
+using DeepSound.Activities.Advertise;
 using DeepSound.Activities.Artists;
 using DeepSound.Activities.Base;
 using DeepSound.Activities.Genres;
@@ -48,11 +48,11 @@ namespace DeepSound.Activities.SettingsUser
         private TextView Name, Email;
 
         public CardView GoProLayout;
-        private LinearLayout EditProfileLayout, MyAccountLayout, BecomeAnArtistLayout, MyAddressesLayout, NotificationsLayout, WithdrawalsLayout, MyAffiliatesLayout, BlockedUsersLayout;
+        private LinearLayout EditProfileLayout, MyAccountLayout, BecomeAnArtistLayout, MyAddressesLayout, NotificationsLayout, AdvertisingLayout, WithdrawalsLayout, WalletLayout, MyAffiliatesLayout, BlockedUsersLayout;
         private LinearLayout PasswordLayout, TwoFactorLayout, ManageSessionsLayout;
         private LinearLayout ThemeLayout;
 
-        private LinearLayout InterestLayout;
+        private LinearLayout InterestLayout, LanguageLayout;
         private LinearLayout RateOurAppLayout, InviteFriendsLayout, TermsOfUseLayout, HelpLayout;
         private LinearLayout DeleteAccountLayout, LogoutLayout;
 
@@ -197,7 +197,9 @@ namespace DeepSound.Activities.SettingsUser
                 BecomeAnArtistLayout = FindViewById<LinearLayout>(Resource.Id.layoutBecomeAnArtist);
                 MyAddressesLayout = FindViewById<LinearLayout>(Resource.Id.layoutMyAddresses);
                 NotificationsLayout = FindViewById<LinearLayout>(Resource.Id.layoutNotifications);
+                AdvertisingLayout = FindViewById<LinearLayout>(Resource.Id.layoutAdvertising);
                 WithdrawalsLayout = FindViewById<LinearLayout>(Resource.Id.layoutWithdrawals);
+                WalletLayout = FindViewById<LinearLayout>(Resource.Id.layoutWallet);
                 MyAffiliatesLayout = FindViewById<LinearLayout>(Resource.Id.layoutMyAffiliates);
                 BlockedUsersLayout = FindViewById<LinearLayout>(Resource.Id.layoutBlockedUsers);
 
@@ -207,8 +209,8 @@ namespace DeepSound.Activities.SettingsUser
 
                 ThemeLayout = FindViewById<LinearLayout>(Resource.Id.layoutTheme);
 
+                LanguageLayout = FindViewById<LinearLayout>(Resource.Id.layoutLanguage);
                 InterestLayout = FindViewById<LinearLayout>(Resource.Id.layoutInterest);
-
 
                 RateOurAppLayout = FindViewById<LinearLayout>(Resource.Id.layoutRateOurApp);
                 InviteFriendsLayout = FindViewById<LinearLayout>(Resource.Id.layoutInviteFriends);
@@ -264,7 +266,9 @@ namespace DeepSound.Activities.SettingsUser
                     BecomeAnArtistLayout.Click += BecomeAnArtistLayoutOnClick;
                     NotificationsLayout.Click += NotificationsLayoutOnClick;
                     MyAddressesLayout.Click += MyAddressesLayoutOnClick;
+                    AdvertisingLayout.Click += AdvertisingLayoutOnClick;
                     WithdrawalsLayout.Click += WithdrawalsLayoutOnClick;
+                    WalletLayout.Click += WalletLayoutOnClick;
                     MyAffiliatesLayout.Click += MyAffiliatesLayoutOnClick;
                     GoProLayout.Click += GoProLayoutOnClick;
                     BlockedUsersLayout.Click += BlockedUsersLayoutOnClick;
@@ -272,6 +276,7 @@ namespace DeepSound.Activities.SettingsUser
                     TwoFactorLayout.Click += TwoFactorLayoutOnClick;
                     ManageSessionsLayout.Click += ManageSessionsLayoutOnClick;
                     ThemeLayout.Click += ThemeLayoutOnClick;
+                    LanguageLayout.Click += LanguageLayoutOnClick;
                     InterestLayout.Click += InterestLayoutOnClick;
                     RateOurAppLayout.Click += RateOurAppLayoutOnClick;
                     InviteFriendsLayout.Click += InviteFriendsLayoutOnClick;
@@ -288,7 +293,9 @@ namespace DeepSound.Activities.SettingsUser
                     BecomeAnArtistLayout.Click -= BecomeAnArtistLayoutOnClick;
                     NotificationsLayout.Click -= NotificationsLayoutOnClick;
                     MyAddressesLayout.Click -= MyAddressesLayoutOnClick;
+                    AdvertisingLayout.Click -= AdvertisingLayoutOnClick;
                     WithdrawalsLayout.Click -= WithdrawalsLayoutOnClick;
+                    WalletLayout.Click -= WalletLayoutOnClick;
                     MyAffiliatesLayout.Click -= MyAffiliatesLayoutOnClick;
                     GoProLayout.Click -= GoProLayoutOnClick;
                     BlockedUsersLayout.Click -= BlockedUsersLayoutOnClick;
@@ -296,6 +303,7 @@ namespace DeepSound.Activities.SettingsUser
                     TwoFactorLayout.Click -= TwoFactorLayoutOnClick;
                     ManageSessionsLayout.Click -= ManageSessionsLayoutOnClick;
                     ThemeLayout.Click -= ThemeLayoutOnClick;
+                    LanguageLayout.Click -= LanguageLayoutOnClick;
                     InterestLayout.Click -= InterestLayoutOnClick;
                     RateOurAppLayout.Click -= RateOurAppLayoutOnClick;
                     InviteFriendsLayout.Click -= InviteFriendsLayoutOnClick;
@@ -353,6 +361,30 @@ namespace DeepSound.Activities.SettingsUser
             try
             {
                 StartActivity(new Intent(this, typeof(MyAffiliatesActivity)));
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
+        private void WalletLayoutOnClick(object sender, EventArgs e)
+        {
+            try
+            {
+                StartActivity(new Intent(this, typeof(WalletActivity)));
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
+        private void AdvertisingLayoutOnClick(object sender, EventArgs e)
+        {
+            try
+            {
+                StartActivity(new Intent(this, typeof(AdvertisingActivity)));
             }
             catch (Exception exception)
             {
@@ -444,13 +476,23 @@ namespace DeepSound.Activities.SettingsUser
                 arrayAdapter.Add(GetText(Resource.String.Lbl_Light));
                 arrayAdapter.Add(GetText(Resource.String.Lbl_Dark));
 
-                if ((int)Build.VERSION.SdkInt >= 29)
-                    arrayAdapter.Add(GetText(Resource.String.Lbl_SetByBattery));
-
                 dialogList.SetItems(arrayAdapter.ToArray(), new MaterialDialogUtils(arrayAdapter, this));
                 dialogList.SetNegativeButton(GetText(Resource.String.Lbl_Close), new MaterialDialogUtils());
 
                 dialogList.Show();
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
+        private void LanguageLayoutOnClick(object sender, EventArgs e)
+        {
+            try
+            {
+                BottomSheetsLanguage BottomSheetsLanguage = new BottomSheetsLanguage();
+                BottomSheetsLanguage.Show(SupportFragmentManager, BottomSheetsLanguage.Tag);
             }
             catch (Exception exception)
             {
@@ -723,63 +765,6 @@ namespace DeepSound.Activities.SettingsUser
                     OverridePendingTransition(0, 0);
                     StartActivity(intent);
                 }
-                else if (text == GetString(Resource.String.Lbl_SetByBattery) && getValue != SharedPref.DefaultMode)
-                {
-                    //NightMode.Summary = this.GetString(Resource.String.Lbl_SetByBattery);
-                    Constant.IsChangingTheme = true;
-
-                    SharedPref.SharedData?.Edit()?.PutString("Night_Mode_key", SharedPref.DefaultMode)?.Commit();
-
-                    if ((int)Build.VERSION.SdkInt >= 29)
-                    {
-                        AppCompatDelegate.DefaultNightMode = AppCompatDelegate.ModeNightFollowSystem;
-
-                        var currentNightMode = Resources.Configuration.UiMode & UiMode.NightMask;
-                        switch (currentNightMode)
-                        {
-                            case UiMode.NightNo:
-                                // Night mode is not active, we're using the light theme
-                                SharedPref.ApplyTheme(SharedPref.LightMode);
-                                break;
-                            case UiMode.NightYes:
-                                // Night mode is active, we're using dark theme
-                                SharedPref.ApplyTheme(SharedPref.DarkMode);
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        AppCompatDelegate.DefaultNightMode = AppCompatDelegate.ModeNightAutoBattery;
-
-                        var currentNightMode = Resources.Configuration.UiMode & UiMode.NightMask;
-                        switch (currentNightMode)
-                        {
-                            case UiMode.NightNo:
-                                // Night mode is not active, we're using the light theme
-                                SharedPref.ApplyTheme(SharedPref.LightMode);
-                                break;
-                            case UiMode.NightYes:
-                                // Night mode is active, we're using dark theme
-                                SharedPref.ApplyTheme(SharedPref.DarkMode);
-                                break;
-                        }
-
-                        if (Build.VERSION.SdkInt >= BuildVersionCodes.Lollipop)
-                        {
-                            Window?.ClearFlags(WindowManagerFlags.TranslucentStatus);
-                            Window?.AddFlags(WindowManagerFlags.DrawsSystemBarBackgrounds);
-                        }
-
-                        Intent intent = new Intent(this, typeof(HomeActivity));
-                        intent.AddCategory(Intent.CategoryHome);
-                        intent.SetAction(Intent.ActionMain);
-                        intent.AddFlags(ActivityFlags.ClearTop | ActivityFlags.NewTask | ActivityFlags.ClearTask);
-                        intent.AddFlags(ActivityFlags.NoAnimation);
-                        FinishAffinity();
-                        OverridePendingTransition(0, 0);
-                        StartActivity(intent);
-                    }
-                }
             }
             catch (Exception e)
             {
@@ -810,6 +795,9 @@ namespace DeepSound.Activities.SettingsUser
 
                 if (!AppSettings.ShowWithdrawals)
                     WithdrawalsLayout.Visibility = ViewStates.Gone;
+
+                if (!AppSettings.ShowAdvertise)
+                    AdvertisingLayout.Visibility = ViewStates.Gone;
 
                 var isPro = dataUser?.IsPro ?? 0;
                 if (!AppSettings.ShowGoPro || isPro != 0)

@@ -8,6 +8,8 @@ using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
+using DeepSound.Library.OneSignalNotif.Models;
+using Newtonsoft.Json;
 using System.Linq;
 using System.Threading.Tasks;
 using Exception = System.Exception;
@@ -15,8 +17,7 @@ using Exception = System.Exception;
 namespace DeepSound.Activities
 {
     [Activity(Icon = "@mipmap/icon", MainLauncher = true, NoHistory = true, Theme = "@style/SplashScreenTheme", Exported = true, ConfigurationChanges = ConfigChanges.ScreenSize | ConfigChanges.Orientation)]
-    [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryBrowsable, Intent.CategoryDefault, Intent.CategoryAppBrowser }, DataSchemes = new[] { "http", "https", "app" }, DataHosts = new[] { "@string/ApplicationUrlWeb", "@string/ApplicationShortUrl" }, AutoVerify = true)]
-    [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryBrowsable, Intent.CategoryDefault, Intent.CategoryAppBrowser }, DataSchemes = new[] { "http", "https", "app" }, DataHosts = new[] { "@string/ApplicationUrlWeb", "@string/ApplicationShortUrl" }, DataPathPrefixes = new[] { "/track/", "/reset-password/", "ref=" }, AutoVerify = true)]
+    [IntentFilter(new[] { Intent.ActionView }, Categories = new[] { Intent.CategoryBrowsable, Intent.CategoryDefault }, DataSchemes = new[] { "http", "https" }, DataHosts = new[] { "@string/ApplicationUrlWeb", "@string/ApplicationShortUrl" }, DataPathPrefixes = new[] { "/track/", "/reset-password/", "ref=" }, AutoVerify = true)]
     public class SplashScreenActivity : AppCompatActivity
     {
         #region Variables Basic
@@ -69,8 +70,8 @@ namespace DeepSound.Activities
                         var trackId = Intent.Data.ToString()!.Split("/track/")?.LastOrDefault()?.Replace("/", "") ?? "";
 
                         var intent = new Intent(this, typeof(HomeActivity));
-                        intent.PutExtra("TrackId", trackId);
-                        intent.PutExtra("TypeNotification", "RunSong");
+                        var dataNotification = new OsObject.OsNotificationObject() { TrackId = trackId, Type = "track" };
+                        intent.PutExtra("OsNotificationObject", JsonConvert.SerializeObject(dataNotification));
                         switch (UserDetails.Status)
                         {
                             case "Active":

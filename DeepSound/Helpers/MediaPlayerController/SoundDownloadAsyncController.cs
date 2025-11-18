@@ -70,7 +70,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                     sqlEntity.Insert_LatestDownloadsSound(sound);
 
                     var folder = GetDownloadedFolder();
- 
+
                     Request.SetTitle(title);
                     Request.SetAllowedNetworkTypes(DownloadNetwork.Mobile | DownloadNetwork.Wifi);
 
@@ -115,10 +115,10 @@ namespace DeepSound.Helpers.MediaPlayerController
         public bool RemoveDiskSoundFile(string filename, long id)
         {
             try
-            { 
+            {
                 var directories = GetDownloadedFolder();
                 string path = new Java.IO.File(directories, filename + ".mp3").Path;
-                 
+
                 if (File.Exists(path))
                 {
                     var sqlEntity = new SqLiteDatabase();
@@ -163,14 +163,14 @@ namespace DeepSound.Helpers.MediaPlayerController
                     var directories1 = Application.Context.GetExternalFilesDir(""); //storage/emulated/0/Android/data/****
                     var pathDefault = directories1.AbsolutePath.Split("/Android/")?.FirstOrDefault();
                     directories = pathDefault + "/" + Environment.DirectoryDownloads + "/" + AppSettings.ApplicationName;
-                      
+
                     //var directories = Application.Context.GetExternalFilesDir(Android.OS.Environment.DirectoryDownloads + "/" + AppSettings.ApplicationName);
                 }
                 else
                 {
                     directories = Methods.Path.GetDirectoryDcim() + "/" + Environment.DirectoryDownloads + "/" + AppSettings.ApplicationName;
                 }
-                 
+
                 if (!Directory.Exists(directories))
                     Directory.CreateDirectory(directories);
 
@@ -187,9 +187,9 @@ namespace DeepSound.Helpers.MediaPlayerController
         {
             try
             {
-                var directories = GetDownloadedFolder(); 
+                var directories = GetDownloadedFolder();
                 Java.IO.File file = new Java.IO.File(directories, filename + ".mp3");
-               
+
                 //Hbh14ktZ3i4frTd  
                 if (file.Exists())
                 {

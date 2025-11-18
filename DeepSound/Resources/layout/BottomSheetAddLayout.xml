@@ -169,7 +169,7 @@
 			android:layout_width="wrap_content"
 			android:layout_height="wrap_content"
 			android:layout_marginEnd="15dp"
-			android:text="@string/Lbl_CreateStation"
+			android:text="@string/Lbl_AddNewStation"
 			android:gravity="start|center"
 			android:layout_centerVertical="true"
 			android:textSize="17sp"

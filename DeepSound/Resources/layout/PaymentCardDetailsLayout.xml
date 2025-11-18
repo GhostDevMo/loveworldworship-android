@@ -190,6 +190,7 @@
                     android:inputType="text"
                     android:maxLines="1"
                     android:singleLine="true"
+                    android:gravity="start|center"
                     android:textColor="#37474F"
                     android:textColorHint="#999999"
                     android:theme="@style/EditText.Grey" />
@@ -223,9 +224,20 @@
                     android:gravity="center"
                     android:layout_marginBottom="10dp" />
             </LinearLayout>
+           
+            <com.google.android.gms.ads.admanager.AdManagerAdView
+	            android:id="@+id/multiple_ad_sizes_view"
+	            android:layout_width="match_parent"
+	            android:layout_height="wrap_content"
+	            android:layout_marginVertical="30dp"
+	            android:layout_alignParentBottom="true"
+	            android:layout_centerHorizontal="true"
+	            app:adSize="MEDIUM_RECTANGLE,120x20,250x250,320x100,SMART_BANNER"
+	            app:adUnitId="@string/banner_multiple_ad_sizes_id" />
+                
             <View 
-                android:layout_width="0dp"
-                android:layout_height="15dp" />
+	            android:layout_width="0dp"
+	            android:layout_height="15dp" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 </LinearLayout>

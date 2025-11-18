@@ -63,6 +63,12 @@ namespace DeepSound.Helpers.Controller
                     ContextCompat.CheckSelfPermission(context, Manifest.Permission.ReadMediaAudio) == Permission.Granted)
                     return true;
             }
+            else if (Build.VERSION.SdkInt >= BuildVersionCodes.R)
+            {
+                if (ContextCompat.CheckSelfPermission(context, Manifest.Permission.ReadExternalStorage) == Permission.Granted &&
+                    ContextCompat.CheckSelfPermission(context, Manifest.Permission.AccessMediaLocation) == Permission.Granted)
+                    return true;
+            }
 
             if (ContextCompat.CheckSelfPermission(context, Manifest.Permission.ReadExternalStorage) == Permission.Granted &&
                 ContextCompat.CheckSelfPermission(context, Manifest.Permission.WriteExternalStorage) == Permission.Granted)
@@ -129,6 +135,8 @@ namespace DeepSound.Helpers.Controller
                                             Manifest.Permission.ReadMediaVideo,
                                             Manifest.Permission.ReadMediaAudio,
                                             Manifest.Permission.ReadExternalStorage,
+                                            Manifest.Permission.ChangeNetworkState,
+
                                         }, 100);
                                         break;
                                 }
@@ -140,7 +148,16 @@ namespace DeepSound.Helpers.Controller
                                 {
                                     Manifest.Permission.ReadExternalStorage,
                                     Manifest.Permission.WriteExternalStorage,
-                                    Manifest.Permission.ManageExternalStorage,
+                                    Manifest.Permission.AccessMediaLocation,
+                                }, 100);
+                            }
+                            else if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
+                            {
+                                //below android 11
+                                ActivityCompat.RequestPermissions(Context, new[]
+                                {
+                                    Manifest.Permission.ReadExternalStorage,
+                                    Manifest.Permission.WriteExternalStorage,
                                     Manifest.Permission.AccessMediaLocation,
                                 }, 100);
                             }
@@ -153,7 +170,6 @@ namespace DeepSound.Helpers.Controller
                                 }, 100);
                             }
                             break;
-
                         case 101:
                             ActivityCompat.RequestPermissions(Context, new[]
                             {
@@ -161,7 +177,6 @@ namespace DeepSound.Helpers.Controller
                                 Manifest.Permission.ReadPhoneNumbers
                             }, 101);
                             break;
-
                         case 102:
                             ActivityCompat.RequestPermissions(Context, new[]
                             {
@@ -169,7 +184,6 @@ namespace DeepSound.Helpers.Controller
                                 Manifest.Permission.ModifyAudioSettings
                             }, 102);
                             break;
-
                         case 103:
                             ActivityCompat.RequestPermissions(Context, new[]
                             {
@@ -177,7 +191,6 @@ namespace DeepSound.Helpers.Controller
                                 Manifest.Permission.RecordAudio,
                                 Manifest.Permission.ModifyAudioSettings }, 103);
                             break;
-
                         case 104:
                             ActivityCompat.RequestPermissions(Context, new[]
                             {
@@ -185,7 +198,6 @@ namespace DeepSound.Helpers.Controller
                                 Manifest.Permission.BroadcastSms
                             }, 104);
                             break;
-
                         case 105:
                             ActivityCompat.RequestPermissions(Context, new[]
                             {
@@ -193,7 +205,6 @@ namespace DeepSound.Helpers.Controller
                                 Manifest.Permission.AccessCoarseLocation
                             }, 105);
                             break;
-
                         case 106:
                             ActivityCompat.RequestPermissions(Context, new[]
                             {
@@ -201,7 +212,6 @@ namespace DeepSound.Helpers.Controller
                                 Manifest.Permission.UseCredentials
                             }, 106);
                             break;
-
                         case 107:
                             ActivityCompat.RequestPermissions(Context, new[]
                             {
@@ -249,6 +259,7 @@ namespace DeepSound.Helpers.Controller
                                             Manifest.Permission.ReadMediaVideo,
                                             Manifest.Permission.ReadMediaAudio,
                                             Manifest.Permission.ReadExternalStorage,
+                                            Manifest.Permission.ChangeNetworkState,
                                         }, 108);
                                         break;
                                 }
@@ -260,7 +271,6 @@ namespace DeepSound.Helpers.Controller
                                 {
                                     Manifest.Permission.Camera,
                                     Manifest.Permission.ReadExternalStorage,
-                                    Manifest.Permission.WriteExternalStorage,
                                     Manifest.Permission.AccessMediaLocation,
                                 }, 108);
                             }
@@ -306,6 +316,9 @@ namespace DeepSound.Helpers.Controller
                                     Manifest.Permission.ReadExternalStorage,
                                     Manifest.Permission.WriteExternalStorage,
                                     Manifest.Permission.AccessMediaLocation,
+                                    Manifest.Permission.ChangeNetworkState,
+                                    Manifest.Permission.ReadPhoneState,
+                                    Manifest.Permission.BluetoothConnect,
                                 }, 111);
 
                                 //if (!Android.OS.Environment.IsExternalStorageManager)
@@ -321,7 +334,9 @@ namespace DeepSound.Helpers.Controller
                                     Manifest.Permission.WriteExternalStorage,
                                     Manifest.Permission.AccessMediaLocation,
                                     Manifest.Permission.RecordAudio,
-                                    Manifest.Permission.ModifyAudioSettings
+                                    Manifest.Permission.ModifyAudioSettings,
+                                    Manifest.Permission.ReadPhoneState,
+                                    Manifest.Permission.BluetoothConnect,
                                 }, 111);
 
                                 //if (!Android.OS.Environment.IsExternalStorageManager)

@@ -13,7 +13,6 @@ using AndroidX.AppCompat.Widget;
 using AndroidX.RecyclerView.Widget;
 using AndroidX.SwipeRefreshLayout.Widget;
 using AT.Markushi.UI;
-using Com.Canhub.Cropper;
 using DeepSound.Activities.Chat.Adapters;
 using DeepSound.Activities.SettingsUser;
 using DeepSound.Activities.Tabbes;
@@ -31,9 +30,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Globalization;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Timers;
 using Console = System.Console;
@@ -54,8 +51,6 @@ namespace DeepSound.Activities.Chat
         public RecyclerView ChatBoxRecyclerView;
         private LinearLayoutManager MLayoutManager;
         public static UserMessagesAdapter MAdapter;
-        private string LastSeenUser = "", TaskWork = "";
-        private long BeforeMessageId, FirstMessageId;
         private static long Userid;// to_id
         private static Timer Timer;
         private SwipeRefreshLayout SwipeRefreshLayout;
@@ -63,6 +58,13 @@ namespace DeepSound.Activities.Chat
         private HomeActivity GlobalContext;
         private static MessagesBoxActivity Instance;
         private DialogGalleryController GalleryController;
+        private int BeforeMessageId;
+
+        // Add this field to the class
+        private int FirstMessageId = 0;
+
+        // Add this field to the class
+        private string TaskWork = "Working";
 
         #endregion
 
@@ -414,8 +416,7 @@ namespace DeepSound.Activities.Chat
                 }
 
                 //Set Event Scroll
-                XamarinRecyclerViewOnScrollListener onScrollListener = new XamarinRecyclerViewOnScrollListener(MLayoutManager, SwipeRefreshLayout);
-                onScrollListener.LoadMoreEvent += Messages_OnScroll_OnLoadMoreEvent;
+                RecyclerView.OnScrollListener onScrollListener = new MyScrollListener();
                 ChatBoxRecyclerView.AddOnScrollListener(onScrollListener);
                 TaskWork = "Working";
 
@@ -489,7 +490,7 @@ namespace DeepSound.Activities.Chat
         {
             try
             {
-                //Code get last Message id where Updater >>
+                //Code get last Message id where Updater > >
                 MessageUpdater();
             }
             catch (Exception exception)
@@ -743,152 +744,110 @@ namespace DeepSound.Activities.Chat
             {
                 if (!Methods.CheckConnectivity())
                 {
-                    SwipeRefreshLayout.Refreshing = false;
                     Toast.MakeText(this, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short);
+                    return "0";
                 }
-                else
+
+                var (apiStatus, respond) = await RequestsAsync.Chat.GetChatConversationsAsync(Userid.ToString(), "30", FirstMessageId.ToString());
+                if (apiStatus == 200)
                 {
-                    var (apiStatus, respond) = await RequestsAsync.Chat.GetChatConversationsAsync(Userid.ToString(), "30", "0", FirstMessageId.ToString()).ConfigureAwait(false);
-                    if (apiStatus == 200)
+                    if (respond is GetChatConversationsObject result)
                     {
-                        if (respond is GetChatConversationsObject result)
+                        int responseList = result.Data.Count;
+                        if (responseList > 0)
                         {
-                            if (result.Data.Count > 0)
+                            foreach (var item in from item in result.Data let check = MAdapter.MessageList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
                             {
-                                var listApi = new ObservableCollection<ChatMessagesDataObject>();
+                                MAdapter.MessageList.Insert(0, item);
 
-                                foreach (var messages in result.Data.OrderBy(a => a.Time))
+                                int index = MAdapter.MessageList.IndexOf(item);
+                                if (index > -1)
                                 {
-                                    MAdapter.MessageList.Insert(0, messages);
-                                    MAdapter.NotifyItemInserted(MAdapter.MessageList.IndexOf(MAdapter.MessageList.FirstOrDefault()));
-
-                                    var index = MAdapter.MessageList.FirstOrDefault(a => a.Id == FirstMessageId);
-                                    if (index != null)
+                                    RunOnUiThread(() =>
                                     {
-                                        MAdapter.NotifyItemChanged(MAdapter.MessageList.IndexOf(index));
-                                        //Scroll Down >> 
-                                        ChatBoxRecyclerView.ScrollToPosition(MAdapter.MessageList.IndexOf(index));
+                                        try
+                                        {
+                                            MAdapter.NotifyItemInserted(index);
+
+                                            //Scroll Down >> 
+                                            ChatBoxRecyclerView.ScrollToPosition(MAdapter.MessageList.IndexOf(MAdapter.MessageList.FirstOrDefault(a => a.Id == FirstMessageId)));
+                                        }
+                                        catch (Exception ee)
+                                        {
+                                            Console.WriteLine(ee);
+                                        }
+                                    });
+                                }
+                            }
+
+                            RunOnUiThread(() =>
+                            {
+                                try
+                                {
+
+                                    MAdapter.NotifyItemRangeInserted(0, responseList);
+
+                                    //Insert to DataBase
+                                    SqLiteDatabase dbDatabase = new SqLiteDatabase();
+                                    dbDatabase.InsertOrReplaceMessages(MAdapter.MessageList);
+
+                                    var firstItem = MAdapter.MessageList.FirstOrDefault();
+                                    if (firstItem != null)
+                                    {
+                                        FirstMessageId = (int)firstItem.Id;
+
+                                        var dataUser = LastChatActivity.MAdapter.UserList?.FirstOrDefault(a => a.User.Id == Userid);
+                                        if (dataUser?.GetLastMessage != null)
+                                        {
+                                            dataUser.GetLastMessage.Value.GetLastMessageClass.Text = firstItem.Text;
+                                            int index = LastChatActivity.MAdapter.UserList.IndexOf(dataUser);
+
+                                            LastChatActivity.MAdapter.UserList.Move(index, 0);
+                                            LastChatActivity.MAdapter.NotifyItemMoved(index, 0);
+
+                                            var data = LastChatActivity.MAdapter.UserList.FirstOrDefault(a => a.User.Id == dataUser.User.Id);
+                                            if (data != null)
+                                            {
+                                                data.User = dataUser.User;
+                                                data.GetCountSeen = dataUser.GetCountSeen;
+                                                data.GetLastMessage = dataUser.GetLastMessage;
+                                                data.ChatTime = dataUser.ChatTime;
+
+                                                LastChatActivity.MAdapter.NotifyItemChanged(LastChatActivity.MAdapter.UserList.IndexOf(data));
+                                            }
+                                        }
                                     }
 
-                                    listApi.Insert(0, messages);
-
-                                    SqLiteDatabase dbDatabase = new SqLiteDatabase();
-                                    // Insert data user in database
-                                    dbDatabase.InsertOrReplaceMessages(listApi);
+                                    SwipeRefreshLayout.Refreshing = false;
+                                    SwipeRefreshLayout.Enabled = false;
                                 }
-                                return "1";
-                            }
-                            return "0";
+                                catch (Exception e)
+                                {
+                                    Methods.DisplayReportResultTrack(e);
+                                }
+                            });
                         }
                     }
-                    else Methods.DisplayReportResult(this, respond);
                 }
-                return "0";
+                else Methods.DisplayReportResult(this, respond);
+
+                return "1";
             }
-            catch (Exception exception)
+            catch (Exception e)
             {
-                Methods.DisplayReportResultTrack(exception);
+                Methods.DisplayReportResultTrack(e);
                 return "0";
             }
         }
 
         #endregion
 
-        #region Events
-
-        //Send Message type => "right_text"
-        private void OnClick_OfSendButton()
-        {
-            try
-            {
-                var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                string time2 = unixTimestamp.ToString(CultureInfo.InvariantCulture);
-
-                if (string.IsNullOrEmpty(EmojisIconEditTextView.Text) || string.IsNullOrWhiteSpace(EmojisIconEditTextView.Text))
-                {
-
-                }
-                else
-                {
-                    //Here on This function will send Text Messages to the user 
-
-                    //remove \n in a string
-                    string replacement = Regex.Replace(EmojisIconEditTextView.Text, @"\t|\n|\r", "");
-
-                    if (Methods.CheckConnectivity())
-                    {
-                        ChatMessagesDataObject message = new ChatMessagesDataObject
-                        {
-                            Id = Convert.ToInt32(unixTimestamp),
-                            FromId = UserDetails.UserId,
-                            ToId = Userid,
-                            Text = replacement,
-                            Seen = 0,
-                            Time = unixTimestamp,
-                            FromDeleted = 0,
-                            ToDeleted = 0,
-                            SentPush = 0,
-                            NotificationId = "",
-                            TypeTwo = "",
-                            Image = "",
-                            FullImage = "",
-                            ApiPosition = ApiPosition.Right,
-                            ApiType = ApiType.Text,
-                            Hash = time2
-                        };
-
-                        MAdapter.MessageList.Add(message);
-
-                        int index = MAdapter.MessageList.IndexOf(MAdapter.MessageList.Last());
-                        if (index > -1)
-                        {
-                            MAdapter.NotifyItemInserted(index);
-                            //Scroll Down >> 
-                            ChatBoxRecyclerView.ScrollToPosition(index);
-                        }
-
-                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => MessageController.SendMessageTask(Userid, EmojisIconEditTextView.Text, "", time2, UserInfoData) });
-                    }
-                    else
-                    {
-                        Toast.MakeText(this, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short);
-                    }
-
-                    EmojisIconEditTextView.Text = "";
-                }
-
-                ChatSendButton.Tag = "Text";
-                ChatSendButton.SetImageResource(Resource.Drawable.icon_send_vector);
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-        //Send messages >>  type text
-        private void Chat_sendButton_Touch(object sender, View.TouchEventArgs e)
-        {
-            try
-            {
-                if (e.Event?.Action == MotionEventActions.Down)
-                {
-                    OnClick_OfSendButton();
-                }
-                e.Handled = false;
-            }
-            catch (Exception exception)
-            {
-                Methods.DisplayReportResultTrack(exception);
-            }
-        }
-
-        //Sent image >> type media (OnActivityResult)
         private void ImageButtonOnClick(object sender, EventArgs e)
         {
             try
             {
-                GalleryController?.OpenDialogGallery();
+                //GalleryController.ShowDialog(GalleryController.OpenMedia.Gallery);
+                Toast.MakeText(this, "Media", ToastLength.Short).Show();
             }
             catch (Exception exception)
             {
@@ -896,294 +855,38 @@ namespace DeepSound.Activities.Chat
             }
         }
 
-        #endregion
-
-        #region Scroll
-
-        //Event Scroll #Messages
-        private void Messages_OnScroll_OnLoadMoreEvent(object sender, EventArgs eventArgs)
+        private void Chat_sendButton_Touch(object sender, View.TouchEventArgs e)
         {
             try
             {
-                //Start Loader Get from Database or API Request >>
-                SwipeRefreshLayout.Refreshing = true;
-                SwipeRefreshLayout.Enabled = true;
-
-                FirstMessageId = 0;
-
-                //Code get first Message id where LoadMore >>
-                var mes = MAdapter.MessageList.FirstOrDefault();
-                if (mes != null)
+                if (e.Event.Action == MotionEventActions.Down)
                 {
-                    FirstMessageId = mes.Id;
+                    ChatSendButton.SetImageResource(Resource.Drawable.icon_send_vector);
                 }
-
-                if (FirstMessageId > 0)
+                else if (e.Event.Action == MotionEventActions.Up)
                 {
-                    LoadMoreMessages();
+                    ChatSendButton.SetImageResource(Resource.Drawable.icon_send_vector);
                 }
-
-                SwipeRefreshLayout.Refreshing = false;
-                SwipeRefreshLayout.Enabled = false;
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
             }
         }
-
-        private class XamarinRecyclerViewOnScrollListener : RecyclerView.OnScrollListener
-        {
-            public delegate void LoadMoreEventHandler(object sender, EventArgs e);
-
-            public event LoadMoreEventHandler LoadMoreEvent;
-
-            private readonly LinearLayoutManager LayoutManager;
-            private readonly SwipeRefreshLayout SwipeRefreshLayout;
-
-            public XamarinRecyclerViewOnScrollListener(LinearLayoutManager layoutManager, SwipeRefreshLayout swipeRefreshLayout)
-            {
-                LayoutManager = layoutManager;
-                SwipeRefreshLayout = swipeRefreshLayout;
-            }
-
-            public override void OnScrolled(RecyclerView recyclerView, int dx, int dy)
-            {
-                try
-                {
-                    base.OnScrolled(recyclerView, dx, dy);
-
-                    var visibleItemCount = recyclerView.ChildCount;
-                    var totalItemCount = recyclerView.GetAdapter().ItemCount;
-
-                    var pastVisibleItems = LayoutManager.FindFirstVisibleItemPosition();
-                    if (pastVisibleItems == 0 && visibleItemCount != totalItemCount)
-                    {
-                        //Load More  from API Request
-                        LoadMoreEvent?.Invoke(this, null);
-                        //Start Load More messages From Database
-                    }
-                    else
-                    {
-                        if (SwipeRefreshLayout.Refreshing)
-                        {
-                            SwipeRefreshLayout.Refreshing = false;
-                            SwipeRefreshLayout.Enabled = false;
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    Methods.DisplayReportResultTrack(e);
-                }
-            }
-        }
-
-        #endregion
-
-        #region Menu
-
-        public override bool OnCreateOptionsMenu(IMenu menu)
-        {
-            MenuInflater.Inflate(Resource.Menu.MessagesBox_Menu, menu);
-            return base.OnCreateOptionsMenu(menu);
-        }
-
-        public override bool OnOptionsItemSelected(IMenuItem item)
-        {
-            switch (item.ItemId)
-            {
-                case Android.Resource.Id.Home:
-                    Finish();
-                    return true;
-                case Resource.Id.menu_block:
-                    MenuBlockClick();
-                    break;
-                case Resource.Id.menu_clear_chat:
-                    MenuClearChatClick();
-                    break;
-            }
-
-            return base.OnOptionsItemSelected(item);
-        }
-
-        //Block User
-        private void MenuBlockClick()
-        {
-            try
-            {
-                if (Methods.CheckConnectivity())
-                {
-                    var list = GlobalContext?.ProfileFragment?.ContactsFragment?.MAdapter?.UsersList;
-                    if (list?.Count > 0)
-                    {
-                        var dataFav = list.FirstOrDefault(a => a.Id == Userid);
-                        if (dataFav != null)
-                        {
-                            list.Remove(dataFav);
-                            GlobalContext?.ProfileFragment?.ContactsFragment?.MAdapter.NotifyDataSetChanged();
-                        }
-                    }
-
-                    MenuClearChatClick();
-
-                    Toast.MakeText(this, GetText(Resource.String.Lbl_Blocked_successfully), ToastLength.Short)?.Show();
-
-                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.User.BlockUnBlockUserAsync(Userid.ToString(), true) });
-                    Finish();
-                }
-                else
-                {
-                    Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-        private void MenuClearChatClick()
-        {
-            try
-            {
-                if (Methods.CheckConnectivity())
-                {
-                    MAdapter.MessageList.Clear();
-                    MAdapter.NotifyDataSetChanged();
-
-                    var userDelete = LastChatActivity.MAdapter.UserList?.FirstOrDefault(a => a.User.Id == Userid);
-                    if (userDelete != null)
-                    {
-                        LastChatActivity.MAdapter.UserList.Remove(userDelete);
-
-                        var index = LastChatActivity.MAdapter.UserList.IndexOf(userDelete);
-                        if (index > -1)
-                            LastChatActivity.MAdapter.NotifyDataSetChanged();
-                    }
-
-                    SqLiteDatabase dbDatabase = new SqLiteDatabase();
-                    dbDatabase.DeleteUserLastChat(Userid.ToString());
-                    dbDatabase.DeleteAllMessagesUser(UserDetails.UserId.ToString(), Userid.ToString());
-
-                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Chat.DeleteChatAsync(Userid.ToString()) });
-                }
-                else
-                {
-                    Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-        #endregion
-
-        #region Permissions && Result
-
-        //Permissions
-        public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
-        {
-            try
-            {
-                base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
-
-                if (requestCode == 108)
-                {
-                    if (grantResults.Length > 0 && grantResults[0] == Permission.Granted)
-                    {
-                        GalleryController?.OpenDialogGallery();
-                    }
-                    else
-                    {
-                        Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
-        }
-
-
-        #endregion
-
-        #region Result Gallery
 
         public void OnActivityResult(Java.Lang.Object p0)
         {
-            try
-            {
-                if (p0 is CropImageView.CropResult result)
-                {
-                    if (result.IsSuccessful)
-                    {
-                        var resultUri = result.UriContent;
-                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
-                        if (!string.IsNullOrEmpty(filepath))
-                        {
-                            //Do something with your Uri 
-                            var unixTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                            string time2 = unixTimestamp.ToString(CultureInfo.InvariantCulture);
-
-                            //Sent image 
-                            ChatMessagesDataObject message = new ChatMessagesDataObject
-                            {
-                                Id = Convert.ToInt32(unixTimestamp),
-                                FromId = UserDetails.UserId,
-                                ToId = Userid,
-                                Text = "",
-                                Seen = 0,
-                                Time = unixTimestamp,
-                                FromDeleted = 0,
-                                ToDeleted = 0,
-                                SentPush = 0,
-                                NotificationId = "",
-                                TypeTwo = "",
-                                Image = filepath,
-                                FullImage = filepath,
-                                ApiPosition = ApiPosition.Right,
-                                ApiType = ApiType.Image,
-                                Hash = time2
-                            };
-
-                            MAdapter.MessageList.Add(message);
-
-                            int index = MAdapter.MessageList.IndexOf(MAdapter.MessageList.Last());
-                            if (index > -1)
-                            {
-                                MAdapter.NotifyItemInserted(index);
-
-                                //Scroll Down >> 
-                                ChatBoxRecyclerView.ScrollToPosition(index);
-                            }
-
-                            PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => MessageController.SendMessageTask(Userid, "", filepath, time2, UserInfoData) });
-
-                            EmojisIconEditTextView.Text = "";
-
-                        }
-                        else
-                        {
-                            Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
-                        }
-                    }
-                    else
-                    {
-                        Toast.MakeText(this, GetText(Resource.String.Lbl_something_went_wrong), ToastLength.Long)?.Show();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                Methods.DisplayReportResultTrack(e);
-            }
+            // TODO: Handle the activity result here as needed for your app.
+            // For now, this is a stub implementation.
         }
 
-        #endregion
-
+        private class MyScrollListener : RecyclerView.OnScrollListener
+        {
+            public override void OnScrolled(RecyclerView recyclerView, int dx, int dy)
+            {
+                base.OnScrolled(recyclerView, dx, dy);
+                // Add your scroll logic here if needed
+            }
+        }
     }
 }

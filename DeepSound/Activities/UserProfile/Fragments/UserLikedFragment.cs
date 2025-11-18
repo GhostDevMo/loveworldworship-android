@@ -14,6 +14,7 @@ using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.MediaPlayerController;
 using DeepSound.Helpers.Model;
+using DeepSound.Helpers.ShimmerUtils;
 using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Global;
@@ -32,8 +33,9 @@ namespace DeepSound.Activities.UserProfile.Fragments
         #region Variables Basic
 
         private HomeActivity GlobalContext;
-        private View Inflated;
-        private ViewStub EmptyStateLayout;
+        private ViewStub EmptyStateLayout, ShimmerPageLayout;
+        private View Inflated, InflatedShimmer;
+        private TemplateShimmerInflater ShimmerInflater;
         private SwipeRefreshLayout SwipeRefreshLayout;
         private RecyclerView MRecycler;
         public RowSoundAdapter MAdapter;
@@ -64,6 +66,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
                 UserId = Arguments?.GetString("UserId");
 
                 InitComponent(view);
+                InitShimmer(view);
                 SetRecyclerViewAdapters();
 
                 PopupFilterList = new PopupFilterList(view, Activity, MAdapter);
@@ -113,6 +116,25 @@ namespace DeepSound.Activities.UserProfile.Fragments
                     BannerAd = AdsFacebook.InitAdView(Activity, adContainer, MRecycler);
                 else if (AppSettings.ShowAppLovinBannerAds)
                     AdsAppLovin.InitBannerAd(Activity, adContainer, MRecycler);
+                else
+                    AdsGoogle.InitBannerAdView(Activity, adContainer, MRecycler);
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        private void InitShimmer(View view)
+        {
+            try
+            {
+                ShimmerPageLayout = view.FindViewById<ViewStub>(Resource.Id.viewStubShimmer);
+                InflatedShimmer ??= ShimmerPageLayout.Inflate();
+
+                ShimmerInflater = new TemplateShimmerInflater();
+                ShimmerInflater.InflateLayout(Activity, InflatedShimmer, ShimmerTemplateStyle.SongRowTemplate);
+                ShimmerInflater.Show();
             }
             catch (Exception e)
             {
@@ -126,6 +148,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
             {
                 MAdapter = new RowSoundAdapter(Activity, "UserLikedFragment") { SoundsList = new ObservableCollection<SoundDataObject>() };
                 MAdapter.ItemClick += MAdapterItemClick;
+                MRecycler.SetItemAnimator(null);
                 MLayoutManager = new LinearLayoutManager(Activity);
                 MRecycler.SetLayoutManager(MLayoutManager);
                 MRecycler.HasFixedSize = true;
@@ -158,7 +181,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
             try
             {
                 //Code get last id where LoadMore >>
-                var item = MAdapter.SoundsList.LastOrDefault();
+                var item = MAdapter.SoundsList.LastOrDefault(a => a.TypeView != "Ads");
                 if (item != null && !string.IsNullOrEmpty(item.Id.ToString()) && !MainScrollEvent.IsLoading)
                     StartApiService(item.Id.ToString());
             }
@@ -218,6 +241,8 @@ namespace DeepSound.Activities.UserProfile.Fragments
         {
             try
             {
+                ShimmerInflater?.Show();
+
                 MAdapter.SoundsList.Clear();
                 MAdapter.NotifyDataSetChanged();
 
@@ -312,18 +337,25 @@ namespace DeepSound.Activities.UserProfile.Fragments
                         {
                             result.Data.SoundList = DeepSoundTools.ListFilter(result.Data?.SoundList);
 
+                            foreach (var item in from item in result.Data.SoundList let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
+                            {
+                                MAdapter.SoundsList.Add(item);
+
+                                if (MAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                {
+                                    MAdapter.SoundsList.Add(new SoundDataObject()
+                                    {
+                                        TypeView = "Ads"
+                                    });
+                                }
+                            }
+
                             if (countList > 0)
                             {
-                                foreach (var item in from item in result.Data?.SoundList let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
-                                {
-                                    MAdapter.SoundsList.Add(item);
-                                }
-
                                 Activity?.RunOnUiThread(() => { MAdapter.NotifyItemRangeInserted(countList, MAdapter.SoundsList.Count - countList); });
                             }
                             else
                             {
-                                MAdapter.SoundsList = new ObservableCollection<SoundDataObject>(result.Data.SoundList);
                                 Activity?.RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); });
                             }
                         }
@@ -363,6 +395,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
         {
             try
             {
+                ShimmerInflater?.Hide();
                 MainScrollEvent.IsLoading = false;
                 SwipeRefreshLayout.Refreshing = false;
 
@@ -392,6 +425,7 @@ namespace DeepSound.Activities.UserProfile.Fragments
             }
             catch (Exception e)
             {
+                ShimmerInflater?.Hide();
                 MainScrollEvent.IsLoading = false;
                 SwipeRefreshLayout.Refreshing = false;
                 Methods.DisplayReportResultTrack(e);

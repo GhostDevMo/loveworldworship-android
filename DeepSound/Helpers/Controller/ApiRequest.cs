@@ -1,6 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
-using Android.Gms.Auth.Api;
+using AndroidX.Credentials;
 using Com.Facebook;
 using Com.Facebook.Login;
 using DeepSound.Activities.Albums;
@@ -39,6 +39,13 @@ namespace DeepSound.Helpers.Controller
             if (Methods.CheckConnectivity())
             {
                 var (apiStatus, respond) = await Current.GetOptionsAsync();
+
+                // 🔧 Fix: handle invalid products_categories values
+                if (respond is string json)
+                    respond = JsonConvert.DeserializeObject<OptionsObject>(
+                        json.Replace("\"products_categories\":false", "\"products_categories\":{}")
+                    );
+
                 if (apiStatus == 200)
                 {
                     if (respond is OptionsObject result)
@@ -48,35 +55,7 @@ namespace DeepSound.Helpers.Controller
 
                         AppSettings.OneSignalAppId = result.DataOptions.AndroidMPushId;
 
-                        //Blog Categories
-                        var listBlog = result.DataOptions.BlogCategories?.Select(cat => new Classes.Categories
-                        {
-                            CategoriesId = cat.Key,
-                            CategoriesName = Methods.FunString.DecodeString(cat.Value),
-                            CategoriesColor = "#ffffff",
-                        }).ToList();
-
-                        CategoriesController.ListCategoriesBlog.Clear();
-                        CategoriesController.ListCategoriesBlog = listBlog?.Count switch
-                        {
-                            > 0 => new ObservableCollection<Classes.Categories>(listBlog),
-                            _ => CategoriesController.ListCategoriesBlog
-                        };
-
-                        //Products Categories
-                        var listProducts = result.DataOptions.ProductsCategories?.Select(cat => new Classes.Categories
-                        {
-                            CategoriesId = cat.Key,
-                            CategoriesName = Methods.FunString.DecodeString(cat.Value),
-                            CategoriesColor = "#ffffff",
-                        }).ToList();
-
-                        CategoriesController.ListCategoriesProducts.Clear();
-                        CategoriesController.ListCategoriesProducts = listProducts?.Count switch
-                        {
-                            > 0 => new ObservableCollection<Classes.Categories>(listProducts),
-                            _ => CategoriesController.ListCategoriesProducts
-                        };
+                        CategoriesController.SetListCategories(result);
 
                         SqLiteDatabase dbDatabase = new SqLiteDatabase();
                         dbDatabase.InsertOrUpdateSettings(result.DataOptions);
@@ -111,6 +90,9 @@ namespace DeepSound.Helpers.Controller
                                 UserDetails.IsPro = result.Data.IsPro.ToString();
                                 UserDetails.Url = result.Data.Url;
                                 UserDetails.FullName = result.Data.Name;
+
+                                if (result.Details != null)
+                                    result.Data.Details = result.Details;
 
                                 ListUtils.MyUserInfoList = new ObservableCollection<UserDataObject> { result.Data };
 
@@ -339,44 +321,54 @@ namespace DeepSound.Helpers.Controller
             {
                 if (RunLogout == false)
                 {
+                    Constant.IsLoggingOut = true;
                     RunLogout = true;
 
                     await RemoveData("Delete");
 
                     context?.RunOnUiThread(() =>
                     {
-                        Constant.IsLoggingOut = true;
-                        Methods.Path.DeleteAll_FolderUser();
+                        try
+                        {
+                            OneSignalNotification.Instance.UnRegisterNotificationDevice();
 
-                        SqLiteDatabase dbDatabase = new SqLiteDatabase();
-                        dbDatabase.DropAll();
+                            Methods.Path.DeleteAll_FolderUser();
 
-                        Runtime.GetRuntime()?.RunFinalization();
-                        Runtime.GetRuntime()?.Gc();
-                        TrimCache(context);
+                            SqLiteDatabase dbDatabase = new SqLiteDatabase();
+                            dbDatabase.DropAll();
 
-                        ListUtils.ClearAllList();
+                            Runtime.GetRuntime()?.RunFinalization();
+                            Runtime.GetRuntime()?.Gc();
+                            TrimCache(context);
 
-                        UserDetails.ClearAllValueUserDetails();
+                            ListUtils.ClearAllList();
+                            CategoriesController.ResetListCategories();
 
-                        dbDatabase.CheckTablesStatus();
 
+                            UserDetails.ClearAllValueUserDetails();
 
-                        context.StopService(new Intent(context, typeof(AppApiService)));
+                            dbDatabase.CheckTablesStatus();
 
-                        SharedPref.SharedData?.Edit()?.Clear()?.Commit();
-                        SharedPref.InAppReview?.Edit()?.Clear()?.Commit();
+                            context.StopService(new Intent(context, typeof(AppApiService)));
 
-                        Intent intent = new Intent(context, typeof(FirstActivity));
-                        intent.AddCategory(Intent.CategoryHome);
-                        intent.SetAction(Intent.ActionMain);
-                        intent.AddFlags(ActivityFlags.ClearTop | ActivityFlags.NewTask | ActivityFlags.ClearTask);
-                        context.StartActivity(intent);
-                        context.FinishAffinity();
-                        context.Finish();
+                            SharedPref.SharedData?.Edit()?.Clear()?.Commit();
+                            SharedPref.InAppReview?.Edit()?.Clear()?.Commit();
+
+                            Intent intent = new Intent(context, typeof(FirstActivity));
+                            intent.AddCategory(Intent.CategoryHome);
+                            intent.SetAction(Intent.ActionMain);
+                            intent.AddFlags(ActivityFlags.ClearTop | ActivityFlags.NewTask | ActivityFlags.ClearTask);
+                            context.StartActivity(intent);
+                            context.FinishAffinity();
+                            context.Finish();
+
+                            RunLogout = false;
+                        }
+                        catch (Exception e)
+                        {
+                            Methods.DisplayReportResultTrack(e);
+                        }
                     });
-
-                    RunLogout = false;
                 }
             }
             catch (Exception e)
@@ -391,43 +383,53 @@ namespace DeepSound.Helpers.Controller
             {
                 if (RunLogout == false)
                 {
+                    Constant.IsLoggingOut = true;
                     RunLogout = true;
 
                     await RemoveData("Logout");
 
                     context?.RunOnUiThread(() =>
                     {
-                        Constant.IsLoggingOut = true;
-                        Methods.Path.DeleteAll_FolderUser();
+                        try
+                        {
+                            OneSignalNotification.Instance.UnRegisterNotificationDevice();
 
-                        SqLiteDatabase dbDatabase = new SqLiteDatabase();
-                        dbDatabase.DropAll();
+                            Methods.Path.DeleteAll_FolderUser();
 
-                        Runtime.GetRuntime()?.RunFinalization();
-                        Runtime.GetRuntime()?.Gc();
-                        TrimCache(context);
+                            SqLiteDatabase dbDatabase = new SqLiteDatabase();
+                            dbDatabase.DropAll();
 
-                        ListUtils.ClearAllList();
+                            Runtime.GetRuntime()?.RunFinalization();
+                            Runtime.GetRuntime()?.Gc();
+                            TrimCache(context);
 
-                        UserDetails.ClearAllValueUserDetails();
+                            ListUtils.ClearAllList();
+                            CategoriesController.ResetListCategories();
 
-                        dbDatabase.CheckTablesStatus();
+                            UserDetails.ClearAllValueUserDetails();
 
-                        context.StopService(new Intent(context, typeof(AppApiService)));
+                            dbDatabase.CheckTablesStatus();
 
-                        SharedPref.SharedData?.Edit()?.Clear()?.Commit();
-                        SharedPref.InAppReview?.Edit()?.Clear()?.Commit();
+                            context.StopService(new Intent(context, typeof(AppApiService)));
 
-                        Intent intent = new Intent(context, typeof(FirstActivity));
-                        intent.AddCategory(Intent.CategoryHome);
-                        intent.SetAction(Intent.ActionMain);
-                        intent.AddFlags(ActivityFlags.ClearTop | ActivityFlags.NewTask | ActivityFlags.ClearTask);
-                        context.StartActivity(intent);
-                        context.FinishAffinity();
-                        context.Finish();
+                            SharedPref.SharedData?.Edit()?.Clear()?.Commit();
+                            SharedPref.InAppReview?.Edit()?.Clear()?.Commit();
+
+                            Intent intent = new Intent(context, typeof(FirstActivity));
+                            intent.AddCategory(Intent.CategoryHome);
+                            intent.SetAction(Intent.ActionMain);
+                            intent.AddFlags(ActivityFlags.ClearTop | ActivityFlags.NewTask | ActivityFlags.ClearTask);
+                            context.StartActivity(intent);
+                            context.FinishAffinity();
+                            context.Finish();
+
+                            RunLogout = false;
+                        }
+                        catch (Exception e)
+                        {
+                            Methods.DisplayReportResultTrack(e);
+                        }
                     });
-
-                    RunLogout = false;
                 }
             }
             catch (Exception e)
@@ -501,12 +503,11 @@ namespace DeepSound.Helpers.Controller
 
                 try
                 {
-                    if (AppSettings.ShowGoogleLogin && LoginActivity.MGoogleSignInClient != null)
-                        if (Auth.GoogleSignInApi != null)
-                        {
-                            LoginActivity.MGoogleSignInClient.SignOut();
-                            LoginActivity.MGoogleSignInClient = null;
-                        }
+                    if (AppSettings.ShowGoogleLogin && LoginActivity.CredentialManager != null)
+                    {
+                        LoginActivity.CredentialManager.ClearCredentialState(new ClearCredentialStateRequest(), null);
+                        LoginActivity.CredentialManager = null;
+                    }
 
                     if (AppSettings.ShowFacebookLogin)
                     {
@@ -519,12 +520,7 @@ namespace DeepSound.Helpers.Controller
                     }
 
                     AlbumsFragment.Instance?.MAdapter?.SoundsList?.Clear();
-
-                    OneSignalNotification.Instance.UnRegisterNotificationDevice();
-                    UserDetails.ClearAllValueUserDetails();
-
                     Constant.Player?.Release();
-
                     GC.Collect();
                 }
                 catch (Exception exception)

@@ -278,7 +278,7 @@ namespace DeepSound.Payment
                     {
                         Toast.MakeText(this, GetText(Resource.String.Lbl_YourWasReceiptSuccessfullyUploaded), ToastLength.Long)?.Show();
 
-                        AndHUD.Shared.Dismiss(this);
+                        AndHUD.Shared.Dismiss();
                         Finish();
                     }
                     else
@@ -294,7 +294,7 @@ namespace DeepSound.Payment
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
             }
         }
 
@@ -322,7 +322,7 @@ namespace DeepSound.Payment
             {
                 base.OnRequestPermissionsResult(requestCode, permissions, grantResults);
 
-                if (requestCode == 106)
+                if (requestCode == 108)
                 {
                     if (grantResults.Length > 0 && grantResults[0] == Permission.Granted)
                     {
@@ -353,7 +353,7 @@ namespace DeepSound.Payment
                     if (result.IsSuccessful)
                     {
                         var resultUri = result.UriContent;
-                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        string filepath = Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu ? result.GetUriFilePath(this, true) : Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
                         if (!string.IsNullOrEmpty(filepath))
                         {
                             //Do something with your Uri

@@ -157,7 +157,7 @@ namespace DeepSound.Payment
                     switch (apiStatus)
                     {
                         case 200:
-                            AndHUD.Shared.Dismiss(ActivityContext);
+                            AndHUD.Shared.Dismiss();
 
                             Toast.MakeText(ActivityContext, ActivityContext.GetText(Resource.String.Lbl_PaymentSuccessfully), ToastLength.Short)?.Show();
 
@@ -174,7 +174,7 @@ namespace DeepSound.Payment
             }
             catch (Exception e)
             {
-                AndHUD.Shared.Dismiss(ActivityContext);
+                AndHUD.Shared.Dismiss();
                 Methods.DisplayReportResultTrack(e);
             }
         }

@@ -6,14 +6,18 @@
 	<!--@color/textDark_color-->
 	<!--Get colors from: http://www.materialpalette.com/-->
 
-	<color name="accent">#FF8216</color>
-	<color name="primary">#FFAB38</color>
-	<color name="secondery">#FF9D48</color>
-	<color name="accent_transparent">#80FF8216</color>
-	<color name="accent_transparentligher">#14FF8216</color>
-	<color name="primary_transparent">#30f98f1d</color>
+	<color name="accent">#ff5757</color>
+	<color name="primary">#8fabf7</color>
+	<color name="secondery">#ff5757</color>
+	<color name="accent_transparent">#444444</color>
+	<color name="accent_transparentligher">#444444</color>
+	<color name="primary_transparent">#c6d4fb</color>
+	<color name="colorAccent">#ff5757</color>
+	<color name="transparent">#00000000</color>
 
-	<color name="primaryDark">#bc6910</color>
+
+
+	<color name="primaryDark">#8fabf7</color>
 	<color name="primaryLight">#FFF3E8</color>
 
 	<color name="StartColorToolBar">#ffff</color>
@@ -27,7 +31,7 @@
  
 	<color name="textDark_color">#212121</color>
 	<color name="text_color_in_between">#9E9E9E</color>
-	<color name="lightcolor">#efefef</color>
+	<color name="LightColor">#efefef</color>
 	<color name="anderblack_color">#ffefefef</color>
 	<color name="lightPrimary">#B3E5FC</color>
 	<color name="textIcon">@color/white</color>
@@ -36,9 +40,10 @@
 	<color name="secondaryText2">#616161</color>
 	<color name="divider">#B6B6B6</color>
 	<color name="activated_color">#E8E8E8</color>
-	
 
-	<color name="Dialog_Accent_color">#c7ac56</color>
+	<color name="shimmerColor">#C2C2C2</color>
+
+	<color name="Dialog_Accent_color">#ff5757</color>
 	<color name="Dialog_text_color">#fafafa</color>
 	<color name="Dialog_background_color">#5c8487</color>
 	<color name="Dialog_Btn_color">#992e49</color>
@@ -46,8 +51,8 @@
 	<color name="AutoLinkText_ModePhone_color">#008000</color>
 	<color name="AutoLinkText_ModeEmail_color">#3e0e4c</color>
 	<color name="AutoLinkText_ModeHashtag_color">#0000ff</color>
-	<color name="AutoLinkText_ModeUrl_color">#df541e</color>
-	<color name="AutoLinkText_ModeMention_color">#ff0000</color>
+	<color name="AutoLinkText_ModeUrl_color">#FF0000</color>
+	<color name="AutoLinkText_ModeMention_color">#FF0000</color>
 
 	<color name="right_ModePhone_color">@color/white</color>
 	<color name="right_ModeEmail_color">@color/white</color>
@@ -70,7 +75,7 @@
  
 	<color name="WoWonderLogin_color">#a84849</color>
  
-	<color name="DragTransparentBlack">#90000000</color>
+	<color name="DragTransparentBlack">#4D000000</color>
 	<color name="transparentDark">#F2000000</color>
 
 	<color name="progress_primary">#FFFFFF</color>

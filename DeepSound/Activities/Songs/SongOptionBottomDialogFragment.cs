@@ -35,7 +35,7 @@ namespace DeepSound.Activities.Songs
         private ImageView Image, IconHeart;
         private TextView TxtTitle, TxtSeconderText;
 
-        private LinearLayout PlayNextLayout, PlayingQueueLayout, EditSongLayout, AddPlaylistLayout, GoToArtistLayout, DetailsLayout, RePostLayout, ReportLayout, ReportCopyrightLayout, SetRingtoneLayout, AddToBlackListLayout, DeleteLayout;
+        private LinearLayout PlayNextLayout, PlayingQueueLayout, EditSongLayout, AddPlaylistLayout, GoToAlbumLayout, GoToArtistLayout, DetailsLayout, RePostLayout, ReportLayout, ReportCopyrightLayout, SetRingtoneLayout, AddToBlackListLayout, ShareLayout, DeleteLayout;
 
         private SoundDataObject SongsClass;
         private string NamePage;
@@ -126,9 +126,15 @@ namespace DeepSound.Activities.Songs
                 PlayingQueueLayout = view.FindViewById<LinearLayout>(Resource.Id.PlayingQueueLayout);
                 EditSongLayout = view.FindViewById<LinearLayout>(Resource.Id.EditSongLayout);
                 AddPlaylistLayout = view.FindViewById<LinearLayout>(Resource.Id.AddPlaylistLayout);
+                GoToAlbumLayout = view.FindViewById<LinearLayout>(Resource.Id.GoToAlbumLayout);
                 GoToArtistLayout = view.FindViewById<LinearLayout>(Resource.Id.GoToArtistLayout);
                 DetailsLayout = view.FindViewById<LinearLayout>(Resource.Id.DetailsLayout);
                 RePostLayout = view.FindViewById<LinearLayout>(Resource.Id.RePostLayout);
+                ReportLayout = view.FindViewById<LinearLayout>(Resource.Id.ReportLayout);
+                ReportCopyrightLayout = view.FindViewById<LinearLayout>(Resource.Id.ReportCopyrightLayout);
+                SetRingtoneLayout = view.FindViewById<LinearLayout>(Resource.Id.SetRingtoneLayout);
+                AddToBlackListLayout = view.FindViewById<LinearLayout>(Resource.Id.AddToBlackListLayout);
+                ShareLayout = view.FindViewById<LinearLayout>(Resource.Id.ShareLayout);
                 DeleteLayout = view.FindViewById<LinearLayout>(Resource.Id.DeleteLayout);
 
                 IconHeart.Click += IconHeartOnClick;
@@ -136,6 +142,7 @@ namespace DeepSound.Activities.Songs
                 PlayingQueueLayout.Click += PlayingQueueLayoutOnClick;
                 EditSongLayout.Click += EditSongLayoutOnClick;
                 AddPlaylistLayout.Click += AddPlaylistLayoutOnClick;
+                GoToAlbumLayout.Click += GoToAlbumLayoutOnClick;
                 GoToArtistLayout.Click += GoToArtistLayoutOnClick;
                 DetailsLayout.Click += DetailsLayoutOnClick;
                 RePostLayout.Click += RePostLayoutOnClick;
@@ -143,8 +150,11 @@ namespace DeepSound.Activities.Songs
                 ReportCopyrightLayout.Click += ReportCopyrightLayoutOnClick;
                 SetRingtoneLayout.Click += SetRingtoneLayoutOnClick;
                 AddToBlackListLayout.Click += AddToBlackListLayoutOnClick;
+                ShareLayout.Click += ShareLayoutOnClick;
                 DeleteLayout.Click += DeleteLayoutOnClick;
 
+                //wael change to Visible after update 
+                GoToAlbumLayout.Visibility = ViewStates.Gone;
             }
             catch (Exception e)
             {
@@ -501,7 +511,8 @@ namespace DeepSound.Activities.Songs
                         {
                             Methods.DisplayReportResultTrack(xed);
                         }
-                    };
+                    }
+                    ;
                 }
             }
             catch (Exception e)
@@ -540,6 +551,19 @@ namespace DeepSound.Activities.Songs
                 ClickListeners.OnNotInterestedSongsClick(new MoreClickEventArgs { Button = IconHeart, SongsClass = SongsClass }, NamePage);
                 Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_SongRemoved), ToastLength.Short)?.Show();
 
+                Dismiss();
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
+        private void ShareLayoutOnClick(object sender, EventArgs e)
+        {
+            try
+            {
+                ClickListeners.OnShareClick(new MoreClickEventArgs() { SongsClass = SongsClass });
                 Dismiss();
             }
             catch (Exception exception)

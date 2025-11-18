@@ -95,7 +95,6 @@ namespace DeepSound.Helpers.Utils
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="context"></param>
         /// <param name="colors">new int[]{Color.LightGreen,Color.DarkGreen,}</param>
         /// <param name="width"></param>
         /// <param name="height"></param>

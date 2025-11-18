@@ -338,6 +338,9 @@ namespace DeepSound.Activities.Event
             {
                 if (e?.Event?.Action != MotionEventActions.Up) return;
 
+
+                Methods.HideKeyboard(this);
+
                 TypeDialog = "Timezone";
 
                 var dialogList = new MaterialAlertDialogBuilder(this);
@@ -361,6 +364,8 @@ namespace DeepSound.Activities.Event
             try
             {
                 if (e?.Event?.Action != MotionEventActions.Up) return;
+
+                Methods.HideKeyboard(this);
 
                 TypeDialog = "Location";
 
@@ -387,6 +392,8 @@ namespace DeepSound.Activities.Event
             try
             {
                 if (e?.Event?.Action != MotionEventActions.Up) return;
+
+                Methods.HideKeyboard(this);
 
                 TypeDialog = "SellTicket";
 
@@ -516,7 +523,7 @@ namespace DeepSound.Activities.Event
                     {
                         if (respond is CreateEventObject result)
                         {
-                            AndHUD.Shared.Dismiss(this);
+                            AndHUD.Shared.Dismiss();
                             Console.WriteLine(result.Message);
 
                             Intent intent = new Intent();
@@ -534,7 +541,7 @@ namespace DeepSound.Activities.Event
             }
             catch (Exception exception)
             {
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
                 Methods.DisplayReportResultTrack(exception);
             }
         }
@@ -807,7 +814,7 @@ namespace DeepSound.Activities.Event
                     if (result.IsSuccessful)
                     {
                         var resultUri = result.UriContent;
-                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        string filepath = Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu ? result.GetUriFilePath(this, true) : Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
                         if (!string.IsNullOrEmpty(filepath))
                         {
                             //Do something with your Uri
@@ -861,7 +868,7 @@ namespace DeepSound.Activities.Event
                     var frag = PopupDialogController.DatePickerFragment.NewInstance(delegate (DateTime time)
                     {
                         TxtStartDate.Text = time.Date.ToString("yyyy-MM-dd");
-                    });
+                    }, "StartDate");
 
                     frag.Show(SupportFragmentManager, PopupDialogController.DatePickerFragment.Tag);
                 }
@@ -870,7 +877,7 @@ namespace DeepSound.Activities.Event
                     var frag = PopupDialogController.DatePickerFragment.NewInstance(delegate (DateTime time)
                     {
                         TxtEndDate.Text = time.Date.ToString("yyyy-MM-dd");
-                    });
+                    }, "StartDate");
                     frag.Show(SupportFragmentManager, PopupDialogController.DatePickerFragment.Tag);
                 }
             }

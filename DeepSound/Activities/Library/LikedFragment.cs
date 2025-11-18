@@ -185,6 +185,7 @@ namespace DeepSound.Activities.Library
             {
                 MAdapter = new RowSoundAdapter(Activity, "LikedFragment") { SoundsList = new ObservableCollection<SoundDataObject>() };
                 MAdapter.ItemClick += MAdapterItemClick;
+                MRecycler.SetItemAnimator(null);
                 LayoutManager = new LinearLayoutManager(Activity);
                 MRecycler.SetLayoutManager(LayoutManager);
                 MRecycler.HasFixedSize = true;
@@ -217,7 +218,7 @@ namespace DeepSound.Activities.Library
             try
             {
                 //Code get last id where LoadMore >>
-                var item = MAdapter.SoundsList.LastOrDefault();
+                var item = MAdapter.SoundsList.LastOrDefault(a => a.TypeView != "Ads");
                 if (item != null && !string.IsNullOrEmpty(item.Id.ToString()) && !MainScrollEvent.IsLoading)
                     StartApiService(item.Id.ToString());
             }
@@ -324,18 +325,25 @@ namespace DeepSound.Activities.Library
                         var respondList = result.Data?.SoundList?.Count;
                         if (respondList > 0)
                         {
+                            foreach (var item in from item in result.Data.SoundList let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
+                            {
+                                MAdapter.SoundsList.Add(item);
+
+                                if (MAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                {
+                                    MAdapter.SoundsList.Add(new SoundDataObject()
+                                    {
+                                        TypeView = "Ads"
+                                    });
+                                }
+                            }
+
                             if (countList > 0)
                             {
-                                foreach (var item in from item in result.Data?.SoundList let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
-                                {
-                                    MAdapter.SoundsList.Add(item);
-                                }
-
                                 Activity?.RunOnUiThread(() => { MAdapter.NotifyItemRangeInserted(countList, MAdapter.SoundsList.Count - countList); });
                             }
                             else
                             {
-                                MAdapter.SoundsList = new ObservableCollection<SoundDataObject>(result.Data?.SoundList);
                                 Activity?.RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); });
                             }
                         }

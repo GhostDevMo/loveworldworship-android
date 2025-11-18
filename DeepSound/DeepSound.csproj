@@ -1,46 +1,63 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>net7.0-android</TargetFramework>
+		<TargetFramework>net8.0-android34.0</TargetFramework>
 		<SupportedOSPlatformVersion>21</SupportedOSPlatformVersion>
 		<OutputType>Exe</OutputType>
 		<Nullable>disable</Nullable>
 		<ImplicitUsings>disable</ImplicitUsings>
-		<ApplicationId>com.DeepSound.Android</ApplicationId>
+		<ApplicationId>com.deepsound.music</ApplicationId>
 		<ApplicationVersion>1</ApplicationVersion>
 		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-		<Copyright>Copyright © 2023</Copyright>
-		<AndroidSigningKeyStore>my-release-key.keystore</AndroidSigningKeyStore>
+		<Copyright>Copyright © 2024</Copyright>
+		<AndroidSigningKeyStore>KeyApk\deepsound.keystore</AndroidSigningKeyStore>
 		<Title>DeepSound</Title>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
 		<JavaMaximumHeapSize>3G</JavaMaximumHeapSize>
 		<AndroidKeyStore>True</AndroidKeyStore>
-		<AndroidSigningKeyAlias>loveworld_worship</AndroidSigningKeyAlias>
-		<AndroidSigningStorePass>karthatizo500</AndroidSigningStorePass>
-		<AndroidSigningKeyPass>karthatizo500</AndroidSigningKeyPass>
+		<AndroidSigningKeyAlias>deepsound</AndroidSigningKeyAlias>
+		<AndroidSigningStorePass>aaaaaaaa</AndroidSigningStorePass>
+		<AndroidSigningKeyPass>aaaaaaaa</AndroidSigningKeyPass>
+		<!--apk - aab-->
 		<AndroidPackageFormat>apk</AndroidPackageFormat>
 		<NoWarn>1701;1702;CA1416;CA1422;CS0618;SYSLIB0039;</NoWarn>
+		<!--for Debug : android-arm - android-arm64 - android-x86 - android-x64 -->
+		<RuntimeIdentifiers>android-arm;android-arm64;android-x86;android-x64;</RuntimeIdentifiers>
 		<PublishTrimmed>False</PublishTrimmed>
 		<RunAOTCompilation>False</RunAOTCompilation>
-		<AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
 		<AndroidUseAapt2>True</AndroidUseAapt2>
+		<!--<AndroidLinkTool>r8</AndroidLinkTool>-->
+		<AndroidStripILAfterAOT>False</AndroidStripILAfterAOT>
+		<AndroidEnableProfiledAot>False</AndroidEnableProfiledAot>
+		<EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
 	</PropertyGroup>
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<AndroidSupportedAbis>armeabi-v7a;arm64-v8a</AndroidSupportedAbis>
 		<JavaMaximumHeapSize>3G</JavaMaximumHeapSize>
 		<AndroidKeyStore>True</AndroidKeyStore>
-		<AndroidSigningKeyAlias>loveworld_worship</AndroidSigningKeyAlias>
-		<AndroidSigningStorePass>karthatizo500</AndroidSigningStorePass>
-		<AndroidSigningKeyPass>karthatizo500</AndroidSigningKeyPass>
+		<AndroidSigningKeyAlias>DeepSound</AndroidSigningKeyAlias>
+		<AndroidSigningStorePass>aaaaaaaa</AndroidSigningStorePass>
+		<AndroidSigningKeyPass>aaaaaaaa</AndroidSigningKeyPass>
+		<!--apk - aab-->
 		<AndroidPackageFormat>apk</AndroidPackageFormat>
+		<!--<AndroidPackageFormats>apk;aab</AndroidPackageFormats>-->
 		<NoWarn>1701;1702;CA1416;CA1422;CS0618;SYSLIB0039</NoWarn>
+		<!--for Release Recommended : android-arm - android-arm64 -->
+		<RuntimeIdentifiers>android-arm;android-arm64;</RuntimeIdentifiers>
 		<PublishTrimmed>True</PublishTrimmed>
 		<RunAOTCompilation>True</RunAOTCompilation>
-		<AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
 		<AndroidUseAapt2>True</AndroidUseAapt2>
+		<!--<AndroidLinkTool>r8</AndroidLinkTool>-->
+		<AndroidStripILAfterAOT>True</AndroidStripILAfterAOT>
+		<AndroidEnableProfiledAot>True</AndroidEnableProfiledAot>
+		<EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
 	</PropertyGroup>
-	<!--android-arm - android-arm64 - android-x86 - android-x64 -->
 	<PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)'))=='android'">
-		<RuntimeIdentifiers>android-arm;android-arm64</RuntimeIdentifiers>
+		<!--link path -->
+		<AndroidManifest Condition=" Exists('$(AndroidProjectFolder)AndroidManifest.xml') ">$(AndroidProjectFolder)AndroidManifest.xml</AndroidManifest>
+		<MonoAndroidResourcePrefix>$(AndroidProjectFolder)Resources</MonoAndroidResourcePrefix>
+		<MonoAndroidAssetsPrefix>$(AndroidProjectFolder)Assets</MonoAndroidAssetsPrefix>
 	</PropertyGroup>
 	<ItemGroup>
 		<AndroidResource Include="Resources\drawable-hdpi\addImage.webp" />
@@ -124,213 +141,257 @@
 	</ItemGroup>
 	<ItemGroup>
 		<GoogleServicesJson Include="google-services.json" />
+		<ProguardConfiguration Include="Proguard.cfg" />
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="AndHUD" Version="2.0.0" />
-		<PackageReference Include="Anjo.Android.Airbnb.Mavericks" Version="3.0.2" />
-		<PackageReference Include="Anjo.Android.AppLovin" Version="11.10.0" />
-		<PackageReference Include="Anjo.Android.Facebook" Version="16.0.0" />
-		<PackageReference Include="Anjo.Android.Facebook.Applinks" Version="16.0.0" />
-		<PackageReference Include="Anjo.Android.Facebook.Common" Version="16.0.0" />
-		<PackageReference Include="Anjo.Android.Facebook.Core" Version="16.0.0" />
-		<PackageReference Include="Anjo.Android.Facebook.Login" Version="16.0.0" />
-		<PackageReference Include="Anjo.Android.Facebook.Messenger" Version="16.0.0" />
-		<PackageReference Include="Anjo.Android.Facebook.Share" Version="16.0.0" />
-		<PackageReference Include="Anjo.Android.Cashfree.Analytics" Version="1.0.13.1" />
-		<PackageReference Include="Anjo.Android.Cashfree.Api" Version="2.0.7" />
-		<PackageReference Include="Anjo.Android.Cashfree.Base" Version="1.0.1.1" />
-		<PackageReference Include="Anjo.Android.Cashfree.Core" Version="2.0.7" />
-		<PackageReference Include="Anjo.Android.Cashfree.ImageCaching" Version="1.0.5.1" />
-		<PackageReference Include="Anjo.Android.Cashfree.Network" Version="1.0.4" />
-		<PackageReference Include="Anjo.Android.Cashfree.Ui" Version="2.0.7" />
-		<PackageReference Include="Anjo.Android.Flutterwave" Version="2.1.39.1" />
-		<PackageReference Include="Anjo.Android.Flutterwave.Cache" Version="2.1.39.1" />
-		<PackageReference Include="Anjo.Android.Flutterwave.Commons" Version="2.1.39.1" />
-		<PackageReference Include="Anjo.Android.Flutterwave.Core" Version="2.1.39.1" />
-		<PackageReference Include="Anjo.Android.Flutterwave.Logger" Version="2.1.39.1" />
-		<PackageReference Include="Anjo.Android.Flutterwave.Presentation" Version="2.1.39.1" />
-		<PackageReference Include="Anjo.Android.Flutterwave.Remote" Version="2.1.39.1" />
-		<PackageReference Include="Anjo.Android.Flutterwave.Utils" Version="2.1.39.1" />
-		<PackageReference Include="Anjo.Android.GoogleServices.Ads" Version="22.0.0" />
-		<PackageReference Include="Anjo.Android.GoogleServices.AdsBase" Version="22.0.0" />
-		<PackageReference Include="Anjo.Android.GoogleServices.AdsLite" Version="22.0.0" />
+		<PackageReference Include="AndHUD" Version="2.0.2" />
+		<PackageReference Include="Anjo.Android.Airbnb.Mavericks" Version="3.0.9" />
+		<PackageReference Include="Anjo.Android.AppLovin" Version="13.0.1" />
+		<PackageReference Include="Anjo.Android.AppLovin.Mediation.FacebookAdapter" Version="6.16.0.2" />
+		<PackageReference Include="Anjo.Android.AppLovin.Mediation.GoogleAdMobAdapter" Version="23.0.0" />
+		<PackageReference Include="Anjo.Android.BrainTree.BrowserSwitch" Version="2.6.0" />
+		<PackageReference Include="Anjo.Android.BrainTree.Card" Version="4.38.2" />
+		<PackageReference Include="Anjo.Android.BrainTree.CardForm" Version="5.4.0.5" />
+		<PackageReference Include="Anjo.Android.BrainTree.Core" Version="4.38.2" />
+		<PackageReference Include="Anjo.Android.BrainTree.DataCollector" Version="4.38.2" />
+		<PackageReference Include="Anjo.Android.BrainTree.DropIn" Version="6.13.0" />
+		<PackageReference Include="Anjo.Android.BrainTree.GooglePayment" Version="4.38.2" />
+		<PackageReference Include="Anjo.Android.BrainTree.PayPal" Version="4.38.2" />
+		<PackageReference Include="Anjo.Android.BrainTree.PayPalDataCollector" Version="4.38.2" />
+		<PackageReference Include="Anjo.Android.BrainTree.SharedUtilities" Version="4.38.2" />
+		<PackageReference Include="Anjo.Android.BrainTree.ThreeDSecure" Version="4.38.2" />
+		<PackageReference Include="Anjo.Android.BrainTree.UnionPay" Version="4.38.2" />
+		<PackageReference Include="Anjo.Android.BrainTree.Venmo" Version="4.38.2" />
+		<PackageReference Include="Anjo.Android.Facebook" Version="17.0.0" />
+		<PackageReference Include="Anjo.Android.Facebook.Applinks" Version="17.0.0" />
+		<PackageReference Include="Anjo.Android.Facebook.AudienceNetwork" Version="6.17.0" />
+		<PackageReference Include="Anjo.Android.Facebook.Common" Version="17.0.0" />
+		<PackageReference Include="Anjo.Android.Facebook.Core" Version="17.0.0" />
+		<PackageReference Include="Anjo.Android.Facebook.Login" Version="17.0.0" />
+		<PackageReference Include="Anjo.Android.Facebook.Messenger" Version="17.0.0" />
+		<PackageReference Include="Anjo.Android.Facebook.Share" Version="17.0.0" />
+		<PackageReference Include="Anjo.Android.Cashfree.Analytics" Version="1.0.16" />
+		<PackageReference Include="Anjo.Android.Cashfree.Api" Version="2.1.18" />
+		<PackageReference Include="Anjo.Android.Cashfree.Base" Version="1.0.4" />
+		<PackageReference Include="Anjo.Android.Cashfree.Core" Version="2.1.18" />
+		<PackageReference Include="Anjo.Android.Cashfree.ImageCaching" Version="1.0.8" />
+		<PackageReference Include="Anjo.Android.Cashfree.Network" Version="1.0.6" />
+		<PackageReference Include="Anjo.Android.Cashfree.Ui" Version="2.1.18" />
+		<PackageReference Include="Anjo.Android.Flutterwave" Version="2.1.39.2" />
+		<PackageReference Include="Anjo.Android.Flutterwave.Cache" Version="2.1.39.2" />
+		<PackageReference Include="Anjo.Android.Flutterwave.Commons" Version="2.1.39.2" />
+		<PackageReference Include="Anjo.Android.Flutterwave.Core" Version="2.1.39.2" />
+		<PackageReference Include="Anjo.Android.Flutterwave.Logger" Version="2.1.39.2" />
+		<PackageReference Include="Anjo.Android.Flutterwave.Presentation" Version="2.1.39.2" />
+		<PackageReference Include="Anjo.Android.Flutterwave.Remote" Version="2.1.39.2" />
+		<PackageReference Include="Anjo.Android.Flutterwave.Utils" Version="2.1.39.2" />
+		<PackageReference Include="Anjo.Android.GoogleAccompanist.ThemeAdapterAppcompat" Version="0.34.0" />
+		<PackageReference Include="Anjo.Android.GoogleAccompanist.ThemeAdapterCore" Version="0.34.0" />
+		<PackageReference Include="Anjo.Android.GoogleAccompanist.ThemeAdapterMaterial" Version="0.34.0" />
+		<PackageReference Include="Anjo.Android.GoogleAccompanist.ThemeAdapterMaterial3" Version="0.34.0" />
+		<PackageReference Include="Anjo.Android.GooglePayButton.ComposePayButton" Version="1.0.0" />
+		<PackageReference Include="Anjo.Android.GoogleAds.Mediation.AppLovinAdapter" Version="12.1.0.1" />
+		<PackageReference Include="Anjo.Android.GoogleServices.Ads" Version="23.5.0" />
+		<PackageReference Include="Anjo.Android.GoogleServices.AdsBase" Version="23.5.0" />
+		<PackageReference Include="Anjo.Android.GoogleServices.AdsLite" Version="23.5.0" />
 		<PackageReference Include="Anjo.Android.ImageCropper" Version="4.5.0.3" />
-		<PackageReference Include="Anjo.Android.OneSignal" Version="4.8.4.1" />
-		<PackageReference Include="Anjo.Android.Razorpay" Version="1.6.32" />
-		<PackageReference Include="Anjo.Android.Stripe" Version="20.25.3" />
-		<PackageReference Include="Anjo.Android.Stripe.3DSecue" Version="6.1.7.1" />
-		<PackageReference Include="Anjo.Android.Stripe.Core" Version="20.25.3" />
-		<PackageReference Include="Anjo.Android.Stripe.FinancialConnections" Version="20.25.3" />
-		<PackageReference Include="Anjo.Android.Stripe.Link" Version="20.25.3" />
-		<PackageReference Include="Anjo.Android.Stripe.PaymentCore" Version="20.25.3" />
-		<PackageReference Include="Anjo.Android.Stripe.PaymentModel" Version="20.25.3" />
-		<PackageReference Include="Anjo.Android.Stripe.PaymentSheet" Version="20.25.3" />
-		<PackageReference Include="Anjo.Android.Stripe.PaymentsUiCore" Version="20.25.3" />
-		<PackageReference Include="Anjo.Android.Stripe.UiCore" Version="20.25.3" />
-		<PackageReference Include="Anjoxam.BillingClient.Droid" Version="6.0.0" />
+		<PackageReference Include="Anjo.Android.Lottie" Version="6.4.1" />
+		<PackageReference Include="Anjo.Android.Media3.Common" Version="1.4.1" />
+		<PackageReference Include="Anjo.Android.Media3.Container" Version="1.4.1" />
+		<PackageReference Include="Anjo.Android.Media3.Database" Version="1.4.1" />
+		<PackageReference Include="Anjo.Android.Media3.DataSource" Version="1.4.1" />
+		<PackageReference Include="Anjo.Android.Media3.Decoder" Version="1.4.1" />
+		<PackageReference Include="Anjo.Android.Media3.ExoPlayer" Version="1.4.1" />
+		<PackageReference Include="Anjo.Android.Media3.ExoPlayer.Dash" Version="1.4.1" />
+		<PackageReference Include="Anjo.Android.Media3.ExoPlayer.Hls" Version="1.4.1" />
+		<PackageReference Include="Anjo.Android.Media3.ExoPlayer.Rtsp" Version="1.4.1" />
+		<PackageReference Include="Anjo.Android.Media3.ExoPlayer.SmoothStreaming" Version="1.4.1" />
+		<PackageReference Include="Anjo.Android.Media3.Extractor" Version="1.4.1" />
+		<PackageReference Include="Anjo.Android.Media3.Session" Version="1.4.1" />
+		<PackageReference Include="Anjo.Android.Media3.Ui" Version="1.4.1" />
+		<PackageReference Include="Anjo.Android.OneSignal" Version="5.1.23" />
+		<PackageReference Include="Anjo.Android.OneSignal.Core" Version="5.1.23" />
+		<PackageReference Include="Anjo.Android.OneSignal.InAppMessages" Version="5.1.23" />
+		<PackageReference Include="Anjo.Android.OneSignal.Location" Version="5.1.23" />
+		<PackageReference Include="Anjo.Android.OneSignal.Notifications" Version="5.1.23" />
+		<PackageReference Include="Anjo.Android.PixImagePicker" Version="1.6.3.1" />
+		<PackageReference Include="Anjo.Android.Razorpay" Version="1.6.39" />
+		<PackageReference Include="Anjo.Android.Stripe" Version="21.0.0" />
+		<PackageReference Include="Anjo.Android.Stripe.3DSecue" Version="6.1.8.3" />
+		<PackageReference Include="Anjo.Android.Stripe.Core" Version="21.0.0" />
+		<PackageReference Include="Anjo.Android.Stripe.FinancialConnections" Version="21.0.0" />
+		<PackageReference Include="Anjo.Android.Stripe.Hcaptcha" Version="21.0.0" />
+		<PackageReference Include="Anjo.Android.Stripe.Link" Version="21.0.0" />
+		<PackageReference Include="Anjo.Android.Stripe.PaymentCore" Version="21.0.0" />
+		<PackageReference Include="Anjo.Android.Stripe.PaymentModel" Version="21.0.0" />
+		<PackageReference Include="Anjo.Android.Stripe.PaymentSheet" Version="21.0.0" />
+		<PackageReference Include="Anjo.Android.Stripe.PaymentsUiCore" Version="21.0.0" />
+		<PackageReference Include="Anjo.Android.Stripe.UiCore" Version="21.0.0" />
+		<PackageReference Include="Anjoxam.BillingClient.Droid" Version="7.0.0" />
 		<PackageReference Include="Anjo.Google.Android.InstantApps" Version="1.1.0.1" />
-		<PackageReference Include="AutoMapper" Version="11.0.1" />
+		<PackageReference Include="AutoMapper" Version="13.0.1" />
 		<PackageReference Include="Bubble" Version="3.0.1" />
-		<PackageReference Include="Com.Airbnb.Android.Lottie" Version="4.2.2" />
+		<PackageReference Include="Com.Google.Accompanist.AccompanistThemeadapterMaterial3" Version="0.32.0" />
+		<PackageReference Include="Crc32.NET" Version="1.2.0" />
+		<PackageReference Include="DrawableToolbox" Version="1.0.7" />
 		<PackageReference Include="FlexboxLayout.Xamarin.Android" Version="3.0.0" />
-		<PackageReference Include="GoogleGson" Version="2.10.1.4" />
-		<PackageReference Include="HtmlAgilityPack" Version="1.11.50" />
+		<PackageReference Include="GoogleGson" Version="2.11.0.4" />
+		<PackageReference Include="HtmlAgilityPack" Version="1.11.71" />
 		<PackageReference Include="Karamunting.Android.AmulyaKhare.TextDrawable" Version="1.0.1.1" />
+		<PackageReference Include="Karamunting.Android.HDodenhof.CircleImageView" Version="3.1.0" />
 		<PackageReference Include="Karamunting.Android.Ongakuer.CircleIndicator" Version="2.1.4" />
 		<PackageReference Include="Karamunting.Android.TutorialsAndroid.SEmojis" Version="1.0.19" />
-		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="PlayCore" Version="1.10.2-rc2" />
-		<PackageReference Include="Plugin.CurrentActivity" Version="2.1.0.4" />
-		<PackageReference Include="Polly" Version="7.2.4" />
-		<PackageReference Include="Refractored.Controls.CircleImageView" Version="1.2.0-beta" />
-		<PackageReference Include="sqlite-net-pcl" Version="1.9.141-beta" />
-		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.4" />
-		<PackageReference Include="SQLitePCLRaw.core" Version="2.1.4" />
-		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3.android" Version="2.1.4" />
-		<PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="2.1.4" />
-		<PackageReference Include="Square.OkHttp3" Version="4.11.0.1" />
-		<PackageReference Include="Square.OkHttp3.LoggingInterceptor" Version="4.9.3" />
-		<PackageReference Include="Square.Retrofit2" Version="2.9.0.2" />
-		<PackageReference Include="Square.Retrofit2.ConverterGson" Version="2.9.0.2" />
-		<PackageReference Include="Square.Retrofit2.ConverterScalars" Version="2.9.0.2" />
-		<PackageReference Include="System.Net.Http" Version="4.3.4" />
-		<PackageReference Include="Xam.Plugin.Geolocator" Version="5.0.0-beta" />
+		<PackageReference Include="Polly" Version="8.5.0" />
+		<PackageReference Include="sqlite-net-pcl" Version="1.9.172" />
+		<PackageReference Include="SQLitePCLRaw.bundle_green" Version="2.1.10" />
+		<PackageReference Include="SQLitePCLRaw.core" Version="2.1.10" />
+		<PackageReference Include="SQLitePCLRaw.lib.e_sqlite3.android" Version="2.1.10" />
+		<PackageReference Include="SQLitePCLRaw.provider.e_sqlite3" Version="2.1.10" />
+		<PackageReference Include="Square.OkHttp3" Version="4.12.0.3" />
+		<PackageReference Include="Square.OkHttp3.LoggingInterceptor" Version="4.12.0.2" />
+		<PackageReference Include="Square.Retrofit2" Version="2.9.0.7" />
+		<PackageReference Include="Square.Retrofit2.ConverterGson" Version="2.9.0.6" />
+		<PackageReference Include="Square.Retrofit2.ConverterScalars" Version="2.9.0.6" />
 		<PackageReference Include="Xam.Plugins.Android.AutoLinkTextView" Version="0.1.1" />
-		<PackageReference Include="Xam.Plugins.Android.ExoPlayer" Version="2.18.6" />
-		<PackageReference Include="Xam.Plugins.Android.ExoPlayer.Common" Version="2.18.6" />
-		<PackageReference Include="Xam.Plugins.Android.ExoPlayer.Core" Version="2.18.6" />
-		<PackageReference Include="Xam.Plugins.Android.ExoPlayer.Dash" Version="2.18.6" />
-		<PackageReference Include="Xam.Plugins.Android.ExoPlayer.Database" Version="2.18.6" />
-		<PackageReference Include="Xam.Plugins.Android.ExoPlayer.DataSource" Version="2.18.6" />
-		<PackageReference Include="Xam.Plugins.Android.ExoPlayer.Decoder" Version="2.18.6" />
-		<PackageReference Include="Xam.Plugins.Android.ExoPlayer.Extractor" Version="2.18.6" />
-		<PackageReference Include="Xam.Plugins.Android.ExoPlayer.Hls" Version="2.18.6" />
-		<PackageReference Include="Xam.Plugins.Android.ExoPlayer.Rtsp" Version="2.18.6" />
-		<PackageReference Include="Xam.Plugins.Android.ExoPlayer.SmoothStreaming" Version="2.18.6" />
-		<PackageReference Include="Xam.Plugins.Android.ExoPlayer.Transformer" Version="2.18.6" />
-		<PackageReference Include="Xam.Plugins.Android.ExoPlayer.UI" Version="2.18.6" />
 		<PackageReference Include="Xam.Plugins.AndroidX.SlidingUpPanel" Version="1.0.0" />
-		<PackageReference Include="Xamarin.Android.Glide" Version="4.15.1.2" />
-		<PackageReference Include="Xamarin.Android.Glide.Annotations" Version="4.15.1.2" />
-		<PackageReference Include="Xamarin.Android.Glide.GifDecoder" Version="4.15.1.2" />
+		<PackageReference Include="Xamarin.Android.Glide" Version="4.16.0.6" />
+		<PackageReference Include="Xamarin.Android.Glide.Annotations" Version="4.16.0.6" />
+		<PackageReference Include="Xamarin.Android.Glide.GifDecoder" Version="4.16.0.6" />
+		<PackageReference Include="Xamarin.Android.Glide.RecyclerViewIntegration" Version="4.16.0.6" />
 		<PackageReference Include="Xamarin.Android.JetBrains.Kotlin_Parcelize_Runtime" Version="1.5.20.1" />
-		<PackageReference Include="Xamarin.Android.ReactiveX.RxAndroid" Version="2.1.1.5" />
-		<PackageReference Include="Xamarin.Android.ReactiveX.RxJava" Version="2.2.21.12" />
+		<PackageReference Include="Xamarin.Android.ReactiveX.RxAndroid" Version="2.1.1.13" />
+		<PackageReference Include="Xamarin.Android.ReactiveX.RxJava" Version="2.2.21.20" />
 		<PackageReference Include="Xamarin.Android.RoundedImageView" Version="2.3.0" />
-		<PackageReference Include="Xamarin.AndroidX.Activity" Version="1.7.2.1" />
-		<PackageReference Include="Xamarin.AndroidX.Activity.Compose" Version="1.7.2.1" />
-		<PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.6.0.4" />
-		<PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.6.1.3" />
-		<PackageReference Include="Xamarin.AndroidX.AppCompat.AppCompatResources" Version="1.6.1.3" />
-		<PackageReference Include="Xamarin.AndroidX.Arch.Core.Common" Version="2.2.0.3" />
-		<PackageReference Include="Xamarin.AndroidX.Arch.Core.Runtime" Version="2.2.0.3" />
-		<PackageReference Include="Xamarin.AndroidX.AsyncLayoutInflater" Version="1.0.0.19" />
-		<PackageReference Include="Xamarin.AndroidX.Browser" Version="1.5.0.3" />
-		<PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.2.3.1" />
-		<PackageReference Include="Xamarin.AndroidX.Camera.Core" Version="1.2.3.1" />
-		<PackageReference Include="Xamarin.AndroidX.Camera.Lifecycle" Version="1.2.3.1" />
-		<PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.2.3.1" />
-		<PackageReference Include="Xamarin.AndroidX.CardView" Version="1.0.0.21" />
-		<PackageReference Include="Xamarin.AndroidX.Collection" Version="1.2.0.9" />
-		<PackageReference Include="Xamarin.AndroidX.Compose.Foundation" Version="1.4.3.2" />
-		<PackageReference Include="Xamarin.AndroidX.Compose.Material" Version="1.4.3.2" />
-		<PackageReference Include="Xamarin.AndroidX.Compose.Material.Icons.Core" Version="1.4.3.2" />
-		<PackageReference Include="Xamarin.AndroidX.Compose.Runtime" Version="1.4.3.2" />
-		<PackageReference Include="Xamarin.AndroidX.Compose.UI" Version="1.4.3.2" />
-		<PackageReference Include="Xamarin.AndroidX.Compose.UI.Tooling.Preview" Version="1.4.3.2" />
-		<PackageReference Include="Xamarin.AndroidX.Compose.UI.ViewBinding" Version="1.4.3.2" />
-		<PackageReference Include="Xamarin.AndroidX.ConstraintLayout" Version="2.1.4.6" />
-		<PackageReference Include="Xamarin.AndroidX.ConstraintLayout.Solver" Version="2.0.4.14" />
-		<PackageReference Include="Xamarin.AndroidX.CoordinatorLayout" Version="1.2.0.7" />
-		<PackageReference Include="Xamarin.AndroidX.Core" Version="1.10.1.2" />
-		<PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.2" />
-		<PackageReference Include="Xamarin.AndroidX.CursorAdapter" Version="1.0.0.19" />
-		<PackageReference Include="Xamarin.AndroidX.CustomView" Version="1.1.0.18" />
-		<PackageReference Include="Xamarin.AndroidX.DataBinding.ViewBinding" Version="8.0.2.1" />
-		<PackageReference Include="Xamarin.AndroidX.DocumentFile" Version="1.0.1.19" />
-		<PackageReference Include="Xamarin.AndroidX.DrawerLayout" Version="1.2.0.3" />
-		<PackageReference Include="Xamarin.AndroidX.DynamicAnimation" Version="1.0.0.19" />
-		<PackageReference Include="Xamarin.AndroidX.ExifInterface" Version="1.3.6.3" />
-		<PackageReference Include="Xamarin.AndroidX.Fragment" Version="1.6.0.1" />
-		<PackageReference Include="Xamarin.AndroidX.GridLayout" Version="1.0.0.19" />
-		<PackageReference Include="Xamarin.AndroidX.Interpolator" Version="1.0.0.19" />
-		<PackageReference Include="Xamarin.AndroidX.Leanback" Version="1.0.0.21" />
-		<PackageReference Include="Xamarin.AndroidX.Legacy.Support.Core.UI" Version="1.0.0.20" />
-		<PackageReference Include="Xamarin.AndroidX.Legacy.Support.Core.Utils" Version="1.0.0.19" />
-		<PackageReference Include="Xamarin.AndroidX.Legacy.Support.V13" Version="1.0.0.19" />
-		<PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="1.0.0.19" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Common" Version="2.6.1.3" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Extensions" Version="2.2.0.19" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.6.1.3" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core" Version="2.6.1.3" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Process" Version="2.6.1.3" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime" Version="2.6.1.3" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Service" Version="2.6.1.3" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.6.1.3" />
-		<PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" Version="2.6.1.3" />
-		<PackageReference Include="Xamarin.AndroidX.Loader" Version="1.1.0.19" />
-		<PackageReference Include="Xamarin.AndroidX.LocalBroadcastManager" Version="1.1.0.7" />
-		<PackageReference Include="Xamarin.AndroidX.Media" Version="1.6.0.6" />
-		<PackageReference Include="Xamarin.AndroidX.Media2.Common" Version="1.2.1.7" />
+		<PackageReference Include="Xamarin.AndroidX.Activity" Version="1.9.1" />
+		<PackageReference Include="Xamarin.AndroidX.Activity.Compose" Version="1.9.1" />
+		<PackageReference Include="Xamarin.AndroidX.Annotation" Version="1.8.1" />
+		<PackageReference Include="Xamarin.AndroidX.AppCompat" Version="1.7.0.1" />
+		<PackageReference Include="Xamarin.AndroidX.AppCompat.AppCompatResources" Version="1.7.0.1" />
+		<PackageReference Include="Xamarin.AndroidX.Arch.Core.Common" Version="2.2.0.11" />
+		<PackageReference Include="Xamarin.AndroidX.Arch.Core.Runtime" Version="2.2.0.11" />
+		<PackageReference Include="Xamarin.AndroidX.AsyncLayoutInflater" Version="1.0.0.27" />
+		<PackageReference Include="Xamarin.AndroidX.Browser" Version="1.8.0.4" />
+		<PackageReference Include="Xamarin.AndroidX.Camera.Camera2" Version="1.1.0" />
+		<PackageReference Include="Xamarin.AndroidX.Camera.Core" Version="1.1.0" />
+		<PackageReference Include="Xamarin.AndroidX.Camera.Lifecycle" Version="1.1.0" />
+		<PackageReference Include="Xamarin.AndroidX.Camera.View" Version="1.1.0" />
+		<PackageReference Include="Xamarin.AndroidX.CardView" Version="1.0.0.29" />
+		<PackageReference Include="Xamarin.AndroidX.Collection" Version="1.4.2" />
+		<PackageReference Include="Xamarin.AndroidX.Collection.Ktx" Version="1.4.2" />
+		<PackageReference Include="Xamarin.AndroidX.Compose.Foundation" Version="1.6.8.1" />
+		<PackageReference Include="Xamarin.AndroidX.Compose.Material" Version="1.6.8.1" />
+		<PackageReference Include="Xamarin.AndroidX.Compose.Material.Icons.Core" Version="1.6.8.1" />
+		<PackageReference Include="Xamarin.AndroidX.Compose.Runtime" Version="1.6.8.1" />
+		<PackageReference Include="Xamarin.AndroidX.Compose.UI" Version="1.6.8.1" />
+		<PackageReference Include="Xamarin.AndroidX.Compose.UI.Tooling.Preview" Version="1.6.8.1" />
+		<PackageReference Include="Xamarin.AndroidX.Compose.UI.ViewBinding" Version="1.6.8.1" />
+		<PackageReference Include="Xamarin.AndroidX.ConstraintLayout" Version="2.1.4.14" />
+		<PackageReference Include="Xamarin.AndroidX.ConstraintLayout.Solver" Version="2.0.4.22" />
+		<PackageReference Include="Xamarin.AndroidX.CoordinatorLayout" Version="1.2.0.15" />
+		<PackageReference Include="Xamarin.AndroidX.Core" Version="1.13.1.3" />
+		<PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" Version="1.0.1.10" />
+		<PackageReference Include="Xamarin.AndroidX.Credentials" Version="1.2.2.4" />
+		<PackageReference Include="Xamarin.AndroidX.Credentials.PlayServicesAuth" Version="1.2.2.4" />
+		<PackageReference Include="Xamarin.AndroidX.CursorAdapter" Version="1.0.0.27" />
+		<PackageReference Include="Xamarin.AndroidX.CustomView" Version="1.1.0.26" />
+		<PackageReference Include="Xamarin.AndroidX.DataBinding.ViewBinding" Version="8.5.1" />
+		<PackageReference Include="Xamarin.AndroidX.DocumentFile" Version="1.0.1.27" />
+		<PackageReference Include="Xamarin.AndroidX.DrawerLayout" Version="1.2.0.11" />
+		<PackageReference Include="Xamarin.AndroidX.DynamicAnimation" Version="1.0.0.27" />
+		<PackageReference Include="Xamarin.AndroidX.ExifInterface" Version="1.3.7.5" />
+		<PackageReference Include="Xamarin.AndroidX.Fragment" Version="1.8.2" />
+		<PackageReference Include="Xamarin.AndroidX.Fragment.Ktx" Version="1.8.2" />
+		<PackageReference Include="Xamarin.AndroidX.GridLayout" Version="1.0.0.27" />
+		<PackageReference Include="Xamarin.AndroidX.Interpolator" Version="1.0.0.27" />
+		<PackageReference Include="Xamarin.AndroidX.Leanback" Version="1.0.0.29" />
+		<PackageReference Include="Xamarin.AndroidX.Legacy.Support.Core.UI" Version="1.0.0.28" />
+		<PackageReference Include="Xamarin.AndroidX.Legacy.Support.Core.Utils" Version="1.0.0.27" />
+		<PackageReference Include="Xamarin.AndroidX.Legacy.Support.V13" Version="1.0.0.27" />
+		<PackageReference Include="Xamarin.AndroidX.Legacy.Support.V4" Version="1.0.0.27" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Common" Version="2.8.4" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Common.Jvm" Version="2.8.4" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Extensions" Version="2.2.0.27" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData" Version="2.8.4" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.LiveData.Core" Version="2.8.4" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Process" Version="2.8.4" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime" Version="2.8.4" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Runtime.Ktx" Version="2.8.4" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.Service" Version="2.8.4" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel" Version="2.8.4" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel.Android" Version="2.8.4" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel.Compose" Version="2.8.4" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel.Compose.Android" Version="2.8.4" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModel.Ktx" Version="2.8.4" />
+		<PackageReference Include="Xamarin.AndroidX.Lifecycle.ViewModelSavedState" Version="2.8.4" />
+		<PackageReference Include="Xamarin.AndroidX.Loader" Version="1.1.0.27" />
+		<PackageReference Include="Xamarin.AndroidX.LocalBroadcastManager" Version="1.1.0.15" />
+		<PackageReference Include="Xamarin.AndroidX.Media" Version="1.7.0.5" />
+		<PackageReference Include="Xamarin.AndroidX.Media2.Common" Version="1.3.0.5" />
 		<PackageReference Include="Xamarin.AndroidX.Migration" Version="1.0.10" />
-		<PackageReference Include="Xamarin.AndroidX.MultiDex" Version="2.0.1.19" />
-		<PackageReference Include="Xamarin.AndroidX.Palette" Version="1.0.0.19" />
-		<PackageReference Include="Xamarin.AndroidX.Preference" Version="1.2.0.7" />
-		<PackageReference Include="Xamarin.AndroidX.Print" Version="1.0.0.19" />
-		<PackageReference Include="Xamarin.AndroidX.RecyclerView" Version="1.3.0.3" />
-		<PackageReference Include="Xamarin.AndroidX.SavedState" Version="1.2.1.3" />
-		<PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" Version="1.1.0-alpha05" />
-		<PackageReference Include="Xamarin.AndroidX.SlidingPaneLayout" Version="1.2.0.7" />
-		<PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" Version="1.1.0.14" />
-		<PackageReference Include="Xamarin.AndroidX.Transition" Version="1.4.1.12" />
-		<PackageReference Include="Xamarin.AndroidX.VectorDrawable" Version="1.1.0.19" />
-		<PackageReference Include="Xamarin.AndroidX.VectorDrawable.Animated" Version="1.1.0.19" />
-		<PackageReference Include="Xamarin.AndroidX.VersionedParcelable" Version="1.1.1.19" />
-		<PackageReference Include="Xamarin.AndroidX.ViewPager" Version="1.0.0.19" />
-		<PackageReference Include="Xamarin.AndroidX.Work.Runtime" Version="2.8.1.3" />
-		<PackageReference Include="Xamarin.AndroidX.Work.Work.Runtime.Ktx" Version="2.8.1.3" />
+		<PackageReference Include="Xamarin.AndroidX.MultiDex" Version="2.0.1.27" />
+		<PackageReference Include="Xamarin.AndroidX.Palette" Version="1.0.0.27" />
+		<PackageReference Include="Xamarin.AndroidX.Preference" Version="1.2.1.8" />
+		<PackageReference Include="Xamarin.AndroidX.Print" Version="1.0.0.27" />
+		<PackageReference Include="Xamarin.AndroidX.RecyclerView" Version="1.3.2.6" />
+		<PackageReference Include="Xamarin.AndroidX.SavedState" Version="1.2.1.11" />
+		<PackageReference Include="Xamarin.AndroidX.Security.SecurityCrypto" Version="1.1.0.2-alpha06" />
+		<PackageReference Include="Xamarin.AndroidX.SlidingPaneLayout" Version="1.2.0.15" />
+		<PackageReference Include="Xamarin.AndroidX.SwipeRefreshLayout" Version="1.1.0.22" />
+		<PackageReference Include="Xamarin.AndroidX.Transition" Version="1.5.1" />
+		<PackageReference Include="Xamarin.AndroidX.VectorDrawable" Version="1.2.0.1" />
+		<PackageReference Include="Xamarin.AndroidX.VectorDrawable.Animated" Version="1.2.0.1" />
+		<PackageReference Include="Xamarin.AndroidX.VersionedParcelable" Version="1.2.0.5" />
+		<PackageReference Include="Xamarin.AndroidX.ViewPager" Version="1.0.0.27" />
+		<PackageReference Include="Xamarin.AndroidX.Work.Runtime" Version="2.9.0.5" />
+		<PackageReference Include="Xamarin.AndroidX.Work.Work.Runtime.Ktx" Version="2.9.0.5" />
 		<PackageReference Include="Xamarin.BadgeView" Version="1.1.3" />
 		<PackageReference Include="Xamarin.Build.Download" Version="0.11.4" />
-		<PackageReference Include="Xamarin.Essentials" Version="1.7.7" />
-		<PackageReference Include="Xamarin.Facebook.Shimmer" Version="1.0.2" />
-		<PackageReference Include="Xamarin.Firebase.Common" Version="120.3.3.1" />
-		<PackageReference Include="Xamarin.Firebase.Messaging" Version="123.1.2.2" />
-		<PackageReference Include="Xamarin.Google.Accompanist.FlowLayout" Version="0.30.1.3" />
-		<PackageReference Include="Xamarin.Google.Android.DataTransport.TransportRuntime" Version="3.1.9.2" />
-		<PackageReference Include="Xamarin.Google.Android.Material" Version="1.9.0.2" />
+		<PackageReference Include="Xamarin.Essentials" Version="1.8.1" />
+		<PackageReference Include="Xamarin.Facebook.Shimmer" Version="1.0.4" />
+		<PackageReference Include="Xamarin.Firebase.Common" Version="121.0.0.1" />
+		<PackageReference Include="Xamarin.Firebase.Messaging" Version="124.0.0.1" />
+		<PackageReference Include="Xamarin.Google.Accompanist.FlowLayout" Version="0.34.0.5" />
+		<PackageReference Include="Xamarin.Google.Android.DataTransport.TransportRuntime" Version="3.3.0.1" />
+		<PackageReference Include="Xamarin.Google.Android.Material" Version="1.11.0" />
 		<PackageReference Include="Xamarin.Google.Android.Places" Version="2.4.0" />
-		<PackageReference Include="Xamarin.Google.Android.Play.Integrity" Version="1.1.0.2" />
-		<PackageReference Include="Xamarin.Google.AutoValue.Annotations" Version="1.10.2.1" />
-		<PackageReference Include="Xamarin.Google.Dagger" Version="2.46.1.2" />
-		<PackageReference Include="Xamarin.Google.Guava" Version="31.1.0.8" />
-		<PackageReference Include="Xamarin.Google.Guava.FailureAccess" Version="1.0.1.12" />
-		<PackageReference Include="Xamarin.Google.UserMessagingPlatform" Version="2.0.0.5" />
-		<PackageReference Include="Xamarin.Google.ZXing.Core" Version="3.5.1.3" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Ads.Identifier" Version="118.0.1.5" />
-		<PackageReference Include="Xamarin.GooglePlayServices.AppSet" Version="16.0.2.5" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Auth" Version="120.6.0.1" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Auth.Api.Phone" Version="118.0.1.5" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Auth.Base" Version="118.0.9.1" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Base" Version="118.2.0.2" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Basement" Version="118.2.0.2" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Cast" Version="121.3.0.2" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Cast.Framework" Version="121.3.0.2" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Clearcut" Version="117.0.0.10" />
-		<PackageReference Include="Xamarin.GooglePlayServices.CloudMessaging" Version="117.0.2.5" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Gcm" Version="117.0.0.10" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Iid" Version="117.0.0.10" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Measurement" Version="121.3.0.1" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Measurement.Api" Version="121.3.0.1" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Measurement.Base" Version="121.3.0.1" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Measurement.Sdk.Api" Version="121.3.0.1" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Phenotype" Version="117.0.0.10" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Stats" Version="117.0.3.5" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Tasks" Version="118.0.2.3" />
-		<PackageReference Include="Xamarin.GooglePlayServices.Wallet" Version="119.2.0.1" />
+		<PackageReference Include="Xamarin.Google.Android.Play.Integrity" Version="1.2.0.3" />
+		<PackageReference Include="Xamarin.Google.AutoValue.Annotations" Version="1.11.0.1" />
+		<PackageReference Include="Xamarin.Google.Dagger" Version="2.51.1.1" />
+		<PackageReference Include="Xamarin.Google.Guava" Version="33.2.1.1" />
+		<PackageReference Include="Xamarin.Google.Guava.FailureAccess" Version="1.0.2.6" />
+		<PackageReference Include="Xamarin.Google.UserMessagingPlatform" Version="3.0.0" />
+		<PackageReference Include="Xamarin.Google.ZXing.Core" Version="3.5.3.3" />
+		<PackageReference Include="Xamarin.GoogleAndroid.Libraries.Identity.GoogleId" Version="1.1.0.1" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Ads.Identifier" Version="118.1.0.1" />
+		<PackageReference Include="Xamarin.GooglePlayServices.AppSet" Version="116.1.0.1" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Auth" Version="121.2.0.1" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Auth.Api.Phone" Version="118.1.0.1" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Auth.Base" Version="118.0.13.1" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Base" Version="118.5.0.1" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Basement" Version="118.4.0.1" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Cast" Version="121.5.0.1" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Cast.Framework" Version="121.5.0.1" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Clearcut" Version="117.0.0.17" />
+		<PackageReference Include="Xamarin.GooglePlayServices.CloudMessaging" Version="117.3.0.1" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Gcm" Version="117.0.0.17" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Iid" Version="117.0.0.17" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Measurement" Version="121.6.2" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Measurement.Api" Version="121.6.2" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Measurement.Base" Version="121.6.2" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Measurement.Sdk.Api" Version="121.6.2" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Phenotype" Version="117.0.0.17" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Stats" Version="117.1.0.1" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Tasks" Version="118.2.0.1" />
+		<PackageReference Include="Xamarin.GooglePlayServices.Wallet" Version="119.4.0.1" />
 		<PackageReference Include="Xamarin.Jakewharton.DiskLruCache" Version="2.0.2.6" />
-		<PackageReference Include="Xamarin.Kotlin.StdLib" Version="1.9.0.1" />
-		<PackageReference Include="Xamarin.Kotlin.StdLib.Jdk7" Version="1.9.0.1" />
+		<PackageReference Include="Xamarin.Kotlin.StdLib" Version="2.0.0.1" />
+		<PackageReference Include="Xamarin.Kotlin.StdLib.Jdk7" Version="2.0.0.1" />
+		<PackageReference Include="Xamarin.KotlinX.Coroutines.Android" Version="1.8.1.1" />
+		<PackageReference Include="Xamarin.KotlinX.Coroutines.Core" Version="1.8.1.1" />
+		<PackageReference Include="Xamarin.KotlinX.Coroutines.Play.Services" Version="1.8.1.1" />
+		<PackageReference Include="Xamarin.Android.JetBrains.KotlinX_Serialization_Json_Jvm" Version="1.3.1" />
 	</ItemGroup>
 	<ItemGroup>
 		<Reference Include="AamarPay">
@@ -342,9 +403,6 @@
 		<Reference Include="DeepSoundClient">
 		  <HintPath>..\API\DeepSoundClient.dll</HintPath>
 		</Reference>
-		<Reference Include="FacebookAudienceNetwork">
-			<HintPath>..\API\Facebook\FacebookAudienceNetwork.dll</HintPath>
-		</Reference>
 		<Reference Include="InAppBilling">
 		  <HintPath>..\API\InAppBilling.dll</HintPath>
 		</Reference>
@@ -354,5 +412,8 @@
 		<Reference Include="SecurionPay">
 			<HintPath>..\API\SecurionPay.dll</HintPath>
 		</Reference>
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Activities\Story\Adapters\" />
 	</ItemGroup>
 </Project>

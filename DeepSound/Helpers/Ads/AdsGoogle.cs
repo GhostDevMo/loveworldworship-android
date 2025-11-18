@@ -1,11 +1,15 @@
 ﻿using Android.App;
+using Android.Content;
 using Android.Content.Res;
-using Android.Gms.Maps;
+using Android.OS;
+using Android.Runtime;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
 using Anjo.Android.GoogleAds;
+using Com.Applovin.Mediation;
+using Com.Applovin.Mediation.Adapters;
 using Com.Google.Android.Gms.Ads;
 using Com.Google.Android.Gms.Ads.Admanager;
 using Com.Google.Android.Gms.Ads.Appopen;
@@ -17,8 +21,10 @@ using Com.Google.Android.Gms.Ads.Rewardedinterstitial;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Requests;
+using Java.Lang;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Xamarin.Google.UserMesssagingPlatform;
 using Exception = System.Exception;
@@ -33,7 +39,7 @@ namespace DeepSound.Helpers.Ads
         private static int CountRewarded;
         private static int CountAppOpen;
         private static int CountRewardedInterstitial;
-        public static List<NativeAd> NativeAdsPool = new List<NativeAd>();
+        public static readonly List<NativeAd> NativeAdsPool = new List<NativeAd>();
 
         #region Interstitial
 
@@ -46,8 +52,18 @@ namespace DeepSound.Helpers.Ads
                 try
                 {
                     ActivityContext = context;
-                    var requestBuilder = new AdRequest.Builder().Build();
-                    InterstitialAd.Load(context, AppSettings.AdInterstitialKey, requestBuilder, this);
+
+                    var adRequest = new AdRequest.Builder();
+                    if (AppSettings.ShowAppLovinInterstitialAds)
+                    {
+                        Bundle extras = new AppLovinExtras.Builder()
+                            ?.SetMuteAudio(true)
+                            ?.Build();
+
+                        adRequest.AddNetworkExtrasBundle(Class.FromType(typeof(AppLovinMediationAdapter)), extras);
+                    }
+
+                    InterstitialAd.Load(context, AppSettings.AdInterstitialKey, adRequest.Build(), this);
                 }
                 catch (Exception exception)
                 {
@@ -59,6 +75,7 @@ namespace DeepSound.Helpers.Ads
             {
                 try
                 {
+                    p0.FullScreenContentCallback = new MyFullScreenContentCallback();
                     p0?.Show(ActivityContext);
                     base.OnAdLoaded(p0);
                 }
@@ -95,10 +112,8 @@ namespace DeepSound.Helpers.Ads
                         ads.Show(context);
                         return;
                     }
-                    else
-                    {
-                        Ad_AppOpenManager(context);
-                    }
+
+                    Ad_AppOpenManager(context);
 
                     CountInterstitial++;
                 }
@@ -163,15 +178,37 @@ namespace DeepSound.Helpers.Ads
                     Template = template ?? Context.FindViewById<TemplateView>(Resource.Id.my_template);
                     if (Template != null)
                     {
-                        Template.Visibility = ViewStates.Gone;
-
-                        if (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobNative)
+                        var ad = NativeAdsPool?.FirstOrDefault();
+                        if (ad != null && NativeAdsPool?.Count > 1 && AppSettings.ShowAdMobNative)
                         {
-                            BindAdMobNative(context);
+                            NativeTemplateStyle styles = new NativeTemplateStyle.Builder().Build();
+
+                            if (Template.GetTemplateTypeName() == TemplateView.NativeContentAd)
+                            {
+                                Template.NativeContentAdView(ad);
+                            }
+                            else
+                            {
+                                Template.SetStyles(styles);
+                                Template.SetNativeAd(ad);
+                            }
+
+                            Template.Visibility = ViewStates.Visible;
+
+                            NativeAdsPool.Remove(ad);
                         }
                         else
                         {
                             Template.Visibility = ViewStates.Gone;
+
+                            if (AppSettings.ShowAdMobNative)
+                            {
+                                BindAdMobNative(context);
+                            }
+                            else
+                            {
+                                Template.Visibility = ViewStates.Gone;
+                            }
                         }
                     }
                 }
@@ -264,8 +301,17 @@ namespace DeepSound.Helpers.Ads
                 {
                     Context = context;
 
-                    AdRequest adRequest = new AdRequest.Builder().Build();
-                    RewardedAd.Load(context, AppSettings.AdRewardVideoKey, adRequest, this);
+                    var adRequest = new AdRequest.Builder();
+                    if (AppSettings.ShowAppLovinRewardAds)
+                    {
+                        Bundle extras = new AppLovinExtras.Builder()
+                            ?.SetMuteAudio(true)
+                            ?.Build();
+
+                        adRequest.AddNetworkExtrasBundle(Class.FromType(typeof(AppLovinMediationAdapter)), extras);
+                    }
+
+                    RewardedAd.Load(context, AppSettings.AdRewardVideoKey, adRequest.Build(), this);
                 }
                 catch (Exception exception)
                 {
@@ -277,6 +323,7 @@ namespace DeepSound.Helpers.Ads
             {
                 try
                 {
+                    p0.FullScreenContentCallback = new MyFullScreenContentCallback();
                     p0?.Show(Context, new MyUserEarnedRewardListener(Context));
                     base.OnAdLoaded(p0);
                 }
@@ -306,13 +353,11 @@ namespace DeepSound.Helpers.Ads
                         ads.ShowAd(context);
                         return;
                     }
-                    else
-                    {
-                        if (AppSettings.ShowFbInterstitialAds)
-                            AdsFacebook.InitInterstitial(context);
-                        else if (AppSettings.ShowAppLovinInterstitialAds)
-                            AdsAppLovin.Ad_Interstitial(context);
-                    }
+
+                    if (AppSettings.ShowFbInterstitialAds)
+                        AdsFacebook.InitInterstitial(context);
+                    else if (AppSettings.ShowAppLovinInterstitialAds)
+                        AdsAppLovin.Ad_Interstitial(context);
 
                     CountRewarded++;
                 }
@@ -344,6 +389,15 @@ namespace DeepSound.Helpers.Ads
                 {
                     mAdView.Visibility = ViewStates.Visible;
                     var adRequest = new AdRequest.Builder();
+                    if (AppSettings.ShowAppLovinBannerAds)
+                    {
+                        Bundle extras = new AppLovinExtras.Builder()
+                            ?.SetMuteAudio(true)
+                            ?.Build();
+
+                        adRequest.AddNetworkExtrasBundle(Class.FromType(typeof(AppLovinMediationAdapter)), extras);
+                    }
+
                     mAdView.LoadAd(adRequest.Build());
                     mAdView.AdListener = new MyAdListener(mAdView, mRecycler);
                 }
@@ -385,6 +439,64 @@ namespace DeepSound.Helpers.Ads
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        public static AdView InitBannerAdView(Activity activity, LinearLayout adContainer, RecyclerView mRecycler, AdSize adSize = null)
+        {
+            try
+            {
+                if (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobBanner)
+                {
+                    AdView mAdView = new AdView(activity);
+
+                    if (adSize != null)
+                        mAdView.AdSize = adSize;
+                    else
+                        mAdView.AdSize = GetFullWidthAdaptiveSize(activity);
+
+                    mAdView.AdUnitId = activity.GetText(Resource.String.banner_ad_unit_id);
+
+                    var adRequest = new AdRequest.Builder();
+                    mAdView.LoadAd(adRequest.Build());
+                    mAdView.AdListener = new MyAdListener(mAdView, mRecycler);
+
+                    // Add the ad view to your activity layout
+                    adContainer.AddView(mAdView);
+
+                    return mAdView;
+                }
+
+                if (mRecycler != null)
+                    Methods.SetMargin(mRecycler, 0, 0, 0, 0);
+                return null;
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+                return null;
+            }
+        }
+
+        private static AdSize GetFullWidthAdaptiveSize(Context context)
+        {
+            try
+            {
+                var display = context?.GetSystemService(Context.WindowService).JavaCast<IWindowManager>()?.DefaultDisplay;
+
+                DisplayMetrics outMetrics = new DisplayMetrics();
+                display.GetMetrics(outMetrics);
+
+                float widthPixels = outMetrics.WidthPixels;
+                float density = outMetrics.Density;
+
+                int adWidth = (int)(widthPixels / density);
+                return AdSize.GetCurrentOrientationAnchoredAdaptiveBannerAdSize(context, adWidth);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return AdSize.Banner;
             }
         }
 
@@ -447,7 +559,16 @@ namespace DeepSound.Helpers.Ads
                 if (DeepSoundTools.GetStatusAds() && AppSettings.ShowAdMobBanner)
                 {
                     mAdView.Visibility = ViewStates.Visible;
-                    var adRequest = new AdManagerAdRequest.Builder();
+                    var adRequest = new AdRequest.Builder();
+                    if (AppSettings.ShowAppLovinBannerAds)
+                    {
+                        Bundle extras = new AppLovinExtras.Builder()
+                            ?.SetMuteAudio(true)
+                            ?.Build();
+
+                        adRequest.AddNetworkExtrasBundle(Class.FromType(typeof(AppLovinMediationAdapter)), extras);
+                    }
+
                     mAdView.AdListener = new MyAdManagerAdViewListener(mAdView);
                     mAdView.LoadAd(adRequest.Build());
                 }
@@ -462,6 +583,7 @@ namespace DeepSound.Helpers.Ads
                 Methods.DisplayReportResultTrack(e);
             }
         }
+
         public static void LifecycleAdManagerAdView(AdManagerAdView mAdView, string lifecycle)
         {
             try
@@ -545,13 +667,11 @@ namespace DeepSound.Helpers.Ads
                         appOpenManager.ShowAdIfAvailable();
                         return;
                     }
-                    else
-                    {
-                        if (AppSettings.ShowFbInterstitialAds)
-                            AdsFacebook.InitInterstitial(context);
-                        else if (AppSettings.ShowAppLovinInterstitialAds)
-                            AdsAppLovin.Ad_Interstitial(context);
-                    }
+
+                    if (AppSettings.ShowFbInterstitialAds)
+                        AdsFacebook.InitInterstitial(context);
+                    else if (AppSettings.ShowAppLovinInterstitialAds)
+                        AdsAppLovin.Ad_Interstitial(context);
 
                     CountAppOpen++;
                 }
@@ -590,8 +710,17 @@ namespace DeepSound.Helpers.Ads
             {
                 try
                 {
-                    AdRequest request = new AdRequest.Builder().Build();
-                    AppOpenAd.Load(MostCurrentActivity, AppSettings.AdAdMobAppOpenKey, request, this);
+                    var adRequest = new AdRequest.Builder();
+                    if (AppSettings.ShowAppLovinInterstitialAds)
+                    {
+                        Bundle extras = new AppLovinExtras.Builder()
+                            ?.SetMuteAudio(true)
+                            ?.Build();
+
+                        adRequest.AddNetworkExtrasBundle(Class.FromType(typeof(AppLovinMediationAdapter)), extras);
+                    }
+
+                    AppOpenAd.Load(MostCurrentActivity, AppSettings.AdAdMobAppOpenKey, adRequest.Build(), this);
                 }
                 catch (Exception e)
                 {
@@ -606,6 +735,7 @@ namespace DeepSound.Helpers.Ads
                     base.OnAdLoaded(p0);
 
                     Ad = p0;
+                    p0.FullScreenContentCallback = new MyFullScreenContentCallback();
                     Ad.Show(MostCurrentActivity);
                 }
                 catch (Exception e)
@@ -635,10 +765,18 @@ namespace DeepSound.Helpers.Ads
                 {
                     Context = context;
 
-                    AdRequest adRequest = new AdRequest.Builder().Build();
+                    var adRequest = new AdRequest.Builder();
+                    if (AppSettings.ShowAppLovinRewardAds)
+                    {
+                        Bundle extras = new AppLovinExtras.Builder()
+                            ?.SetMuteAudio(true)
+                            ?.Build();
+
+                        adRequest.AddNetworkExtrasBundle(Class.FromType(typeof(AppLovinMediationAdapter)), extras);
+                    }
 
                     // Use an activity context to get the rewarded video instance. 
-                    RewardedInterstitialAd.Load(context, AppSettings.AdRewardedInterstitialKey, adRequest, this);
+                    RewardedInterstitialAd.Load(context, AppSettings.AdRewardedInterstitialKey, adRequest.Build(), this);
                 }
                 catch (Exception exception)
                 {
@@ -650,6 +788,7 @@ namespace DeepSound.Helpers.Ads
             {
                 try
                 {
+                    p0.FullScreenContentCallback = new MyFullScreenContentCallback();
                     p0?.Show(Context, new MyUserEarnedRewardListener(Context));
                     base.OnAdLoaded(p0);
                 }
@@ -679,13 +818,11 @@ namespace DeepSound.Helpers.Ads
                         ads.ShowAd(context);
                         return;
                     }
-                    else
-                    {
-                        if (AppSettings.ShowFbRewardVideoAds)
-                            AdsFacebook.InitRewardVideo(context);
-                        else if (AppSettings.ShowAppLovinRewardAds)
-                            AdsAppLovin.Ad_Rewarded(context);
-                    }
+
+                    if (AppSettings.ShowFbRewardVideoAds)
+                        AdsFacebook.InitRewardVideo(context);
+                    else if (AppSettings.ShowAppLovinRewardAds)
+                        AdsAppLovin.Ad_Rewarded(context);
 
                     CountRewardedInterstitial++;
                 }
@@ -740,36 +877,108 @@ namespace DeepSound.Helpers.Ads
             }
         }
 
+        private class MyFullScreenContentCallback : FullScreenContentCallback
+        {
+            /// <summary>
+            /// Called when a click is recorded for an ad
+            /// </summary>
+            public override void OnAdClicked()
+            {
+                base.OnAdClicked();
+                Console.WriteLine("On Ad Clicked.");
+            }
+
+            /// <summary>
+            /// Called when ad is dismissed
+            /// Set the ad reference to null so you don't show the ad a second time.
+            /// </summary>
+            public override void OnAdDismissedFullScreenContent()
+            {
+                base.OnAdDismissedFullScreenContent();
+                Console.WriteLine("On Ad Dismissed Full Screen Content.");
+            }
+
+            /// <summary>
+            /// Called when ad fails to show
+            /// </summary>
+            /// <param name="p0"></param>
+            public override void OnAdFailedToShowFullScreenContent(AdError p0)
+            {
+                base.OnAdFailedToShowFullScreenContent(p0);
+                Console.WriteLine("On Ad Failed To Show Full Screen Content.");
+            }
+
+            /// <summary>
+            /// Called when an impression is recorded for an ad.
+            /// </summary>
+            public override void OnAdImpression()
+            {
+                base.OnAdImpression();
+                Console.WriteLine("On Ad Impression.");
+            }
+
+            /// <summary>
+            /// Called when ad is shown
+            /// </summary>
+            public override void OnAdShowedFullScreenContent()
+            {
+                base.OnAdShowedFullScreenContent();
+                Console.WriteLine("On Ad Showed FullScreen Content.");
+            }
+        }
+
         public static class InitializeAdsGoogle
         {
             public static void Initialize(Activity context)
             {
-                try
+                context.RunOnUiThread(() =>
                 {
-                    if (AppSettings.ShowAdMobBanner || AppSettings.ShowAdMobInterstitial || AppSettings.ShowAdMobRewardVideo || AppSettings.ShowAdMobNative || AppSettings.ShowAdMobAppOpen || AppSettings.ShowAdMobRewardedInterstitial)
+                    try
                     {
-                        RequestConfiguration configuration = new RequestConfiguration.Builder().SetTestDeviceIds(new List<string>() { "5BCFF0AAE83AF424648A954038C71DE6", "A5E3E2068BD88202CBC281AD76984BEE" ,
-                           // AdRequest.DeviceIdEmulator
-                            
-                        }).Build();
-                        MobileAds.RequestConfiguration = configuration;
+                        if (AppSettings.ShowAdMobBanner || AppSettings.ShowAdMobInterstitial || AppSettings.ShowAdMobRewardVideo || AppSettings.ShowAdMobNative || AppSettings.ShowAdMobAppOpen || AppSettings.ShowAdMobRewardedInterstitial)
+                        {
+                            RequestConfiguration configuration = new RequestConfiguration.Builder().SetTestDeviceIds(new List<string>
+                            {
+                                //"5BCFF0AAE83AF424648A954038C71DE6", "A5E3E2068BD88202CBC281AD76984BEE" , AdRequest.DeviceIdEmulator
+                                // UserDetails.AdvertisingId
+                            }).Build();
+                            MobileAds.RequestConfiguration = configuration;
 
-                        MobileAds.Initialize(context, new MyInitializationCompleteListener(context));
-                        MapsInitializer.Initialize(context);
+                            ConsentDebugSettings debugSettings = new ConsentDebugSettings.Builder(context)
+                                .AddTestDeviceHashedId("")
+                                .Build();
 
-                        // Set tag for under age of consent. false means users are not under age.
-                        ConsentRequestParameters param = new ConsentRequestParameters.Builder()
-                            .SetTagForUnderAgeOfConsent(false)
-                            .Build();
+                            // Set tag for under age of consent. false means users are not under age.
+                            ConsentRequestParameters param = new ConsentRequestParameters.Builder()
+                                .SetTagForUnderAgeOfConsent(false)
+                                .SetAdMobAppId(context.GetText(Resource.String.admob_app_id))
+                                .SetConsentDebugSettings(debugSettings)
+                                .Build();
 
-                        var consentInformation = UserMessagingPlatform.GetConsentInformation(context);
-                        var requestParameters = new MyConsentRequestParameters();
-                        consentInformation.RequestConsentInfoUpdate(context, param, requestParameters, requestParameters);
+                            var consentInformation = UserMessagingPlatform.GetConsentInformation(context);
+                            var requestParameters = new MyConsentRequestParameters(context);
+                            consentInformation.RequestConsentInfoUpdate(context, param, requestParameters, requestParameters);
+                            UserMessagingPlatform.ShowPrivacyOptionsForm(context, new MyConsentFormOnConsentFormDismissedListener(context));
+                        }
                     }
-                }
-                catch (Exception e)
+                    catch (Exception e)
+                    {
+                        Methods.DisplayReportResultTrack(e);
+                    }
+                });
+            }
+
+            private class MyConsentFormOnConsentFormDismissedListener : Object, IConsentFormOnConsentFormDismissedListener
+            {
+                private readonly Activity Context;
+                public MyConsentFormOnConsentFormDismissedListener(Activity context)
                 {
-                    Methods.DisplayReportResultTrack(e);
+                    Context = context;
+                }
+
+                public void OnConsentFormDismissed(FormError p0)
+                {
+
                 }
             }
 
@@ -785,7 +994,7 @@ namespace DeepSound.Helpers.Ads
                 {
                     try
                     {
-                        AdsGoogle.AdMobNative ads = new AdsGoogle.AdMobNative();
+                        AdMobNative ads = new AdMobNative();
                         ads.BindAdMobNative(Context);
                     }
                     catch (Exception e)
@@ -797,15 +1006,42 @@ namespace DeepSound.Helpers.Ads
 
             private class MyConsentRequestParameters : Object, IConsentInformationOnConsentInfoUpdateSuccessListener, IConsentInformationOnConsentInfoUpdateFailureListener
             {
+                private readonly Activity Context;
+                public MyConsentRequestParameters(Activity context)
+                {
+                    Context = context;
+                }
 
                 public void OnConsentInfoUpdateSuccess()
                 {
-
+                    try
+                    {
+                        MobileAds.Initialize(Context, new MyInitializationCompleteListener(Context));
+                    }
+                    catch (Exception e)
+                    {
+                        Methods.DisplayReportResultTrack(e);
+                    }
                 }
 
-                public void OnConsentInfoUpdateFailure(FormError p0)
+                public void OnConsentInfoUpdateFailure(FormError loadAndShowError)
                 {
+                    try
+                    {
+                        if (loadAndShowError != null)
+                        {
+                            // Consent gathering failed.
+                            Console.WriteLine("ErrorCodeData: " + loadAndShowError.ErrorCodeData() + "\nMessage: " + loadAndShowError.Message);
+                            return;
+                        }
 
+                        // Consent has been gathered.
+                        MobileAds.Initialize(Context, new MyInitializationCompleteListener(Context));
+                    }
+                    catch (Exception e)
+                    {
+                        Methods.DisplayReportResultTrack(e);
+                    }
                 }
             }
 

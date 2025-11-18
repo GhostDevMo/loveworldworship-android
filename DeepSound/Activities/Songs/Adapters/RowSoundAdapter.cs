@@ -5,6 +5,7 @@ using AndroidX.CardView.Widget;
 using AndroidX.RecyclerView.Widget;
 using Bumptech.Glide;
 using Bumptech.Glide.Request;
+using DeepSound.Adapters;
 using DeepSound.Helpers.CacheLoaders;
 using DeepSound.Helpers.MediaPlayerController;
 using DeepSound.Helpers.Utils;
@@ -50,10 +51,19 @@ namespace DeepSound.Activities.Songs.Adapters
         {
             try
             {
-                //Setup your layout here >> Style_SongView
-                var itemView = LayoutInflater.From(parent.Context)?.Inflate(Resource.Layout.Style_SongView, parent, false);
-                var vh = new RowSoundAdapterViewHolder(itemView, OnClick, OnLongClick);
-                return vh;
+                if (viewType == 222222)
+                {
+                    var itemView = LayoutInflater.From(parent.Context)?.Inflate(Resource.Layout.Style_AdMob5, parent, false);
+                    var vh = new AdapterHolders.AdsAdapterViewHolder(itemView, AdsModelType.AdMob5, ActivityContext);
+                    return vh;
+                }
+                else
+                {
+                    //Setup your layout here >> Style_SongView
+                    var itemView = LayoutInflater.From(parent.Context)?.Inflate(Resource.Layout.Style_SongView, parent, false);
+                    var vh = new RowSoundAdapterViewHolder(itemView, OnClick, OnLongClick);
+                    return vh;
+                }
             }
             catch (Exception exception)
             {
@@ -69,34 +79,41 @@ namespace DeepSound.Activities.Songs.Adapters
                 if (payloads.Count > 0)
                 {
                     var item = SoundsList[position];
-                    switch (payloads[0].ToString())
+                    if (item != null && item.TypeView != "Ads")
                     {
-                        case "playerAction":
-                            {
-                                if (viewHolder is not RowSoundAdapterViewHolder holder) return;
-
-                                ClickListeners.SetPlaySongs(holder.PlayButton, item.IsPlay);
-
-                                if (item.IsPlay)
+                        switch (payloads[0].ToString())
+                        {
+                            case "playerAction":
                                 {
-                                    holder.Image.Visibility = ViewStates.Gone;
-                                    holder.CardViewImage.Visibility = ViewStates.Gone;
-                                    holder.Equalizer.Visibility = ViewStates.Visible;
-                                    holder.Equalizer.AnimateBars();
+                                    if (viewHolder is not RowSoundAdapterViewHolder holder) return;
+
+                                    ClickListeners.SetPlaySongs(holder.PlayButton, item.IsPlay);
+
+                                    if (item.IsPlay)
+                                    {
+                                        holder.Image.Visibility = ViewStates.Gone;
+                                        holder.CardViewImage.Visibility = ViewStates.Gone;
+                                        holder.Equalizer.Visibility = ViewStates.Visible;
+                                        holder.Equalizer.AnimateBars();
+                                    }
+                                    else
+                                    {
+                                        holder.Image.Visibility = ViewStates.Visible;
+                                        holder.CardViewImage.Visibility = ViewStates.Visible;
+                                        holder.Equalizer.Visibility = ViewStates.Gone;
+                                        holder.Equalizer.StopBars();
+                                    }
+                                    //NotifyItemChanged(position);
+                                    break;
                                 }
-                                else
-                                {
-                                    holder.Image.Visibility = ViewStates.Visible;
-                                    holder.CardViewImage.Visibility = ViewStates.Visible;
-                                    holder.Equalizer.Visibility = ViewStates.Gone;
-                                    holder.Equalizer.StopBars();
-                                }
-                                //NotifyItemChanged(position);
+                            default:
+                                base.OnBindViewHolder(viewHolder, position, payloads);
                                 break;
-                            }
-                        default:
-                            base.OnBindViewHolder(viewHolder, position, payloads);
-                            break;
+                        }
+                    }
+                    else
+                    {
+                        base.OnBindViewHolder(viewHolder, position, payloads);
                     }
                 }
                 else
@@ -116,11 +133,14 @@ namespace DeepSound.Activities.Songs.Adapters
         {
             try
             {
-                if (viewHolder is not RowSoundAdapterViewHolder holder) return;
-
                 var item = SoundsList[position];
                 if (item == null)
                     return;
+
+                if (item.TypeView == "Ads")
+                    return;
+
+                if (viewHolder is not RowSoundAdapterViewHolder holder) return;
 
                 holder.CountItemTextView.Text = position.ToString("D2");
 
@@ -167,7 +187,12 @@ namespace DeepSound.Activities.Songs.Adapters
                 }
 
                 if (!holder.MoreButton.HasOnClickListeners)
-                    holder.MoreButton.Click += (sender, e) => ClickListeners.OnMoreClick(new MoreClickEventArgs { View = holder.MainView, SongsClass = item }, NamePage);
+                    holder.MoreButton.Click += (sender, e) =>
+                    {
+                        var item = SoundsList[holder.BindingAdapterPosition];
+
+                        ClickListeners.OnMoreClick(new MoreClickEventArgs { View = holder.MainView, SongsClass = item }, NamePage);
+                    };
             }
             catch (Exception exception)
             {
@@ -197,12 +222,24 @@ namespace DeepSound.Activities.Songs.Adapters
         {
             try
             {
-                return position;
+                var item = GetItem(position);
+                if (item != null)
+                {
+                    if (item.TypeView == "Ads")
+                    {
+                        return 222222;
+                    }
+                    else
+                    {
+                        return 1111;
+                    }
+                }
+                return 1111;
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                return 0;
+                return 1111;
             }
         }
 

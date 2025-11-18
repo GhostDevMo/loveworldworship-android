@@ -93,6 +93,15 @@
 						android:drawablePadding="13dp" />
 				</RelativeLayout>
 				<ViewStub
+					android:id="@+id/viewStubShimmer"
+					android:inflatedId="@+id/subViewShimmer"
+					android:layout="@layout/ShimmerLoadPageLayout"
+					android:layout_centerInParent="true"
+					android:layout_gravity="center"
+					android:gravity="center"
+					android:layout_width="match_parent"
+					android:layout_height="match_parent" />
+				<ViewStub
 					android:id="@+id/viewStubPublicePlaylist"
 					android:inflatedId="@+id/stubViewPublicePlaylist"
 					android:layout_width="match_parent"

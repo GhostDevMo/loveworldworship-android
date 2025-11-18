@@ -13,6 +13,7 @@ using Java.Util;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Object = Java.Lang.Object;
 
 namespace DeepSound.Helpers.Ads
 {
@@ -20,6 +21,8 @@ namespace DeepSound.Helpers.Ads
     {
         private static int CountInterstitial;
         private static int CountRewarded;
+        public static readonly List<NativeAd> MAdItems = new List<NativeAd>();
+        public static NativeAdsManager MNativeAdsManager;
 
         #region Banner
 
@@ -35,17 +38,15 @@ namespace DeepSound.Helpers.Ads
 
                     // Request an ad
                     var build = adView.BuildLoadAdConfig()
-                        ?.WithAdListener(new BannerAdListener(recyclerView))
+                        ?.WithAdListener(new BannerAdListener(adContainer, recyclerView))
                         ?.Build();
                     adView.LoadAd(build);
 
                     return adView;
                 }
-                else
-                {
-                    if (recyclerView != null)
-                        Methods.SetMargin(recyclerView, 0, 0, 0, 0);
-                }
+
+                if (recyclerView != null)
+                    Methods.SetMargin(recyclerView, 0, 0, 0, 0);
                 return null;
             }
             catch (Exception e)
@@ -55,11 +56,14 @@ namespace DeepSound.Helpers.Ads
             }
         }
 
-        private class BannerAdListener : Java.Lang.Object, IAdListener
+
+        private class BannerAdListener : Object, IAdListener
         {
             private readonly RecyclerView MRecycler;
-            public BannerAdListener(RecyclerView recyclerView)
+            private readonly LinearLayout AdContainer;
+            public BannerAdListener(LinearLayout adContainer, RecyclerView recyclerView)
             {
+                AdContainer = adContainer;
                 MRecycler = recyclerView;
             }
             /// <summary>
@@ -77,7 +81,7 @@ namespace DeepSound.Helpers.Ads
             /// <param name="ad"></param>
             public void OnAdLoaded(IAd ad)
             {
-
+                AdContainer.Visibility = ViewStates.Visible;
             }
 
             /// <summary>
@@ -89,6 +93,7 @@ namespace DeepSound.Helpers.Ads
             {
                 try
                 {
+                    AdContainer.Visibility = ViewStates.Gone;
                     var error = adError.ErrorMessage;
                     Console.WriteLine(error);
                     if (MRecycler != null) Methods.SetMargin(MRecycler, 0, 0, 0, 0);
@@ -132,11 +137,9 @@ namespace DeepSound.Helpers.Ads
 
                         return interstitialAd;
                     }
-                    else
-                    {
-                        if (AppSettings.ShowAppLovinInterstitialAds)
-                            AdsAppLovin.Ad_Interstitial(activity);
-                    }
+
+                    if (AppSettings.ShowAppLovinInterstitialAds)
+                        AdsAppLovin.Ad_Interstitial(activity);
 
                     CountInterstitial++;
                 }
@@ -154,7 +157,7 @@ namespace DeepSound.Helpers.Ads
             }
         }
 
-        private class MyInterstitialAdListener : Java.Lang.Object, IInterstitialAdListener, InterstitialAd.IInterstitialLoadAdConfig
+        private class MyInterstitialAdListener : Object, IInterstitialAdListener, InterstitialAd.IInterstitialLoadAdConfig
         {
             private readonly InterstitialAd InterstitialAd;
             private readonly Activity Activity;
@@ -245,39 +248,29 @@ namespace DeepSound.Helpers.Ads
         {
             try
             {
-                if (DeepSoundTools.GetStatusAds())
+                if (DeepSoundTools.GetStatusAds() && AppSettings.ShowFbRewardVideoAds && CountRewarded == AppSettings.ShowAdRewardedVideoCount)
                 {
-                    if (AppSettings.ShowFbRewardVideoAds && CountRewarded == AppSettings.ShowAdRewardedVideoCount)
-                    {
-                        CountRewarded = 0;
+                    CountRewarded = 0;
 
-                        var rewardVideoAd = new RewardedVideoAd(activity, AppSettings.AdsFbRewardVideoKey);
+                    var rewardVideoAd = new RewardedVideoAd(activity, AppSettings.AdsFbRewardVideoKey);
 
-                        // Create the rewarded ad data
-                        RewardData rewardData = new RewardData(UserDetails.UserId.ToString(), "200");
+                    // Create the rewarded ad data
+                    RewardData rewardData = new RewardData(UserDetails.UserId.ToString(), "200");
 
-                        var build = rewardVideoAd.BuildLoadAdConfig()
-                            ?.WithAdListener(new MyRRewardVideoAdListener(activity, rewardVideoAd))
-                            ?.WithRewardData(rewardData)
-                            ?.WithFailOnCacheFailureEnabled(true)
-                            ?.Build();
-                        rewardVideoAd.LoadAd(build);
+                    var build = rewardVideoAd.BuildLoadAdConfig()
+                        ?.WithAdListener(new MyRRewardVideoAdListener(activity, rewardVideoAd))
+                        ?.WithRewardData(rewardData)
+                        ?.WithFailOnCacheFailureEnabled(true)
+                        ?.Build();
+                    rewardVideoAd.LoadAd(build);
 
-                        //rewardVideoAd.SetRewardData(new RewardData("YOUR_USER_ID", "YOUR_REWARD"));
-                        return rewardVideoAd;
-                    }
-                    else
-                    {
-                        if (AppSettings.ShowAppLovinRewardAds)
-                            AdsAppLovin.Ad_Rewarded(activity);
-                    }
-                    CountRewarded++;
+                    //rewardVideoAd.SetRewardData(new RewardData("YOUR_USER_ID", "YOUR_REWARD"));
+                    return rewardVideoAd;
                 }
-                else
-                {
-                    if (AppSettings.ShowAppLovinRewardAds)
-                        AdsAppLovin.Ad_Rewarded(activity);
-                }
+
+                if (AppSettings.ShowAppLovinRewardAds)
+                    AdsAppLovin.Ad_Rewarded(activity);
+                CountRewarded++;
 
                 return null;
             }
@@ -288,7 +281,7 @@ namespace DeepSound.Helpers.Ads
             }
         }
 
-        private class MyRRewardVideoAdListener : Java.Lang.Object, IS2SRewardedVideoAdListener
+        private class MyRRewardVideoAdListener : Object, IS2SRewardedVideoAdListener
         {
             private readonly RewardedVideoAd RewardVideoAd;
             private readonly Activity Activity;
@@ -409,33 +402,23 @@ namespace DeepSound.Helpers.Ads
         {
             try
             {
-                switch (DeepSoundTools.GetStatusAds() && AppSettings.ShowFbNativeAds)
+                if (DeepSoundTools.GetStatusAds() && AppSettings.ShowFbNativeAds)
                 {
-                    case true:
-                        {
-                            switch (ad)
-                            {
-                                case null:
-                                    {
-                                        var nativeAd = new NativeAd(activity, AppSettings.AdsFbNativeKey);
+                    if (ad == null)
+                    {
+                        var nativeAd = new NativeAd(activity, AppSettings.AdsFbNativeKey);
 
-                                        // Initiate a request to load an ad. 
-                                        var build = nativeAd.BuildLoadAdConfig()
-                                            .WithAdListener(new NativeAdListener(activity, nativeAd, nativeAdLayout))
-                                            .Build();
-                                        nativeAd.LoadAd(build);
-                                        break;
-                                    }
-                                default:
-                                    {
-                                        var holder = new AdHolder(nativeAdLayout);
-                                        LoadAd(activity, holder, ad, nativeAdLayout);
-                                        break;
-                                    }
-                            }
-
-                            break;
-                        }
+                        // Initiate a request to load an ad. 
+                        var build = nativeAd.BuildLoadAdConfig()
+                            .WithAdListener(new NativeAdListener(activity, nativeAd, nativeAdLayout))
+                            .Build();
+                        nativeAd.LoadAd(build);
+                    }
+                    else
+                    {
+                        var holder = new AdHolder(nativeAdLayout);
+                        LoadAd(activity, holder, ad, nativeAdLayout);
+                    }
                 }
             }
             catch (Exception e)
@@ -444,7 +427,8 @@ namespace DeepSound.Helpers.Ads
             }
         }
 
-        private class NativeAdListener : Java.Lang.Object, INativeAdListener
+
+        private class NativeAdListener : Object, INativeAdListener
         {
             private readonly NativeAd NativeAd;
             private readonly LinearLayout NativeAdLayout;
@@ -591,7 +575,7 @@ namespace DeepSound.Helpers.Ads
                 }
             }
 
-            public class MediaViewListener : Java.Lang.Object, IMediaViewListener
+            public class MediaViewListener : Object, IMediaViewListener
             {
                 public void OnComplete(MediaView p0)
                 {
@@ -710,54 +694,43 @@ namespace DeepSound.Helpers.Ads
             }
         }
 
-        #endregion
-    }
-    //public class MyNativeAdsManagerListener : Java.Lang.Object, NativeAdsManager.IListener
-    //{
-    //    private readonly PostsAdapter NativePostAdapter2;
-    //    public MyNativeAdsManagerListener(PostsAdapter nativePostAdapter)
-    //    {
-    //        try
-    //        {
-    //            NativePostAdapter2 = nativePostAdapter;
-    //        }
-    //        catch (Exception e)
-    //        {
-    //            Methods.DisplayReportResultTrack(e);
-    //        }
-    //    }
-
-    //    public void OnAdError(AdError p0)
-    //    {
-
-    //    }
-
-    //    public void OnAdsLoaded()
-    //    {
-    //        try
-    //        {
-    //            NativeAd ad = NativePostAdapter2?.MNativeAdsManager?.NextNativeAd();
-    //            if (ad != null)
-    //            {
-    //                NativePostAdapter2.MAdItems.Add(ad);
-    //            }
-    //        }
-    //        catch (Exception e)
-    //        {
-    //            Methods.DisplayReportResultTrack(e);
-    //        }
-    //    }
-    //}
-
-    public static class InitializeFacebook
-    {
-        public static void Initialize(Context context)
+        public static void BindAdFb(Context context)
         {
             try
             {
-                if (AppSettings.ShowFbBannerAds || AppSettings.ShowFbInterstitialAds || AppSettings.ShowFbRewardVideoAds)
+                switch (DeepSoundTools.GetStatusAds() && AppSettings.ShowFbNativeAds)
                 {
-                    AudienceNetworkAds.Initialize(context);
+                    case true when MAdItems?.Count == 0:
+                        MNativeAdsManager = new NativeAdsManager(context, AppSettings.AdsFbNativeKey, 5);
+                        MNativeAdsManager.LoadAds();
+                        MNativeAdsManager.SetListener(new MyNativeAdsManagerListener());
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        #endregion
+    }
+
+    public class MyNativeAdsManagerListener : Object, NativeAdsManager.IListener
+    {
+        public void OnAdError(AdError p0)
+        {
+
+        }
+
+        public void OnAdsLoaded()
+        {
+            try
+            {
+                NativeAd ad = AdsFacebook.MNativeAdsManager?.NextNativeAd();
+                if (ad != null)
+                {
+                    AdsFacebook.MAdItems.Add(ad);
                 }
             }
             catch (Exception e)
@@ -767,4 +740,56 @@ namespace DeepSound.Helpers.Ads
         }
     }
 
+    public class InitializeFacebook
+    {
+        public static void Initialize(Context context)
+        {
+            try
+            {
+                if (AppSettings.ShowFbBannerAds || AppSettings.ShowFbInterstitialAds || AppSettings.ShowFbRewardVideoAds)
+                {
+                    if (!AudienceNetworkAds.IsInitialized(context))
+                    {
+                        if (BuildConfig.Debug)
+                        {
+                            AdSettings.TurnOnSDKDebugger(context);
+                        }
+                        //AdSettings.AddTestDevice(UserDetails.AdvertisingId);
+                        AdSettings.SetIntegrationErrorMode(AdSettings.IntegrationErrorMode.IntegrationErrorCrashDebugMode);
+
+                        AudienceNetworkAds.BuildInitSettings(context)
+                            ?.WithInitListener(new MyInitializationListener(context))
+                            ?.Initialize();
+                    }
+
+                }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        private class MyInitializationListener : Object, AudienceNetworkAds.IInitListener
+        {
+            private readonly Context Context;
+            public MyInitializationListener(Context context)
+            {
+                Context = context;
+            }
+
+            public void OnInitialized(AudienceNetworkAds.IInitResult result)
+            {
+                try
+                {
+                    Console.WriteLine("AudienceNetwork Ads Initialization : " + result.Message);
+                    AdsFacebook.BindAdFb(Context);
+                }
+                catch (Exception e)
+                {
+                    Methods.DisplayReportResultTrack(e);
+                }
+            }
+        }
+    }
 }

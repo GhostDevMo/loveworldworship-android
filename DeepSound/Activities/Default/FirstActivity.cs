@@ -17,7 +17,6 @@ using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSound.Library.OneSignalNotif;
-using DeepSound.SQLite;
 using DeepSoundClient;
 using Me.Relex.CircleIndicatorLib;
 using System;
@@ -47,7 +46,7 @@ namespace DeepSound.Activities.Default
             try
             {
                 base.OnCreate(savedInstanceState);
-                InitializeDeepSound.Initialize(AppSettings.Cert, PackageName, AppSettings.TurnTrustFailureOnWebException, AppSettings.SetApisReportMode);
+                InitializeDeepSound.Initialize(AppSettings.Cert, PackageName, AppSettings.TurnTrustFailureOnWebException, new MyReportModeApp());
 
                 Methods.App.FullScreenApp(this);
 
@@ -148,8 +147,6 @@ namespace DeepSound.Activities.Default
                 ViewPagerView = FindViewById<ViewPager>(Resource.Id.viewPager);
                 CircleIndicatorView = FindViewById<CircleIndicator>(Resource.Id.indicator);
 
-                BtnRegister.Click += BtnRegisterOnClick;
-
                 if (!AppSettings.ShowSkipButton)
                     BtnSkip.Visibility = ViewStates.Gone;
 
@@ -196,13 +193,13 @@ namespace DeepSound.Activities.Default
         {
             if (ViewPagerView.CurrentItem == 1)
             {
-                int drawableResourceId = this.Resources.GetIdentifier("new_person_image2", "drawable", PackageName);
+                int drawableResourceId = this.Resources.GetIdentifier("splash2", "drawable", PackageName);
                 Glide.With(this).Load(drawableResourceId).Transition(DrawableTransitionOptions.WithCrossFade(400)).Into(ImageBackground);
                 BtnRegister.Text = GetString(Resource.String.Btn_GetStarted);
             }
             else
             {
-                int drawableResourceId = this.Resources.GetIdentifier("new_person_image1", "drawable", PackageName);
+                int drawableResourceId = this.Resources.GetIdentifier("splash2", "drawable", PackageName);
                 Glide.With(this).Load(drawableResourceId).Transition(DrawableTransitionOptions.WithCrossFade(400)).Into(ImageBackground);
             }
         }
@@ -246,25 +243,7 @@ namespace DeepSound.Activities.Default
                 UserDetails.Cookie = "";
                 UserDetails.Email = "";
 
-                //Insert user data to database
-                var user = new DataTables.LoginTb
-                {
-                    UserId = UserDetails.UserId.ToString(),
-                    AccessToken = UserDetails.AccessToken,
-                    Cookie = UserDetails.Cookie,
-                    Username = "",
-                    Password = "",
-                    Status = "Pending",
-                    Lang = "",
-                    DeviceId = UserDetails.DeviceId
-                };
-                ListUtils.DataUserLoginList.Clear();
-                ListUtils.DataUserLoginList.Add(user);
-
                 UserDetails.IsLogin = false;
-
-                var dbDatabase = new SqLiteDatabase();
-                dbDatabase.InsertOrUpdateLogin_Credentials(user);
 
                 StartActivity(new Intent(this, typeof(HomeActivity)));
                 Finish();
@@ -278,7 +257,7 @@ namespace DeepSound.Activities.Default
 
         public void OnMoveSliderEffect()
         {
-            int drawableResourceId = this.Resources.GetIdentifier("new_person_image2", "drawable", PackageName);
+            int drawableResourceId = this.Resources.GetIdentifier("splash2", "drawable", PackageName);
             Glide.With(this).Load(drawableResourceId).Transition(DrawableTransitionOptions.WithCrossFade(400)).Into(ImageBackground);
 
             ViewPagerView.SetCurrentItem(ViewPagerView.CurrentItem + 1, true);

@@ -22,7 +22,7 @@ namespace DeepSound.Activities.Tabbes
         private readonly HomeActivity Context;
 
         private LinearLayout MainLayout;
-        private LinearLayout CustomButton0, CustomButton3, CustomButton4, CustomButton5;
+        private LinearLayout CustomButton0, CustomButton2, CustomButton3, CustomButton4, CustomButton5;
         private ImageView CustomImage0, CustomImage2, CustomImage3, CustomImage4, CustomImage5;
         private TextView CustomText0, CustomText2, CustomText3, CustomText4, CustomText5;
         public int PageNumber;
@@ -57,21 +57,25 @@ namespace DeepSound.Activities.Tabbes
                 MainLayout = MainContext.FindViewById<LinearLayout>(Resource.Id.llMain);
 
                 CustomButton0 = MainContext.FindViewById<LinearLayout>(Resource.Id.llcustom0);
+                CustomButton2 = MainContext.FindViewById<LinearLayout>(Resource.Id.llcustom2);
                 CustomButton3 = MainContext.FindViewById<LinearLayout>(Resource.Id.llcustom3);
                 CustomButton4 = MainContext.FindViewById<LinearLayout>(Resource.Id.llcustom4);
                 CustomButton5 = MainContext.FindViewById<LinearLayout>(Resource.Id.llcustom5);
 
                 CustomImage0 = MainContext.FindViewById<ImageView>(Resource.Id.ivcustom0);
+                CustomImage2 = MainContext.FindViewById<ImageView>(Resource.Id.ivcustom2);
                 CustomImage3 = MainContext.FindViewById<ImageView>(Resource.Id.ivcustom3);
                 CustomImage4 = MainContext.FindViewById<ImageView>(Resource.Id.ivcustom4);
                 CustomImage5 = MainContext.FindViewById<ImageView>(Resource.Id.ivcustom5);
 
                 CustomText0 = MainContext.FindViewById<TextView>(Resource.Id.txtcustom0);
+                CustomText2 = MainContext.FindViewById<TextView>(Resource.Id.txtcustom2);
                 CustomText3 = MainContext.FindViewById<TextView>(Resource.Id.txtcustom3);
                 CustomText4 = MainContext.FindViewById<TextView>(Resource.Id.txtcustom4);
                 CustomText5 = MainContext.FindViewById<TextView>(Resource.Id.txtcustom5);
 
                 CustomButton0?.SetOnClickListener(this);
+                CustomButton2?.SetOnClickListener(this);
                 CustomButton3?.SetOnClickListener(this);
                 CustomButton4?.SetOnClickListener(this);
                 CustomButton5?.SetOnClickListener(this);
@@ -124,7 +128,12 @@ namespace DeepSound.Activities.Tabbes
                         ShowFragment0();
                         AdsGoogle.Ad_AppOpenManager(MainContext);
                         break;
-
+                    case Resource.Id.llcustom2:
+                        EnableNavigationButton(CustomImage2, CustomText2);
+                        PageNumber = 1;
+                        ShowFragment1();
+                        AdsGoogle.Ad_RewardedVideo(MainContext);
+                        break;
                     case Resource.Id.llcustom3:
 
                         if (!UserDetails.IsLogin)
@@ -340,7 +349,7 @@ namespace DeepSound.Activities.Tabbes
         {
             try
             {
-                if (fragmentList.Count < 0)
+                if (fragmentList.Count == 0)
                     return;
 
                 foreach (var fra in fragmentList)

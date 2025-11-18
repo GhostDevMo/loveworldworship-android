@@ -316,6 +316,8 @@ namespace DeepSound.Activities.SettingsUser.General
                         {
                             if (respond is MessageObject result)
                             {
+                                AndHUD.Shared.Dismiss();
+
                                 Console.WriteLine(result.Message);
                                 Toast.MakeText(this, GetText(Resource.String.Lbl_RequestSentWithdrawals), ToastLength.Long)?.Show();
                             }
@@ -333,7 +335,7 @@ namespace DeepSound.Activities.SettingsUser.General
             }
             catch (Exception exception)
             {
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
                 Methods.DisplayReportResultTrack(exception);
             }
         }
@@ -362,7 +364,7 @@ namespace DeepSound.Activities.SettingsUser.General
             }
         }
 
-        #region Load Blocks 
+        #region Load Withdrawals 
 
         private void StartApiService(string offset = "0")
         {
@@ -395,7 +397,7 @@ namespace DeepSound.Activities.SettingsUser.General
                                 MAdapter.WithdrawalsList.Add(item);
                             }
 
-                            if (countList > 0)
+                            if (countList > 1)
                             {
                                 RunOnUiThread(() => { MAdapter.NotifyItemRangeInserted(countList, MAdapter.WithdrawalsList.Count - countList); });
                             }
@@ -445,7 +447,6 @@ namespace DeepSound.Activities.SettingsUser.General
         }
 
         #endregion
-
 
     }
 }

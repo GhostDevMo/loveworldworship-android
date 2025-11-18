@@ -270,7 +270,7 @@ namespace DeepSound.Activities.Upload
 
         #region Events
 
-        //Click Save data Playlist
+        //Click Save data Album
         private async void BtnSaveOnClick(object sender, EventArgs e)
         {
             try
@@ -321,7 +321,7 @@ namespace DeepSound.Activities.Upload
                             Console.WriteLine(result.Url);
                             Toast.MakeText(this, GetText(Resource.String.Lbl_AddedSuccessfully), ToastLength.Short)?.Show();
 
-                            AndHUD.Shared.Dismiss(this);
+                            AndHUD.Shared.Dismiss();
 
                             if (result.AlbumData != null)
                             {
@@ -341,7 +341,7 @@ namespace DeepSound.Activities.Upload
             }
             catch (Exception exception)
             {
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
                 Methods.DisplayReportResultTrack(exception);
             }
         }
@@ -365,6 +365,8 @@ namespace DeepSound.Activities.Upload
             try
             {
                 if (e.Event?.Action != MotionEventActions.Up) return;
+
+                Methods.HideKeyboard(this);
 
                 TypeDialog = "Genres";
 
@@ -390,6 +392,8 @@ namespace DeepSound.Activities.Upload
             try
             {
                 if (e.Event?.Action != MotionEventActions.Up) return;
+
+                Methods.HideKeyboard(this);
 
                 TypeDialog = "Price";
 
@@ -483,7 +487,7 @@ namespace DeepSound.Activities.Upload
                     if (result.IsSuccessful)
                     {
                         var resultUri = result.UriContent;
-                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        string filepath = Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu ? result.GetUriFilePath(this, true) : Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
                         if (!string.IsNullOrEmpty(filepath))
                         {
                             //Do something with your Uri 

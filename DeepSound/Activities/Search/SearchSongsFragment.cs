@@ -10,6 +10,7 @@ using DeepSound.Activities.Songs.Adapters;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.MediaPlayerController;
 using DeepSound.Helpers.Model;
+using DeepSound.Helpers.ShimmerUtils;
 using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Global;
@@ -30,8 +31,9 @@ namespace DeepSound.Activities.Search
         public RecyclerView MRecycler;
         public ProgressBar ProgressBarLoader;
         private LinearLayoutManager LayoutManager;
-        public ViewStub EmptyStateLayout;
-        public View Inflated;
+        public ViewStub EmptyStateLayout, ShimmerPageLayout;
+        public View Inflated, InflatedShimmer;
+        public TemplateShimmerInflater ShimmerInflater;
         public RecyclerViewOnScrollListener MainScrollEvent;
 
         #endregion
@@ -53,6 +55,7 @@ namespace DeepSound.Activities.Search
                 View view = inflater.Inflate(Resource.Layout.SearchSongsLayout, container, false);
 
                 InitComponent(view);
+                InitShimmer(view);
                 SetRecyclerViewAdapters();
                 return view;
             }
@@ -88,7 +91,7 @@ namespace DeepSound.Activities.Search
                 EmptyStateLayout = view.FindViewById<ViewStub>(Resource.Id.viewStub);
 
                 ProgressBarLoader = (ProgressBar)view.FindViewById(Resource.Id.sectionProgress);
-                ProgressBarLoader.Visibility = ViewStates.Visible;
+                ProgressBarLoader.Visibility = !UserDetails.IsLogin ? ViewStates.Gone : ViewStates.Visible;
 
                 SwipeRefreshLayout = (SwipeRefreshLayout)view.FindViewById(Resource.Id.swipeRefreshLayout);
                 SwipeRefreshLayout.SetColorSchemeResources(Android.Resource.Color.HoloBlueLight, Android.Resource.Color.HoloGreenLight, Android.Resource.Color.HoloOrangeLight, Android.Resource.Color.HoloRedLight);
@@ -102,12 +105,34 @@ namespace DeepSound.Activities.Search
             }
         }
 
+        private void InitShimmer(View view)
+        {
+            try
+            {
+                ShimmerPageLayout = view.FindViewById<ViewStub>(Resource.Id.viewStubShimmer);
+                InflatedShimmer ??= ShimmerPageLayout.Inflate();
+
+                ShimmerInflater = new TemplateShimmerInflater();
+                ShimmerInflater.InflateLayout(Activity, InflatedShimmer, ShimmerTemplateStyle.SongRowTemplate);
+
+                if (!UserDetails.IsLogin)
+                    ShimmerInflater.Hide();
+                else
+                    ShimmerInflater.Show();
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
         private void SetRecyclerViewAdapters()
         {
             try
             {
                 MAdapter = new RowSoundAdapter(Activity, "SearchSongsFragment") { SoundsList = new ObservableCollection<SoundDataObject>() };
                 MAdapter.ItemClick += MAdapterItemClick;
+                MRecycler.SetItemAnimator(null);
                 LayoutManager = new LinearLayoutManager(Activity);
                 MRecycler.SetLayoutManager(LayoutManager);
                 MRecycler.HasFixedSize = true;
@@ -124,17 +149,17 @@ namespace DeepSound.Activities.Search
                 MRecycler.AddOnScrollListener(xamarinRecyclerViewOnScrollListener);
                 MainScrollEvent.IsLoading = false;
 
-                //if (Inflated == null)
-                //    Inflated = EmptyStateLayout.Inflate();
-
-                //EmptyStateInflater x = new EmptyStateInflater();
-                //x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSearchResult);
-                //if (!x.EmptyStateButton.HasOnClickListeners)
-                //{
-                //    x.EmptyStateButton.Click += null;
-                //    x.EmptyStateButton.Click += ContextSearch.TryAgainButton_Click;
-                //}
-
+                if (!UserDetails.IsLogin)
+                {
+                    Inflated = EmptyStateLayout.Inflate();
+                    EmptyStateInflater x = new EmptyStateInflater();
+                    x.InflateLayout(Inflated, EmptyStateInflater.Type.NoSearchResult);
+                    if (!x.EmptyStateButton.HasOnClickListeners)
+                    {
+                        x.EmptyStateButton.Click += null;
+                        x.EmptyStateButton.Click += ContextSearch.TryAgainButton_Click;
+                    }
+                }
             }
             catch (Exception e)
             {
@@ -152,7 +177,7 @@ namespace DeepSound.Activities.Search
             try
             {
                 //Code get last id where LoadMore >>
-                var item = MAdapter.SoundsList.LastOrDefault();
+                var item = MAdapter.SoundsList.LastOrDefault(a => a.TypeView != "Ads");
                 if (item != null && !string.IsNullOrEmpty(item.Id.ToString()) && !MainScrollEvent.IsLoading)
                 {
                     ContextSearch.OffsetSongs = item.Id.ToString();

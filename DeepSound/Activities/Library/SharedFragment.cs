@@ -181,6 +181,7 @@ namespace DeepSound.Activities.Library
             {
                 MAdapter = new RowSoundAdapter(Activity, "SharedFragment") { SoundsList = new ObservableCollection<SoundDataObject>() };
                 MAdapter.ItemClick += MAdapterItemClick;
+                MRecycler.SetItemAnimator(null);
                 LayoutManager = new LinearLayoutManager(Activity);
                 MRecycler.SetLayoutManager(LayoutManager);
                 MRecycler.HasFixedSize = true;
@@ -261,7 +262,19 @@ namespace DeepSound.Activities.Library
 
                 if (list?.Count > 0)
                 {
-                    MAdapter.SoundsList = list;
+                    foreach (var item in from item in list let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
+                    {
+                        MAdapter.SoundsList.Add(item);
+
+                        if (MAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                        {
+                            MAdapter.SoundsList.Add(new SoundDataObject()
+                            {
+                                TypeView = "Ads"
+                            });
+                        }
+                    }
+
                     MAdapter.NotifyDataSetChanged();
 
                     MRecycler.Visibility = ViewStates.Visible;

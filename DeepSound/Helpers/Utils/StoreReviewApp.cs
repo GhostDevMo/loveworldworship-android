@@ -8,7 +8,7 @@ using Uri = Android.Net.Uri;
 
 namespace DeepSound.Helpers.Utils
 {
-    public class StoreReviewApp : Java.Lang.Object, IOnCompleteListener
+    public class StoreReviewApp : Java.Lang.Object, IOnCompleteListener, IOnFailureListener
     {
         private Intent GetRateIntent(string url)
         {
@@ -43,18 +43,19 @@ namespace DeepSound.Helpers.Utils
         /// <param name="appId">App identifier.</param>
         public void OpenStoreReviewPage(Context context, string appId)
         {
-            try
-            {
-                var manager = ReviewManagerFactory.Create(context);
-                var request = manager.RequestReviewFlow();
-                request.AddOnCompleteListener(this);
-                return;
-            }
-            catch (Exception ex)
-            {
-                //Unable to launch app store
-                Methods.DisplayReportResultTrack(ex);
-            }
+            //try
+            //{
+            //    var manager = ReviewManagerFactory.Create(context);
+            //    var request = manager.RequestReviewFlow();
+            //    request.AddOnCompleteListener(this);
+            //    request.AddOnFailureListener(this);
+            //    return;
+            //}
+            //catch (Exception ex)
+            //{
+            //    //Unable to launch app store
+            //    Methods.DisplayReportResultTrack(ex);
+            //}
 
             //Unable to launch app store
             var url = $"market://details?id={appId}";
@@ -103,6 +104,18 @@ namespace DeepSound.Helpers.Utils
                     // There was some problem, log or handle the error code.
                     var reviewErrorCode = task.Exception;
                 }
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        public void OnFailure(Java.Lang.Exception p0)
+        {
+            try
+            {
+
             }
             catch (Exception e)
             {

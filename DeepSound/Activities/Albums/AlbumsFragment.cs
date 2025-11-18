@@ -1,5 +1,8 @@
-﻿using Android.Graphics;
+﻿using Android.Content;
+using Android.Graphics;
 using Android.OS;
+using Android.Runtime;
+using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.AppCompat.Widget;
@@ -224,11 +227,13 @@ namespace DeepSound.Activities.Albums
             {
                 MAdapter = new RowSoundAdapter(Activity, "AlbumsFragment") { SoundsList = new ObservableCollection<SoundDataObject>() };
                 MAdapter.ItemClick += MAdapterItemClick;
+                MRecycler.SetItemAnimator(null);
                 LayoutManager = new LinearLayoutManager(Activity);
                 MRecycler.SetLayoutManager(LayoutManager);
                 MRecycler.HasFixedSize = true;
                 MRecycler.SetItemViewCacheSize(10);
                 MRecycler.GetLayoutManager().ItemPrefetchEnabled = true;
+
                 var sizeProvider = new FixedPreloadSizeProvider(10, 10);
                 var preLoader = new RecyclerViewPreloader<SoundDataObject>(Activity, MAdapter, sizeProvider, 10);
                 MRecycler.AddOnScrollListener(preLoader);
@@ -496,23 +501,27 @@ namespace DeepSound.Activities.Albums
                         var respondList = result.Songs?.Count;
                         if (respondList > 0)
                         {
+                            result.Songs = DeepSoundTools.ListFilter(result.Songs);
+
+                            foreach (var item in from item in result.Songs let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
+                            {
+                                MAdapter.SoundsList.Add(item);
+
+                                if (MAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
+                                {
+                                    MAdapter.SoundsList.Add(new SoundDataObject()
+                                    {
+                                        TypeView = "Ads"
+                                    });
+                                }
+                            }
+
                             if (countList > 0)
                             {
-                                result.Songs = DeepSoundTools.ListFilter(result.Songs);
-
-                                foreach (var item in from item in result.Songs let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
-                                {
-                                    MAdapter.SoundsList.Add(item);
-                                }
-
-                                Activity?.RunOnUiThread(() =>
-                                {
-                                    MAdapter.NotifyItemRangeInserted(countList, MAdapter.SoundsList.Count - countList);
-                                });
+                                Activity?.RunOnUiThread(() => { MAdapter.NotifyItemRangeInserted(countList, MAdapter.SoundsList.Count - countList); });
                             }
                             else
                             {
-                                MAdapter.SoundsList = new ObservableCollection<SoundDataObject>(result.Songs);
                                 Activity?.RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); });
                             }
                         }
@@ -591,6 +600,30 @@ namespace DeepSound.Activities.Albums
         }
 
         #endregion
+
+        public class LinearLayoutManagerWrapper : LinearLayoutManager
+        {
+            protected LinearLayoutManagerWrapper(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+            {
+            }
+
+            public LinearLayoutManagerWrapper(Context context) : base(context)
+            {
+            }
+
+            public LinearLayoutManagerWrapper(Context context, IAttributeSet attrs, int defStyleAttr, int defStyleRes) : base(context, attrs, defStyleAttr, defStyleRes)
+            {
+            }
+
+            public LinearLayoutManagerWrapper(Context context, int orientation, bool reverseLayout) : base(context, orientation, reverseLayout)
+            {
+            }
+
+            public override bool SupportsPredictiveItemAnimations()
+            {
+                return false;
+            }
+        }
 
     }
 }

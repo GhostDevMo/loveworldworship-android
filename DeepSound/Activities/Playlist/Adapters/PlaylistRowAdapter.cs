@@ -85,7 +85,11 @@ namespace DeepSound.Activities.Playlist.Adapters
                         holder.TxtCountSongs.Text = item.Songs + " " + ActivityContext.GetText(Resource.String.Lbl_Songs);
 
                         if (!holder.MoreButton.HasOnClickListeners)
-                            holder.MoreButton.Click += (sender, e) => ClickListeners.PlaylistMoreOnClick(item);
+                            holder.MoreButton.Click += (sender, e) =>
+                            {
+                                var item = PlaylistList[holder.BindingAdapterPosition];
+                                ClickListeners.PlaylistMoreOnClick(item);
+                            };
                     }
                 }
             }

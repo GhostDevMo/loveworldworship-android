@@ -256,7 +256,7 @@ namespace DeepSound.Activities.SettingsUser.Security
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
             }
         }
 

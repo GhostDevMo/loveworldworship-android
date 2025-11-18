@@ -6,6 +6,7 @@ using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Fragment.App;
 using AndroidX.ViewPager2.Widget;
+using DE.Hdodenhof.CircleImageViewLib;
 using DeepSound.Activities.Chat;
 using DeepSound.Activities.MyContacts;
 using DeepSound.Activities.MyProfile;
@@ -24,7 +25,6 @@ using Google.Android.Material.AppBar;
 using Google.Android.Material.Dialog;
 using Google.Android.Material.Tabs;
 using Newtonsoft.Json;
-using Refractored.Controls;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -424,6 +424,7 @@ namespace DeepSound.Activities.UserProfile
                         //iconTick.Bounds = new Rect(10, 10, 10, 7);
                         iconTick.SetTint(Color.White);
                         BtnFollow.SetCompoundDrawablesWithIntrinsicBounds(iconTick, null, null, null);
+                        BtnFollow.Text = GetText(Resource.String.Lbl_Following);
                         BtnFollow.Tag = "friends";
 
                         Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_Sent_successfully_followed), ToastLength.Short)?.Show();
@@ -440,6 +441,7 @@ namespace DeepSound.Activities.UserProfile
                         //iconAdd.Bounds = new Rect(10, 10, 10, 7);
                         iconAdd.SetTint(Color.White);
                         BtnFollow.SetCompoundDrawablesWithIntrinsicBounds(iconAdd, null, null, null);
+                        BtnFollow.Text = GetText(Resource.String.Lbl_Follow);
                         BtnFollow.Tag = "Add";
 
                         Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_Sent_successfully_Unfollowed), ToastLength.Short)?.Show();
@@ -584,7 +586,9 @@ namespace DeepSound.Activities.UserProfile
                         iconTick.SetTint(Color.White);
 
                         BtnFollow.SetCompoundDrawablesWithIntrinsicBounds(iconTick, null, null, null);
+                        BtnFollow.Text = GetText(Resource.String.Lbl_Following);
                         BtnFollow.Tag = "friends";
+
                     }
                     else  //Not Friend
                     {
@@ -596,6 +600,7 @@ namespace DeepSound.Activities.UserProfile
                         //iconAdd.Bounds = new Rect(10, 10, 10, 7);
                         iconAdd.SetTint(Color.White);
                         BtnFollow.SetCompoundDrawablesWithIntrinsicBounds(iconAdd, null, null, null);
+                        BtnFollow.Text = GetText(Resource.String.Lbl_Follow);
                         BtnFollow.Tag = "Add";
                     }
 

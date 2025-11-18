@@ -3,12 +3,7 @@ using Android.App;
 using Android.Content;
 using Android.Content.PM;
 using Android.Content.Res;
-using Android.Gms.Auth.Api.Identity;
-using Android.Gms.Auth.Api.SignIn;
-using Android.Gms.Common;
-using Android.Gms.Common.Apis;
-using Android.Gms.Extensions;
-using Android.Gms.Tasks;
+using Android.Gms.Common.Util.Concurrent;
 using Android.Graphics;
 using Android.OS;
 using Android.Views;
@@ -17,6 +12,7 @@ using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.App;
 using AndroidX.Core.Content;
+using AndroidX.Credentials;
 using Com.Facebook;
 using Com.Facebook.Login;
 using Com.Facebook.Login.Widget;
@@ -31,11 +27,13 @@ using DeepSoundClient;
 using DeepSoundClient.Classes.Auth;
 using DeepSoundClient.Classes.Global;
 using DeepSoundClient.Requests;
+using Java.Util.Concurrent;
 using Newtonsoft.Json;
 using Org.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Xamarin.GoogleAndroid.Libraries.Identity.GoogleId;
 using Exception = System.Exception;
 using Object = Java.Lang.Object;
 using Task = System.Threading.Tasks.Task;
@@ -43,7 +41,7 @@ using Task = System.Threading.Tasks.Task;
 namespace DeepSound.Activities.Default
 {
     [Activity(Icon = "@mipmap/icon", Theme = "@style/MyTheme", ConfigurationChanges = ConfigChanges.Locale | ConfigChanges.UiMode | ConfigChanges.ScreenSize | ConfigChanges.Orientation | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize)]
-    public class LoginActivity : AppCompatActivity, IFacebookCallback, GraphRequest.IGraphJSONObjectCallback, IOnSuccessListener, IOnFailureListener
+    public class LoginActivity : AppCompatActivity, IFacebookCallback, GraphRequest.IGraphJSONObjectCallback, ICredentialManagerCallback
     {
         #region Variables Basic
 
@@ -55,8 +53,8 @@ namespace DeepSound.Activities.Default
 
         private ICallbackManager MFbCallManager;
         private FbMyProfileTracker ProfileTracker;
+        public static ICredentialManager CredentialManager;
         public static LoginActivity Instance;
-        public static GoogleSignInClient MGoogleSignInClient;
 
         private ImageView BackIcon, EmailIcon, PasswordIcon, EyesIcon;
         private RelativeLayout EmailFrameLayout, PassFrameLayout;
@@ -72,7 +70,7 @@ namespace DeepSound.Activities.Default
             {
                 base.OnCreate(savedInstanceState);
 
-                InitializeDeepSound.Initialize(AppSettings.Cert, PackageName, AppSettings.TurnTrustFailureOnWebException, AppSettings.SetApisReportMode);
+                InitializeDeepSound.Initialize(AppSettings.Cert, PackageName, AppSettings.TurnTrustFailureOnWebException, new MyReportModeApp());
 
                 Methods.App.FullScreenApp(this, true);
                 SetTheme(DeepSoundTools.IsTabDark() ? Resource.Style.MyTheme_Dark : Resource.Style.MyTheme);
@@ -108,7 +106,7 @@ namespace DeepSound.Activities.Default
                 }
 
                 if (AppSettings.EnableSmartLockForPasswords)
-                    BuildClients(null);
+                    BuildClients();
             }
             catch (Exception e)
             {
@@ -303,17 +301,6 @@ namespace DeepSound.Activities.Default
                 //#Google
                 if (AppSettings.ShowGoogleLogin)
                 {
-                    // Configure sign-in to request the user's ID, email address, and basic profile. ID and basic profile are included in DEFAULT_SIGN_IN.
-                    var gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DefaultSignIn)
-                        .RequestIdToken(AppSettings.ClientId)
-                        .RequestScopes(new Scope(Scopes.Profile))
-                        .RequestScopes(new Scope(Scopes.PlusMe))
-                        .RequestScopes(new Scope(Scopes.DriveAppfolder))
-                        .RequestServerAuthCode(AppSettings.ClientId)
-                        .RequestProfile().RequestEmail().Build();
-
-                    MGoogleSignInClient = GoogleSignIn.GetClient(this, gso);
-
                     GoogleSignInButton = FindViewById<FrameLayout>(Resource.Id.google);
                     GoogleSignInButton.Click += GoogleSignInButtonOnClick;
                 }
@@ -391,22 +378,21 @@ namespace DeepSound.Activities.Default
         {
             try
             {
-                if (MGoogleSignInClient == null)
-                {
-                    // Configure sign-in to request the user's ID, email address, and basic profile. ID and basic profile are included in DEFAULT_SIGN_IN.
-                    var gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DefaultSignIn)
-                        .RequestIdToken(AppSettings.ClientId)
-                        .RequestScopes(new Scope(Scopes.Profile))
-                        .RequestScopes(new Scope(Scopes.PlusMe))
-                        .RequestScopes(new Scope(Scopes.DriveAppfolder))
-                        .RequestServerAuthCode(AppSettings.ClientId)
-                        .RequestProfile().RequestEmail().Build();
+                GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
+                    .SetFilterByAuthorizedAccounts(false)
+                    .SetServerClientId(AppSettings.ClientId)
+                    //.SetAutoSelectEnabled(false) 
+                    .Build();
 
-                    MGoogleSignInClient ??= GoogleSignIn.GetClient(this, gso);
-                }
+                GetCredentialRequest request = new GetCredentialRequest.Builder()
+                    .AddCredentialOption(googleIdOption)
+                    .Build();
 
-                var signInIntent = MGoogleSignInClient.SignInIntent;
-                StartActivityForResult(signInIntent, 0);
+                CancellationSignal cancellationSignal = new CancellationSignal();
+                CredentialManager ??= ICredentialManager.Create(this);
+                IExecutor executor = ContextCompat.GetMainExecutor(this);
+
+                CredentialManager.GetCredentialAsync(this, request, cancellationSignal, executor, this);
             }
             catch (Exception ex)
             {
@@ -517,6 +503,8 @@ namespace DeepSound.Activities.Default
                     {
                         ProgressBar.Visibility = ViewStates.Visible;
                         BtnSignIn.Visibility = ViewStates.Gone;
+
+                        Methods.HideKeyboard(this);
 
                         await AuthApi(EmailEditText.Text.Replace(" ", ""), PasswordEditText.Text);
                     }
@@ -684,7 +672,7 @@ namespace DeepSound.Activities.Default
 
         #region Social Logins
 
-        private string FbAccessToken, GAccessToken, GServerCode;
+        private string FbAccessToken;
 
         #region Facebook
 
@@ -819,75 +807,61 @@ namespace DeepSound.Activities.Default
 
         #region Google
 
-        private async void SetContentGoogle(GoogleSignInAccount acct)
+        private async void SetContentGoogle(string gAccessToken)
         {
             try
             {
                 //Successful log in hooray!!
-                if (acct != null)
+                if (!string.IsNullOrEmpty(gAccessToken))
                 {
                     ProgressBar.Visibility = ViewStates.Visible;
                     BtnSignIn.Visibility = ViewStates.Gone;
 
-                    //var GAccountName = acct.Account.Name;
-                    //var GAccountType = acct.Account.Type;
-                    //var GDisplayName = acct.DisplayName;
-                    //var GFirstName = acct.GivenName;
-                    //var GLastName = acct.FamilyName;
-                    //var GProfileId = acct.Id;
-                    //var GEmail = acct.Email;
-                    //var GImg = acct.PhotoUrl.Path;
-                    GAccessToken = acct.IdToken;
-                    GServerCode = acct.ServerAuthCode;
-                    Console.WriteLine(GServerCode);
-
-                    if (!string.IsNullOrEmpty(GAccessToken))
+                    //Login Api 
+                    //string key = Methods.App.GetValueFromManifest(this, "com.google.android.geo.API_KEY");
+                    var (apiStatus, respond) = await RequestsAsync.Auth.SocialLoginAsync(gAccessToken, "google", UserDetails.DeviceId);
+                    if (apiStatus == 200)
                     {
-                        //Login Api 
-                        //string key = Methods.App.GetValueFromManifest(this, "com.google.android.geo.API_KEY");
-                        var (apiStatus, respond) = await RequestsAsync.Auth.SocialLoginAsync(GAccessToken, "google", UserDetails.DeviceId);
-                        if (apiStatus == 200)
+                        if (respond is LoginObject auth)
                         {
-                            if (respond is LoginObject auth)
-                            {
-                                SetDataLogin(auth);
+                            SetDataLogin(auth);
 
-                                StartActivity(new Intent(this, typeof(HomeActivity)));
-                                Finish();
-                            }
-                        }
-                        else if (apiStatus == 400)
-                        {
-                            if (respond is ErrorObject error)
-                            {
-                                string errorText = error.Error;
-                                switch (errorText)
-                                {
-                                    case "Please check your details":
-                                        Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_Security), GetText(Resource.String.Lbl_ErrorPleaseCheckYourDetails), GetText(Resource.String.Lbl_Ok));
-                                        break;
-                                    case "Incorrect username or password":
-                                        Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_Security), GetText(Resource.String.Lbl_ErrorLogin2), GetText(Resource.String.Lbl_Ok));
-                                        break;
-                                    case "Your account is not activated yet, please check your inbox for the activation link":
-                                        Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_Security), GetText(Resource.String.Lbl_ErrorLogin3), GetText(Resource.String.Lbl_Ok));
-                                        break;
-                                    default:
-                                        Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_Security), errorText, GetText(Resource.String.Lbl_Ok));
-                                        break;
-                                }
-                            }
-
-                            ProgressBar.Visibility = ViewStates.Gone;
-                            BtnSignIn.Visibility = ViewStates.Visible;
-                        }
-                        else if (apiStatus == 404)
-                        {
-                            ProgressBar.Visibility = ViewStates.Gone;
-                            BtnSignIn.Visibility = ViewStates.Visible;
-                            Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_Security), respond.ToString(), GetText(Resource.String.Lbl_Ok));
+                            StartActivity(new Intent(this, typeof(HomeActivity)));
+                            Finish();
                         }
                     }
+                    else if (apiStatus == 400)
+                    {
+                        if (respond is ErrorObject error)
+                        {
+                            string errorText = error.Error;
+                            switch (errorText)
+                            {
+                                case "Please check your details":
+                                    Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_Security), GetText(Resource.String.Lbl_ErrorPleaseCheckYourDetails), GetText(Resource.String.Lbl_Ok));
+                                    break;
+                                case "Incorrect username or password":
+                                    Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_Security), GetText(Resource.String.Lbl_ErrorLogin2), GetText(Resource.String.Lbl_Ok));
+                                    break;
+                                case "Your account is not activated yet, please check your inbox for the activation link":
+                                    Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_Security), GetText(Resource.String.Lbl_ErrorLogin3), GetText(Resource.String.Lbl_Ok));
+                                    break;
+                                default:
+                                    Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_Security), errorText, GetText(Resource.String.Lbl_Ok));
+                                    break;
+                            }
+                        }
+
+                        ProgressBar.Visibility = ViewStates.Gone;
+                        BtnSignIn.Visibility = ViewStates.Visible;
+                    }
+                    else if (apiStatus == 404)
+                    {
+                        ProgressBar.Visibility = ViewStates.Gone;
+                        BtnSignIn.Visibility = ViewStates.Visible;
+                        Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_Security), respond.ToString(), GetText(Resource.String.Lbl_Ok));
+                    }
+
                 }
             }
             catch (Exception e)
@@ -895,6 +869,62 @@ namespace DeepSound.Activities.Default
                 ProgressBar.Visibility = ViewStates.Gone;
                 BtnSignIn.Visibility = ViewStates.Visible;
                 Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_Security), e.Message, GetText(Resource.String.Lbl_Ok));
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        public void OnError(Object result)
+        {
+            try
+            {
+                Toast.MakeText(this, result?.ToString(), ToastLength.Short)?.Show();
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
+            }
+        }
+
+        public async void OnResult(Object result)
+        {
+            try
+            {
+                if (result is GetCredentialResponse response)
+                {
+                    Credential credential = response.Credential;
+                    if (credential is CustomCredential customCredential)
+                    {
+                        if (customCredential.Type == GoogleIdTokenCredential.TypeGoogleIdTokenCredential)
+                        {
+                            GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential.CreateFrom(credential.Data);
+
+                            if (googleIdTokenCredential != null)
+                            {
+                                string email = googleIdTokenCredential.Id;
+                                string firstName = googleIdTokenCredential.GivenName;
+                                string lastName = googleIdTokenCredential.FamilyName;
+                                string token = googleIdTokenCredential.IdToken;
+                                SetContentGoogle(token);
+                            }
+                        }
+                    }
+                    else if (credential is PasswordCredential passwordCredential)
+                    {
+                        Methods.HideKeyboard(this);
+
+                        ProgressBar.Visibility = ViewStates.Visible;
+                        BtnSignIn.Visibility = ViewStates.Gone;
+
+                        await AuthApi(passwordCredential.Id, passwordCredential.Password);
+                    }
+                }
+                else if (result is CreatePublicKeyCredentialResponse credentialResponse)
+                {
+
+                }
+            }
+            catch (Exception e)
+            {
                 Methods.DisplayReportResultTrack(e);
             }
         }
@@ -988,47 +1018,19 @@ namespace DeepSound.Activities.Default
         #region Permissions && Result
 
         //Result
-        protected override async void OnActivityResult(int requestCode, Result resultCode, Intent data)
+        protected override void OnActivityResult(int requestCode, Result resultCode, Intent data)
         {
             try
             {
                 // Logins Facebook
                 MFbCallManager?.OnActivityResult(requestCode, (int)resultCode, data);
                 base.OnActivityResult(requestCode, resultCode, data);
-                if (requestCode == 0)
-                {
-                    var task = await GoogleSignIn.GetSignedInAccountFromIntentAsync(data);
-                    SetContentGoogle(task);
-                }
-                else if (requestCode == RcCredentialsHint)
-                {
-                    if (resultCode == Result.Ok)
-                    {
-                        SignInCredential credential = OneTapClient.GetSignInCredentialFromIntent(data);
-                        string idToken = credential.GoogleIdToken;
-                        string username = credential.Id;
-                        string password = credential.Password;
-
-                        if (!string.IsNullOrEmpty(credential?.Id) && !string.IsNullOrEmpty(credential?.Password))
-                        {
-                            // Email/password account
-                            Console.WriteLine("Signed in as {0}", credential.Id);
-
-                            //send api auth  
-                            ProgressBar.Visibility = ViewStates.Visible;
-                            BtnSignIn.Visibility = ViewStates.Gone;
-
-                            await AuthApi(credential.Id, credential.Password);
-                        }
-                    }
-                }
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
-
 
         //Permissions
         public override void OnRequestPermissionsResult(int requestCode, string[] permissions, Permission[] grantResults)
@@ -1057,56 +1059,24 @@ namespace DeepSound.Activities.Default
 
         #region Cross App Authentication
 
-        private static readonly int RcCredentialsHint = 10;
-
-        private ISignInClient OneTapClient;
-        private BeginSignInRequest SignInRequest;
-
-        private async void BuildClients(string accountName)
+        private void BuildClients()
         {
             try
             {
-                OneTapClient = Identity.GetSignInClient(this);
-                SignInRequest = new BeginSignInRequest.Builder()
-                    .SetPasswordRequestOptions(new BeginSignInRequest.PasswordRequestOptions.Builder().SetSupported(true).Build())
-                    .SetGoogleIdTokenRequestOptions(new BeginSignInRequest.GoogleIdTokenRequestOptions.Builder()
-                        .SetSupported(true)
-                        // Your server's client ID, not your Android client ID.
-                        .SetServerClientId(AppSettings.ClientId)
-                        // true : Only show accounts previously used to sign in.
-                        // false : Show all accounts on the device.
-                        .SetFilterByAuthorizedAccounts(false)
-                        .Build())
-                    // true : Automatically sign in when exactly one credential is retrieved.
-                    //.SetAutoSelectEnabled(true)
+                GetPasswordOption getPasswordOption = new GetPasswordOption();
+
+                GetCredentialRequest getCredRequest = new GetCredentialRequest.Builder()
+                    .AddCredentialOption(getPasswordOption)
                     .Build();
 
-                await OneTapClient.BeginSignIn(SignInRequest).AddOnSuccessListener(this).AddOnFailureListener(this);
+                CredentialManager ??= ICredentialManager.Create(this);
+
+                CredentialManager.GetCredentialAsync(this, getCredRequest, new CancellationSignal(), new HandlerExecutor(Looper.MainLooper), this);
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
-        }
-
-        void IOnSuccessListener.OnSuccess(Object result)
-        {
-            try
-            {
-                if (result is BeginSignInResult results)
-                {
-                    StartIntentSenderForResult(results.PendingIntent.IntentSender, RcCredentialsHint, null, 0, 0, 0);
-                }
-            }
-            catch (IntentSender.SendIntentException e)
-            {
-                Console.WriteLine("Couldn't start One Tap UI: " + e.LocalizedMessage);
-            }
-        }
-
-        public void OnFailure(Java.Lang.Exception e)
-        {
-
         }
 
         #endregion

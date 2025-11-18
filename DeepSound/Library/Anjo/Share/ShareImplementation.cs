@@ -1,8 +1,6 @@
 using Android.App;
 using Android.Content;
-using AndroidX.Browser.CustomTabs;
 using DeepSound.Library.Anjo.Share.Abstractions;
-using Plugin.CurrentActivity;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -24,30 +22,12 @@ namespace DeepSound.Library.Anjo.Share
         {
             try
             {
-                if (options == null)
-                    options = new BrowserOptions();
+                var intent = new Intent(Intent.ActionView);
+                intent.SetData(Android.Net.Uri.Parse(url));
 
-                if (CrossCurrentActivity.Current.Activity == null)
-                {
-                    var intent = new Intent(Intent.ActionView);
-                    intent.SetData(Android.Net.Uri.Parse(url));
-
-                    intent.SetFlags(ActivityFlags.ClearTop);
-                    intent.SetFlags(ActivityFlags.NewTask);
-                    Application.Context.StartActivity(intent);
-                }
-                else
-                {
-                    var tabsBuilder = new CustomTabsIntent.Builder();
-                    tabsBuilder.SetShowTitle(options?.ChromeShowTitle ?? false);
-
-                    //var toolbarColor = options?.ChromeToolbarColor;
-                    //if (toolbarColor != null)
-                    //    tabsBuilder.SetToolbarColor(toolbarColor.ToNativeColor());
-
-                    var intent = tabsBuilder.Build();
-                    intent.LaunchUrl(CrossCurrentActivity.Current.Activity, Android.Net.Uri.Parse(url));
-                }
+                intent.SetFlags(ActivityFlags.ClearTop);
+                intent.SetFlags(ActivityFlags.NewTask);
+                Application.Context.StartActivity(intent);
 
                 return Task.FromResult(true);
             }
@@ -67,34 +47,37 @@ namespace DeepSound.Library.Anjo.Share
         /// <returns>True if the operation was successful, false otherwise</returns>
         public Task<bool> Share(ShareMessage message, ShareOptions options = null)
         {
-            if (message == null)
-                throw new ArgumentNullException(nameof(message));
-
-            try
+            switch (message)
             {
-                var items = new List<string>();
-                if (message.Text != null)
-                    items.Add(message.Text);
-                if (message.Url != null)
-                    items.Add(message.Url);
+                case null:
+                    throw new ArgumentNullException(nameof(message));
+                default:
+                    try
+                    {
+                        var items = new List<string>();
+                        if (message.Text != null)
+                            items.Add(message.Text);
+                        if (message.Url != null)
+                            items.Add(message.Url);
 
-                var intent = new Intent(Intent.ActionSend);
-                intent.SetType("text/plain");
-                intent.PutExtra(Intent.ExtraText, string.Join(Environment.NewLine, items));
-                if (message.Title != null)
-                    intent.PutExtra(Intent.ExtraSubject, message.Title);
+                        var intent = new Intent(Intent.ActionSend);
+                        intent.SetType("text/plain");
+                        intent.PutExtra(Intent.ExtraText, string.Join(Environment.NewLine, items));
+                        if (message.Title != null)
+                            intent.PutExtra(Intent.ExtraSubject, message.Title);
 
-                var chooserIntent = Intent.CreateChooser(intent, options?.ChooserTitle);
-                chooserIntent.SetFlags(ActivityFlags.ClearTop);
-                chooserIntent.SetFlags(ActivityFlags.NewTask);
-                Application.Context.StartActivity(chooserIntent);
+                        var chooserIntent = Intent.CreateChooser(intent, options?.ChooserTitle);
+                        chooserIntent.SetFlags(ActivityFlags.ClearTop);
+                        chooserIntent.SetFlags(ActivityFlags.NewTask);
+                        Application.Context.StartActivity(chooserIntent);
 
-                return Task.FromResult(true);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Unable to share: " + ex.Message);
-                return Task.FromResult(false);
+                        return Task.FromResult(true);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine("Unable to share: " + ex.Message);
+                        return Task.FromResult(false);
+                    }
             }
         }
 
@@ -109,15 +92,20 @@ namespace DeepSound.Library.Anjo.Share
             try
             {
                 var sdk = (int)Android.OS.Build.VERSION.SdkInt;
-                if (sdk < (int)Android.OS.BuildVersionCodes.Honeycomb)
+                switch (sdk)
                 {
-                    var clipboard = (ClipboardManager)Application.Context.GetSystemService(Context.ClipboardService);
-                    clipboard.Text = text;
-                }
-                else
-                {
-                    var clipboard = (ClipboardManager)Application.Context.GetSystemService(Context.ClipboardService);
-                    clipboard.PrimaryClip = ClipData.NewPlainText(label ?? string.Empty, text);
+                    case < (int)Android.OS.BuildVersionCodes.Honeycomb:
+                        {
+                            var clipboard = (ClipboardManager)Application.Context.GetSystemService(Context.ClipboardService);
+                            clipboard.Text = text;
+                            break;
+                        }
+                    default:
+                        {
+                            var clipboard = (ClipboardManager)Application.Context.GetSystemService(Context.ClipboardService);
+                            clipboard.PrimaryClip = ClipData.NewPlainText(label ?? string.Empty, text);
+                            break;
+                        }
                 }
 
                 return Task.FromResult(true);
@@ -138,7 +126,7 @@ namespace DeepSound.Library.Anjo.Share
         {
             try
             {
-                var context = CrossCurrentActivity.Current.Activity ?? Application.Context;
+                var context = Application.Context;
                 var intent = new Intent(Intent.ActionView);
                 intent.SetData(Android.Net.Uri.Parse(url));
 

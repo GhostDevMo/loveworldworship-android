@@ -288,7 +288,7 @@ namespace DeepSound.Activities.Event
                         ButtonJoin.Tag = "true";
                         ButtonJoin.SetBackgroundResource(Resource.Drawable.round_button_pressed);
                         ButtonJoin.SetTextColor(Color.White);
-                        ButtonJoin.SupportCompoundDrawablesTintList = ColorStateList.ValueOf(Color.White);
+                        ButtonJoin.CompoundDrawableTintList = ColorStateList.ValueOf(Color.White);
 
                         EventObject.IsJoined = 1;
                         PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Event.JoinEventAsync(EventObject.Id?.ToString(), "join") });
@@ -298,7 +298,7 @@ namespace DeepSound.Activities.Event
                         ButtonJoin.Tag = "false";
                         ButtonJoin.SetBackgroundResource(Resource.Drawable.round_button_normal);
                         ButtonJoin.SetTextColor(Color.ParseColor(AppSettings.MainColor));
-                        ButtonJoin.SupportCompoundDrawablesTintList = ColorStateList.ValueOf(Color.ParseColor(AppSettings.MainColor));
+                        ButtonJoin.CompoundDrawableTintList = ColorStateList.ValueOf(Color.ParseColor(AppSettings.MainColor));
 
                         EventObject.IsJoined = 0;
 
@@ -419,10 +419,10 @@ namespace DeepSound.Activities.Event
                 {
                     GlideImageLoader.LoadImage(Activity, EventObject.Image, ImageCover, ImageStyle.CenterCrop, ImagePlaceholders.Drawable);
 
-                    if (EventObject.UserData != null)
+                    if (EventObject.UserData?.UserDataClass != null)
                     {
-                        GlideImageLoader.LoadImage(Activity, EventObject.UserData.Avatar, ImageUser, ImageStyle.CircleCrop, ImagePlaceholders.Drawable);
-                        TxtUsername.Text = "@" + EventObject.UserData.Username;
+                        GlideImageLoader.LoadImage(Activity, EventObject.UserData?.UserDataClass.Avatar, ImageUser, ImageStyle.CircleCrop, ImagePlaceholders.Drawable);
+                        TxtUsername.Text = "@" + EventObject.UserData?.UserDataClass.Username;
                     }
 
                     TxtName.Text = Methods.FunString.DecodeString(EventObject.Name);
@@ -457,7 +457,7 @@ namespace DeepSound.Activities.Event
                             ButtonJoin.Tag = "true";
                             ButtonJoin.SetBackgroundResource(Resource.Drawable.round_button_pressed);
                             ButtonJoin.SetTextColor(Color.White);
-                            ButtonJoin.SupportCompoundDrawablesTintList = ColorStateList.ValueOf(Color.White);
+                            ButtonJoin.CompoundDrawableTintList = ColorStateList.ValueOf(Color.White);
                         }
                         else
                         {
@@ -465,7 +465,7 @@ namespace DeepSound.Activities.Event
                             ButtonJoin.Tag = "false";
                             ButtonJoin.SetBackgroundResource(Resource.Drawable.round_button_normal);
                             ButtonJoin.SetTextColor(Color.ParseColor(AppSettings.MainColor));
-                            ButtonJoin.SupportCompoundDrawablesTintList = ColorStateList.ValueOf(Color.ParseColor(AppSettings.MainColor));
+                            ButtonJoin.CompoundDrawableTintList = ColorStateList.ValueOf(Color.ParseColor(AppSettings.MainColor));
                         }
 
                         if (EventObject.TicketPrice is > 0 && EventObject.TicketPrice is > 0)

@@ -42,6 +42,8 @@ namespace DeepSound.Activities.SettingsUser
 
                 string getValue = SharedData.GetString("Night_Mode_key", string.Empty);
                 ApplyTheme(getValue);
+
+                AppSettings.Lang = SharedData.GetString("Lang_key", AppSettings.Lang);
             }
             catch (Exception exception)
             {

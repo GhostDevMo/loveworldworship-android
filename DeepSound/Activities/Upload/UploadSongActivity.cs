@@ -388,7 +388,7 @@ namespace DeepSound.Activities.Upload
                                 PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Tracks.ConvertTrackAsync(result.AudioId, result.SongLocation) });
 
                             Toast.MakeText(this, GetText(Resource.String.Lbl_AddedSuccessfully), ToastLength.Short)?.Show();
-                            AndHUD.Shared.Dismiss(this);
+                            AndHUD.Shared.Dismiss();
 
                             result.TrackData.AudioLocation = !result.TrackData.AudioLocation.Contains(InitializeDeepSound.WebsiteUrl)
                                     ? InitializeDeepSound.WebsiteUrl + "/" + result.SongLocation
@@ -410,7 +410,7 @@ namespace DeepSound.Activities.Upload
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
             }
         }
 
@@ -470,6 +470,8 @@ namespace DeepSound.Activities.Upload
             {
                 if (e.Event?.Action != MotionEventActions.Up) return;
 
+                Methods.HideKeyboard(this);
+
                 TypeDialog = "Price";
 
                 var arrayAdapter = new List<string>();
@@ -500,6 +502,8 @@ namespace DeepSound.Activities.Upload
             {
                 if (e.Event?.Action != MotionEventActions.Up) return;
 
+                Methods.HideKeyboard(this);
+
                 TypeDialog = "Genres";
 
                 var dialogList = new MaterialAlertDialogBuilder(this);
@@ -524,6 +528,8 @@ namespace DeepSound.Activities.Upload
             try
             {
                 if (e.Event?.Action != MotionEventActions.Up) return;
+
+                Methods.HideKeyboard(this);
 
                 TypeDialog = "AgeRestriction";
 
@@ -553,6 +559,8 @@ namespace DeepSound.Activities.Upload
             try
             {
                 if (e.Event?.Action != MotionEventActions.Up) return;
+
+                Methods.HideKeyboard(this);
 
                 TypeDialog = "AllowDownloads";
 
@@ -663,7 +671,7 @@ namespace DeepSound.Activities.Upload
                     if (result.IsSuccessful)
                     {
                         var resultUri = result.UriContent;
-                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        string filepath = Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu ? result.GetUriFilePath(this, true) : Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
                         if (!string.IsNullOrEmpty(filepath))
                         {
                             //Do something with your Uri
@@ -733,7 +741,7 @@ namespace DeepSound.Activities.Upload
 
                         TxtSubTitle.Text = GetText(Resource.String.Lbl_subTitleUploadSong) + " " + resultUpload.FileName;
 
-                        AndHUD.Shared.Dismiss(this);
+                        AndHUD.Shared.Dismiss();
                     }
                 }
                 else

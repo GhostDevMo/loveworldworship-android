@@ -216,9 +216,9 @@ namespace DeepSound.Activities.SettingsUser.Security
                 };
                 LayoutManager = new LinearLayoutManager(this);
                 MRecycler.SetLayoutManager(LayoutManager);
-                //MRecycler.HasFixedSize = true;
-                //MRecycler.SetItemViewCacheSize(10);
-                //MRecycler.GetLayoutManager().ItemPrefetchEnabled = true;
+                MRecycler.HasFixedSize = true;
+                MRecycler.SetItemViewCacheSize(10);
+                MRecycler.GetLayoutManager().ItemPrefetchEnabled = true;
                 MRecycler.SetAdapter(MAdapter);
             }
             catch (Exception e)

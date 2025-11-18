@@ -187,6 +187,7 @@ namespace DeepSound.Activities.Songs
             {
                 MAdapter = new RowSoundAdapter(Activity, "SongsByGenresFragment") { SoundsList = new ObservableCollection<SoundDataObject>() };
                 MAdapter.ItemClick += MAdapterItemClick;
+                MRecycler.SetItemAnimator(null);
                 LayoutManager = new LinearLayoutManager(Activity);
                 MRecycler.SetLayoutManager(LayoutManager);
                 MRecycler.HasFixedSize = true;
@@ -219,7 +220,7 @@ namespace DeepSound.Activities.Songs
             try
             {
                 //Code get last id where LoadMore >>
-                var item = MAdapter.SoundsList.LastOrDefault();
+                var item = MAdapter.SoundsList.LastOrDefault(a => a.TypeView != "Ads");
                 if (item != null && !string.IsNullOrEmpty(item.Id.ToString()) && !MainScrollEvent.IsLoading)
                     StartApiService(item.Id.ToString());
             }
@@ -321,64 +322,44 @@ namespace DeepSound.Activities.Songs
                 {
                     if (respond is GetTracksByGenresObject result)
                     {
+                        List<SoundDataObject> soundsList = new List<SoundDataObject>();
                         if (result.Tracks?.Data.AnythingArray?.Count > 0)
                         {
-                            var respondList = result.Tracks?.Data.AnythingArray.Count;
-                            if (respondList > 0)
+                            soundsList = DeepSoundTools.ListFilter(result.Tracks.Data.AnythingArray);
+                        }
+                        else if (result.Tracks?.Data.SoundList?.Count > 0)
+                        {
+                            soundsList = DeepSoundTools.ListFilter(result.Tracks.Data.SoundList.Values.ToList());
+                        }
+
+                        if (soundsList.Count > 0)
+                        {
+                            foreach (var item in from item in soundsList let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
                             {
-                                result.Tracks.Data = new GetTracksByGenresObject.TracksByGenresUnion()
-                                {
-                                    AnythingArray = DeepSoundTools.ListFilter(result.Tracks.Data.AnythingArray)
-                                };
+                                MAdapter.SoundsList.Add(item);
 
-                                if (countList > 0)
+                                if (MAdapter.SoundsList.Count % AppSettings.ShowAdNativeCount == 0)
                                 {
-                                    foreach (var item in from item in result.Tracks?.Data.AnythingArray let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
+                                    MAdapter.SoundsList.Add(new SoundDataObject()
                                     {
-                                        MAdapter.SoundsList.Add(item);
-                                    }
+                                        TypeView = "Ads"
+                                    });
+                                }
+                            }
 
-                                    Activity?.RunOnUiThread(() => { MAdapter.NotifyItemRangeInserted(countList, MAdapter.SoundsList.Count - countList); });
-                                }
-                                else
-                                {
-                                    MAdapter.SoundsList = new ObservableCollection<SoundDataObject>(result.Tracks?.Data.AnythingArray);
-                                    Activity?.RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); });
-                                }
+                            if (countList > 0)
+                            {
+                                Activity?.RunOnUiThread(() => { MAdapter.NotifyItemRangeInserted(countList, MAdapter.SoundsList.Count - countList); });
                             }
                             else
                             {
-                                if (MAdapter.SoundsList.Count > 10 && !MRecycler.CanScrollVertically(1))
-                                    Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_NoMoreSongs), ToastLength.Short)?.Show();
+                                Activity?.RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); });
                             }
                         }
                         else
                         {
-                            var respondList = result.Tracks?.Data.SoundList?.Count;
-                            if (respondList > 0)
-                            {
-                                List<SoundDataObject> list = DeepSoundTools.ListFilter(result.Tracks.Data.SoundList.Values.ToList());
-
-                                if (countList > 0)
-                                {
-                                    foreach (var item in from item in list let check = MAdapter.SoundsList.FirstOrDefault(a => a.Id == item.Id) where check == null select item)
-                                    {
-                                        MAdapter.SoundsList.Add(item);
-                                    }
-
-                                    Activity?.RunOnUiThread(() => { MAdapter.NotifyItemRangeInserted(countList, MAdapter.SoundsList.Count - countList); });
-                                }
-                                else
-                                {
-                                    MAdapter.SoundsList = new ObservableCollection<SoundDataObject>(list);
-                                    Activity?.RunOnUiThread(() => { MAdapter.NotifyDataSetChanged(); });
-                                }
-                            }
-                            else
-                            {
-                                if (MAdapter.SoundsList.Count > 10 && !MRecycler.CanScrollVertically(1))
-                                    Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_NoMoreSongs), ToastLength.Short)?.Show();
-                            }
+                            if (MAdapter.SoundsList.Count > 10 && !MRecycler.CanScrollVertically(1))
+                                Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_NoMoreSongs), ToastLength.Short)?.Show();
                         }
                     }
                 }

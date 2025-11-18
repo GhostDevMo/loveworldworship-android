@@ -115,16 +115,21 @@ namespace DeepSound.Helpers.MediaPlayerController
                 {
                     var refs = SetLike(e.Button);
                     e.SongsClass.IsLiked = refs;
+                    e.SongsClass.IsDisLiked = false;
 
                     //add to Liked
                     if (refs)
                     {
+                        Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_Song_Liked), ToastLength.Short)?.Show();
+
                         ListUtils.LikedSongs.Add(e.SongsClass);
                     }
                     else
                     {
                         var removeItem = ListUtils.LikedSongs.Select(x => x).FirstOrDefault(x => x.Id == e.SongsClass.Id);
                         ListUtils.LikedSongs.Remove(removeItem);
+
+                        Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_Remove_Song_Liked), ToastLength.Short)?.Show();
                     }
 
                     if (name == "AlbumsFragment")
@@ -134,6 +139,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                         if (dataSong != null)
                         {
                             dataSong.IsLiked = refs;
+                            dataSong.IsDisLiked = false;
                             int index = list.IndexOf(dataSong);
                             AlbumsFragment.Instance.MAdapter?.NotifyItemChanged(index);
                         }
@@ -145,6 +151,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                         if (dataSong != null)
                         {
                             dataSong.IsLiked = refs;
+                            dataSong.IsDisLiked = false;
                             int index = list.IndexOf(dataSong);
                             PlaylistProfileFragment.Instance?.MAdapter?.NotifyItemChanged(index);
                         }
@@ -156,19 +163,9 @@ namespace DeepSound.Helpers.MediaPlayerController
                         if (dataSong != null)
                         {
                             dataSong.IsLiked = refs;
+                            dataSong.IsDisLiked = false;
                             int index = list.IndexOf(dataSong);
                             GlobalContext?.HomeFragment?.LatestHomeTab?.SongsByGenresFragment?.MAdapter?.NotifyItemChanged(index);
-                        }
-                    }
-                    else if (name == "PlaylistProfileFragment")
-                    {
-                        var list = GlobalContext?.TrendingFragment?.PlaylistProfileFragment?.MAdapter?.SoundsList;
-                        var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id);
-                        if (dataSong != null)
-                        {
-                            dataSong.IsLiked = refs;
-                            int index = list.IndexOf(dataSong);
-                            GlobalContext?.TrendingFragment?.PlaylistProfileFragment?.MAdapter?.NotifyItemChanged(index);
                         }
                     }
                     else if (name == "SearchSongsFragment")
@@ -178,6 +175,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                         if (dataSong != null)
                         {
                             dataSong.IsLiked = refs;
+                            dataSong.IsDisLiked = false;
                             int index = list.IndexOf(dataSong);
                             GlobalContext?.HomeFragment?.SearchFragment?.SongsTab?.MAdapter?.NotifyItemChanged(index);
                         }
@@ -189,6 +187,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                         if (dataSong != null)
                         {
                             dataSong.IsLiked = refs;
+                            dataSong.IsDisLiked = false;
                             int index = list.IndexOf(dataSong);
                             GlobalContext?.LibraryFragment.FavoritesFragment?.MAdapter?.NotifyItemChanged(index);
                         }
@@ -200,6 +199,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                         if (dataSong != null)
                         {
                             dataSong.IsLiked = refs;
+                            dataSong.IsDisLiked = false;
                             int index = list.IndexOf(dataSong);
                             GlobalContext?.LibraryFragment.LatestDownloadsFragment?.MAdapter?.NotifyItemChanged(index);
                         }
@@ -211,6 +211,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                         if (dataSong != null)
                         {
                             dataSong.IsLiked = refs;
+                            dataSong.IsDisLiked = false;
                             int index = list.IndexOf(dataSong);
                             GlobalContext?.LibraryFragment.LikedFragment?.MAdapter?.NotifyItemChanged(index);
                         }
@@ -233,6 +234,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                         if (dataSong != null)
                         {
                             dataSong.IsLiked = refs;
+                            dataSong.IsDisLiked = false;
                             int index = list.IndexOf(dataSong);
                             GlobalContext?.LibraryFragment.RecentlyPlayedFragment?.MAdapter?.NotifyItemChanged(index);
                         }
@@ -244,6 +246,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                         if (dataSong != null)
                         {
                             dataSong.IsLiked = refs;
+                            dataSong.IsDisLiked = false;
                             int index = list.IndexOf(dataSong);
                             GlobalContext?.LibraryFragment.SharedFragment?.MAdapter?.NotifyItemChanged(index);
                         }
@@ -255,6 +258,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                         if (dataSong != null)
                         {
                             dataSong.IsLiked = refs;
+                            dataSong.IsDisLiked = false;
                             int index = list.IndexOf(dataSong);
                             SongsByTypeFragment.Instance?.MAdapter?.NotifyItemChanged(index);
                         }
@@ -266,6 +270,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                         if (dataSong != null)
                         {
                             dataSong.IsLiked = refs;
+                            dataSong.IsDisLiked = false;
                             int index = list.IndexOf(dataSong);
                             GlobalContext?.ProfileFragment.LikedFragment.MAdapter?.NotifyItemChanged(index);
                         }
@@ -277,6 +282,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                         if (dataSong != null)
                         {
                             dataSong.IsLiked = refs;
+                            dataSong.IsDisLiked = false;
                             int index = list.IndexOf(dataSong);
                             GlobalContext?.ProfileFragment.SongsFragment.MAdapter?.NotifyItemChanged(index);
                         }
@@ -311,14 +317,15 @@ namespace DeepSound.Helpers.MediaPlayerController
 
                 if (Methods.CheckConnectivity())
                 {
+                    Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_SongRemoved), ToastLength.Short)?.Show();
+
                     var data = ListUtils.GlobalNotInterestedList.FirstOrDefault(a => a.Id == e.SongsClass.Id);
                     if (data == null)
                     {
                         ListUtils.GlobalNotInterestedList.Add(e.SongsClass);
                     }
 
-                    if (Methods.CheckConnectivity())
-                        PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Tracks.AddDeleteNotInterestedAsync(e.SongsClass.Id.ToString(), true) });
+                    PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Tracks.AddDeleteNotInterestedAsync(e.SongsClass.Id.ToString(), true) });
 
                     if (name == "AlbumsFragment")
                     {
@@ -351,17 +358,6 @@ namespace DeepSound.Helpers.MediaPlayerController
                             int index = list.SoundsList.IndexOf(dataSong);
                             list.SoundsList.Remove(dataSong);
                             GlobalContext?.HomeFragment?.LatestHomeTab?.SongsByGenresFragment?.MAdapter?.NotifyItemChanged(index);
-                        }
-                    }
-                    else if (name == "PlaylistProfileFragment")
-                    {
-                        var list = GlobalContext?.TrendingFragment?.PlaylistProfileFragment?.MAdapter;
-                        var dataSong = list?.SoundsList?.FirstOrDefault(a => a.Id == e.SongsClass.Id);
-                        if (dataSong != null)
-                        {
-                            int index = list.SoundsList.IndexOf(dataSong);
-                            list.SoundsList.Remove(dataSong);
-                            GlobalContext?.TrendingFragment?.PlaylistProfileFragment?.MAdapter?.NotifyItemChanged(index);
                         }
                     }
                     else if (name == "SearchSongsFragment")
@@ -410,14 +406,13 @@ namespace DeepSound.Helpers.MediaPlayerController
                     }
                     else if (name == "PurchasesFragment")
                     {
-                        var list = GlobalContext?.LibraryFragment.PurchasesFragment?.MAdapter?.PurchasesList;
-                        var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id.ToString());
-                        if (dataSong != null)
-                        {
-                            //dataSong.IsLiked = refs;
-                            int index = list.IndexOf(dataSong);
-                            GlobalContext?.LibraryFragment.PurchasesFragment?.MAdapter?.NotifyItemChanged(index);
-                        }
+                        //var list = GlobalContext?.LibraryFragment.PurchasesFragment?.MAdapter?.PurchasesList;
+                        //var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id.ToString());
+                        //if (dataSong != null)
+                        //{
+                        //    int index = list.IndexOf(dataSong);
+                        //    GlobalContext?.LibraryFragment.PurchasesFragment?.MAdapter?.NotifyItemChanged(index);
+                        //}
                     }
                     else if (name == "RecentlyPlayedFragment")
                     {
@@ -474,9 +469,6 @@ namespace DeepSound.Helpers.MediaPlayerController
                             GlobalContext?.ProfileFragment.SongsFragment.MAdapter?.NotifyItemChanged(index);
                         }
                     }
-
-                    //Sent Api after add new api
-                    //PollyController.RunRetryPolicyFunction(new List<Func<Task>> { () => RequestsAsync.Tracks.LikeUnLikeTrackAsync(e.SongsClass.AudioId) });
                 }
                 else
                 {
@@ -506,6 +498,16 @@ namespace DeepSound.Helpers.MediaPlayerController
                 {
                     var refs = SetDislike(e.Button);
                     e.SongsClass.IsDisLiked = refs;
+                    e.SongsClass.IsLiked = false;
+
+                    if (refs)
+                    {
+                        Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_Song_UnLiked), ToastLength.Short)?.Show();
+                    }
+                    else
+                    {
+                        Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_Remove_Song_UnLiked), ToastLength.Short)?.Show();
+                    }
 
                     //add to Disliked
                     //if (refs)
@@ -518,8 +520,9 @@ namespace DeepSound.Helpers.MediaPlayerController
                         if (dataSong != null)
                         {
                             dataSong.IsDisLiked = refs;
+                            dataSong.IsLiked = false;
                             int index = list.IndexOf(dataSong);
-                            AlbumsFragment.Instance?.MAdapter?.NotifyItemChanged(index);
+                            AlbumsFragment.Instance.MAdapter?.NotifyItemChanged(index);
                         }
                     }
                     else if (name == "PlaylistProfileFragment")
@@ -529,8 +532,141 @@ namespace DeepSound.Helpers.MediaPlayerController
                         if (dataSong != null)
                         {
                             dataSong.IsDisLiked = refs;
+                            dataSong.IsLiked = false;
                             int index = list.IndexOf(dataSong);
                             PlaylistProfileFragment.Instance?.MAdapter?.NotifyItemChanged(index);
+                        }
+                    }
+                    else if (name == "SongsByGenresFragment")
+                    {
+                        var list = GlobalContext?.HomeFragment?.LatestHomeTab?.SongsByGenresFragment?.MAdapter?.SoundsList;
+                        var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id);
+                        if (dataSong != null)
+                        {
+                            dataSong.IsDisLiked = refs;
+                            dataSong.IsLiked = false;
+                            int index = list.IndexOf(dataSong);
+                            GlobalContext?.HomeFragment?.LatestHomeTab?.SongsByGenresFragment?.MAdapter?.NotifyItemChanged(index);
+                        }
+                    }
+                    else if (name == "SearchSongsFragment")
+                    {
+                        var list = GlobalContext?.HomeFragment?.SearchFragment?.SongsTab?.MAdapter?.SoundsList;
+                        var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id);
+                        if (dataSong != null)
+                        {
+                            dataSong.IsDisLiked = refs;
+                            dataSong.IsLiked = false;
+                            int index = list.IndexOf(dataSong);
+                            GlobalContext?.HomeFragment?.SearchFragment?.SongsTab?.MAdapter?.NotifyItemChanged(index);
+                        }
+                    }
+                    else if (name == "FavoritesFragment")
+                    {
+                        var list = GlobalContext?.LibraryFragment.FavoritesFragment?.MAdapter?.SoundsList;
+                        var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id);
+                        if (dataSong != null)
+                        {
+                            dataSong.IsDisLiked = refs;
+                            dataSong.IsLiked = false;
+                            int index = list.IndexOf(dataSong);
+                            GlobalContext?.LibraryFragment.FavoritesFragment?.MAdapter?.NotifyItemChanged(index);
+                        }
+                    }
+                    else if (name == "LatestDownloadsFragment")
+                    {
+                        var list = GlobalContext?.LibraryFragment.LatestDownloadsFragment?.MAdapter?.SoundsList;
+                        var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id);
+                        if (dataSong != null)
+                        {
+                            dataSong.IsDisLiked = refs;
+                            dataSong.IsLiked = false;
+                            int index = list.IndexOf(dataSong);
+                            GlobalContext?.LibraryFragment.LatestDownloadsFragment?.MAdapter?.NotifyItemChanged(index);
+                        }
+                    }
+                    else if (name == "LikedFragment")
+                    {
+                        var list = GlobalContext?.LibraryFragment.LikedFragment?.MAdapter?.SoundsList;
+                        var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id);
+                        if (dataSong != null)
+                        {
+                            dataSong.IsDisLiked = refs;
+                            dataSong.IsLiked = false;
+                            int index = list.IndexOf(dataSong);
+                            GlobalContext?.LibraryFragment.LikedFragment?.MAdapter?.NotifyItemChanged(index);
+                        }
+                    }
+                    else if (name == "PurchasesFragment")
+                    {
+                        //var list = GlobalContext?.LibraryFragment.PurchasesFragment?.MAdapter?.PurchasesList;
+                        //var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id.ToString());
+                        //if (dataSong != null)
+                        //{
+                        //    dataSong.IsDisLiked = refs;
+                        //    dataSong.IsLiked = false;
+                        //    int index = list.IndexOf(dataSong);
+                        //    GlobalContext?.LibraryFragment.PurchasesFragment?.MAdapter?.NotifyItemChanged(index);
+                        //}
+                    }
+                    else if (name == "RecentlyPlayedFragment")
+                    {
+                        var list = GlobalContext?.LibraryFragment.RecentlyPlayedFragment?.MAdapter?.SoundsList;
+                        var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id);
+                        if (dataSong != null)
+                        {
+                            dataSong.IsDisLiked = refs;
+                            dataSong.IsLiked = false;
+                            int index = list.IndexOf(dataSong);
+                            GlobalContext?.LibraryFragment.RecentlyPlayedFragment?.MAdapter?.NotifyItemChanged(index);
+                        }
+                    }
+                    else if (name == "SharedFragment")
+                    {
+                        var list = GlobalContext?.LibraryFragment.SharedFragment?.MAdapter?.SoundsList;
+                        var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id);
+                        if (dataSong != null)
+                        {
+                            dataSong.IsDisLiked = refs;
+                            dataSong.IsLiked = false;
+                            int index = list.IndexOf(dataSong);
+                            GlobalContext?.LibraryFragment.SharedFragment?.MAdapter?.NotifyItemChanged(index);
+                        }
+                    }
+                    else if (name == "SongsByTypeFragment")
+                    {
+                        var list = SongsByTypeFragment.Instance?.MAdapter?.SoundsList;
+                        var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id);
+                        if (dataSong != null)
+                        {
+                            dataSong.IsDisLiked = refs;
+                            dataSong.IsLiked = false;
+                            int index = list.IndexOf(dataSong);
+                            SongsByTypeFragment.Instance?.MAdapter?.NotifyItemChanged(index);
+                        }
+                    }
+                    else if (name == "UserLikedFragment")
+                    {
+                        var list = GlobalContext?.ProfileFragment.LikedFragment.MAdapter?.SoundsList;
+                        var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id);
+                        if (dataSong != null)
+                        {
+                            dataSong.IsDisLiked = refs;
+                            dataSong.IsLiked = false;
+                            int index = list.IndexOf(dataSong);
+                            GlobalContext?.ProfileFragment.LikedFragment.MAdapter?.NotifyItemChanged(index);
+                        }
+                    }
+                    else if (name == "UserSongsFragment")
+                    {
+                        var list = GlobalContext?.ProfileFragment.SongsFragment.MAdapter?.SoundsList;
+                        var dataSong = list?.FirstOrDefault(a => a.Id == e.SongsClass.Id);
+                        if (dataSong != null)
+                        {
+                            dataSong.IsDisLiked = refs;
+                            dataSong.IsLiked = false;
+                            int index = list.IndexOf(dataSong);
+                            GlobalContext?.ProfileFragment.SongsFragment.MAdapter?.NotifyItemChanged(index);
                         }
                     }
 
@@ -566,6 +702,24 @@ namespace DeepSound.Helpers.MediaPlayerController
                     var refs = SetFav(e.Button);
                     e.SongsClass.IsFavoriated = refs;
 
+                    var dataSongFav = ListUtils.FavoritesList.FirstOrDefault(a => a.Id == e.SongsClass.Id);
+                    if (refs)
+                    {
+                        Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_Song_Favorite), ToastLength.Short)?.Show();
+                        if (dataSongFav == null)
+                        {
+                            ListUtils.FavoritesList.Add(e.SongsClass);
+                        }
+                    }
+                    else
+                    {
+                        Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_Remove_Song_Favorite), ToastLength.Short)?.Show();
+                        if (dataSongFav != null)
+                        {
+                            ListUtils.FavoritesList.Remove(dataSongFav);
+                        }
+                    }
+
                     var page = GlobalContext?.FavoritesFragment;
                     if (page?.MAdapter != null)
                     {
@@ -577,8 +731,6 @@ namespace DeepSound.Helpers.MediaPlayerController
                             {
                                 page.MAdapter?.SoundsList?.Add(e.SongsClass);
                                 page.MAdapter?.NotifyDataSetChanged();
-
-                                ListUtils.FavoritesList.Add(e.SongsClass);
                             }
                         }
                         else
@@ -589,8 +741,6 @@ namespace DeepSound.Helpers.MediaPlayerController
                                 int index = page.MAdapter.SoundsList.IndexOf(dataSong);
                                 page.MAdapter.SoundsList.Remove(dataSong);
                                 page.MAdapter?.NotifyItemChanged(index);
-
-                                ListUtils.FavoritesList.Remove(dataSong);
                             }
                         }
                     }
@@ -673,36 +823,18 @@ namespace DeepSound.Helpers.MediaPlayerController
         {
             try
             {
-                var filePath = "";
+                var directories = SoundDownloadAsyncController.GetDownloadedFolder();
+                string path = new Java.IO.File(directories, fileName + ".mp3").Path;
 
-                if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
-                {
-                    /*
-                     * this changes is due to scoped storage introduce in Android 10
-                     * https://developer.android.com/preview/privacy/storage
-                     */
-
-                    var file = Application.Context.GetExternalFilesDir(Android.OS.Environment.DirectoryMusic);
-                    filePath = Methods.MultiMedia.CheckFileIfExits(file + "/" + fileName);
-                }
-                else
-                {
-                    filePath = Methods.Path.FolderDcimSound + fileName;
-                }
-
-                if (File.Exists(filePath))
+                if (File.Exists(path))
                 {
                     var sqlEntity = new SqLiteDatabase();
                     sqlEntity.Remove_LatestDownloadsSound(id);
-
-                    File.Delete(filePath);
-
+                    File.Delete(path);
                     return true;
                 }
-                else
-                {
-                    return false;
-                }
+
+                return false;
             }
             catch (Exception exception)
             {
@@ -803,9 +935,7 @@ namespace DeepSound.Helpers.MediaPlayerController
 
                                         Toast.MakeText(MainContext, MainContext.GetText(Resource.String.Lbl_SongSuccessfullyDeleted), ToastLength.Short)?.Show();
 
-                                        var showingDeleteOptionForOtherUsers = MoreSongArgs.SongsClass.UserId != UserDetails.UserId &&
-                                                                            AppSettings.AllowDeletingDownloadedSongs &&
-                                                                            NamePage == "LatestDownloadsFragment";
+                                        var showingDeleteOptionForOtherUsers = MoreSongArgs.SongsClass.UserId != UserDetails.UserId && AppSettings.AllowDeletingDownloadedSongs && NamePage == "LatestDownloadsFragment";
                                         if (showingDeleteOptionForOtherUsers)
                                         {
                                             RemoveDiskSoundFile(dataSong.Title, dataSong.Id);
@@ -1261,6 +1391,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                     }
 
                     likeButton.Tag = "Like";
+
                     return false;
                 }
                 else
@@ -1268,6 +1399,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                     likeButton.SetImageResource(Resource.Drawable.icon_heart_filled_post_vector);
                     likeButton.SetColorFilter(Color.ParseColor("#f55a4e"));
                     likeButton.Tag = "Liked";
+
                     return true;
                 }
             }

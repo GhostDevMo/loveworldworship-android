@@ -230,7 +230,7 @@ namespace DeepSound.Activities.Upload
                 {
                     if (respond is ImportTrackObject result)
                     {
-                        AndHUD.Shared.Dismiss(this);
+                        AndHUD.Shared.Dismiss();
 
                         if (result.Message != null && result.Message.Contains("converted to mp3 soon"))
                         {
@@ -258,7 +258,7 @@ namespace DeepSound.Activities.Upload
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
             }
         }
 

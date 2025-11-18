@@ -62,6 +62,7 @@ namespace DeepSound.Activities.Address
                 InitComponent();
                 InitToolbar();
                 SetRecyclerViewAdapters();
+                StartApiService();
 
                 AdsGoogle.Ad_RewardedVideo(this);
             }
@@ -131,8 +132,7 @@ namespace DeepSound.Activities.Address
         {
             try
             {
-
-                MAdView?.Destroy();
+                AdsGoogle.LifecycleAdView(MAdView, "Destroy");
                 base.OnDestroy();
             }
             catch (Exception exception)
@@ -177,7 +177,6 @@ namespace DeepSound.Activities.Address
 
                 ActionButton = FindViewById<FloatingActionButton>(Resource.Id.floatingActionButtonView);
                 ActionButton.Visibility = ViewStates.Visible;
-                ActionButton.Click += ActionButtonOnClick;
 
                 MAdView = FindViewById<AdView>(Resource.Id.adView);
                 AdsGoogle.InitAdView(MAdView, MRecycler);
@@ -232,9 +231,6 @@ namespace DeepSound.Activities.Address
                 MainScrollEvent.LoadMoreEvent += MainScrollEventOnLoadMoreEvent;
                 MRecycler.AddOnScrollListener(xamarinRecyclerViewOnScrollListener);
                 MainScrollEvent.IsLoading = false;
-
-
-                StartApiService();
             }
             catch (Exception e)
             {
@@ -252,12 +248,14 @@ namespace DeepSound.Activities.Address
                     MAdapter.EditItemClick += MAdapterOnEditItemClick;
                     MAdapter.DeleteItemClick += MAdapterOnDeleteItemClick;
                     SwipeRefreshLayout.Refresh += RefreshLayoutOnRefresh;
+                    ActionButton.Click += ActionButtonOnClick;
                 }
                 else
                 {
                     MAdapter.EditItemClick -= MAdapterOnEditItemClick;
                     MAdapter.DeleteItemClick -= MAdapterOnDeleteItemClick;
                     SwipeRefreshLayout.Refresh -= RefreshLayoutOnRefresh;
+                    ActionButton.Click -= ActionButtonOnClick;
                 }
             }
             catch (Exception e)

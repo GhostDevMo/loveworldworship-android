@@ -50,7 +50,7 @@
                     android:layout_height="match_parent"
                     android:background="@xml/gradientblack"
                     android:focusable="false" />
-                <Refractored.Controls.CircleImageView
+                <de.hdodenhof.circleimageview.CircleImageView
                     android:id="@+id/imageAvatar"
                     android:layout_alignParentTop="true"
                     android:scaleType="centerCrop"

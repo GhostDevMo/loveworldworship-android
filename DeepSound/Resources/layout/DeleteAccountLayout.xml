@@ -37,7 +37,9 @@
                 android:textColorHint="#444"
                 android:background="@drawable/EditTextStyleOne"
                 android:hint="@string/Lbl_Password"
-                android:inputType="textPassword" />
+                android:inputType="textPassword" 
+                android:singleLine="true"
+				android:gravity="start|center"/>
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

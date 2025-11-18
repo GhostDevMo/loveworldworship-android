@@ -1,5 +1,6 @@
 ﻿using Android.App;
 using Android.Content;
+using Android.Content.PM;
 using Android.Graphics;
 using Android.Media;
 using Android.Media.Session;
@@ -7,13 +8,21 @@ using Android.OS;
 using Android.Telephony;
 using Android.Views;
 using Android.Widget;
+using Androidx.Media3.Common;
+using Androidx.Media3.Common.Util;
+using Androidx.Media3.Datasource;
+using Androidx.Media3.Exoplayer;
+using Androidx.Media3.Exoplayer.Dash;
+using Androidx.Media3.Exoplayer.Hls;
+using Androidx.Media3.Exoplayer.Rtsp;
+using Androidx.Media3.Exoplayer.Smoothstreaming;
+using Androidx.Media3.Exoplayer.Source;
+using Androidx.Media3.Exoplayer.Trackselection;
+using Androidx.Media3.Exoplayer.Upstream;
+using Androidx.Media3.Extractor.TS;
 using AndroidX.Core.App;
 using AndroidX.Core.Content;
 using AndroidX.Media.Session;
-using Com.Google.Android.Exoplayer2;
-using Com.Google.Android.Exoplayer2.Source;
-using Com.Google.Android.Exoplayer2.Trackselection;
-using Com.Google.Android.Exoplayer2.Upstream;
 using DeepSound.Activities;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Model;
@@ -27,13 +36,14 @@ using Java.Lang;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using AudioAttributes = Com.Google.Android.Exoplayer2.Audio.AudioAttributes;
+using AudioAttributes = Androidx.Media3.Common.AudioAttributes;
+using BitmapUtil = DeepSound.Helpers.Utils.BitmapUtil;
 using Exception = System.Exception;
 using Uri = Android.Net.Uri;
 
 namespace DeepSound.Helpers.MediaPlayerController
 {
-    [Service(Exported = true)]
+    [Service(Exported = false, ForegroundServiceType = ForegroundService.TypeMediaPlayback)]
     public class PlayerService : Android.App.Service
     {
         #region Variables Basic
@@ -97,6 +107,31 @@ namespace DeepSound.Helpers.MediaPlayerController
                 GlobalContext = HomeActivity.GetInstance();
                 MNotificationManager = (NotificationManager)GetSystemService(NotificationService);
 
+                // ✅ 1️⃣ Create notification channel (mandatory for Android 8.0+)
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.O)
+                {
+                    var channel = new NotificationChannel(NotificationChannelId, "DeepSound Playback", NotificationImportance.Low)
+                    {
+                        Description = "Playback controls and player updates"
+                    };
+                    MNotificationManager.CreateNotificationChannel(channel);
+                }
+
+                // ✅ 2️⃣ Immediately start a lightweight foreground notification
+                var placeholderNotification = new NotificationCompat.Builder(this, NotificationChannelId)
+                    .SetContentTitle("Preparing player…")
+                    .SetContentText("Initializing playback service")
+                    .SetSmallIcon(Resource.Drawable.icon_player_notification)
+                    .SetPriority((int)NotificationPriority.Low)
+                    .SetOngoing(true)
+                    .Build();
+
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
+                    StartForeground(99, placeholderNotification, ForegroundService.TypeMediaPlayback);
+                else
+                    StartForeground(99, placeholderNotification);
+
+                // ✅ 3️⃣ Continue regular service setup
                 OnCallIncome = new CallBroadcastReceiver();
                 OnHeadPhoneDetect = new HeadPhoneBroadcastReceiver();
 
@@ -107,13 +142,20 @@ namespace DeepSound.Helpers.MediaPlayerController
                 InitializePlayer();
 
                 IsFirstTime = true;
-                CreateNoti();
+
+                // ✅ 4️⃣ Replace placeholder with real notification once ready
+                Task.Run(async () =>
+                {
+                    await Task.Delay(1500); // small delay for smoother transition
+                    CreateNoti();
+                });
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
             }
         }
+
 
         private void SetAudioFocus()
         {
@@ -166,7 +208,9 @@ namespace DeepSound.Helpers.MediaPlayerController
                 {
                     AdaptiveTrackSelection.Factory trackSelectionFactory = new AdaptiveTrackSelection.Factory();
                     var trackSelector = new DefaultTrackSelector(Application.Context, trackSelectionFactory);
-                    Constant.Player = new IExoPlayer.Builder(Application.Context)?.SetTrackSelector(trackSelector)?.Build();
+
+                    var mediaSourceFactory = new DefaultMediaSourceFactory(this);
+                    Constant.Player = new IExoPlayer.Builder(Application.Context)?.SetMediaSourceFactory(mediaSourceFactory)?.SetTrackSelector(trackSelector)?.Build();
                     Constant.Player.ShuffleModeEnabled = Constant.IsSuffle;
                     PlayerListener = new PlayerEvents(this);
                     Constant.Player.AddListener(PlayerListener);
@@ -187,47 +231,57 @@ namespace DeepSound.Helpers.MediaPlayerController
         {
             try
             {
+                // ✅ Always call StartForeground quickly to satisfy Android 9+
+                if (Notification == null)
+                {
+                    var quickNoti = new NotificationCompat.Builder(this, NotificationChannelId)
+                        .SetContentTitle("Player active")
+                        .SetContentText("Preparing audio service…")
+                        .SetSmallIcon(Resource.Drawable.icon_player_notification)
+                        .SetOngoing(true)
+                        .Build();
+
+                    if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
+                        StartForeground(99, quickNoti, ForegroundService.TypeMediaPlayback);
+                    else
+                        StartForeground(99, quickNoti);
+                }
+
                 base.OnStartCommand(intent, flags, startId);
-                string action = intent.Action;
-                if (action == ActionSeekTo)
+
+                string action = intent?.Action;
+                switch (action)
                 {
-                    SeekTo(intent.Extras?.GetLong("seekTo") ?? 0);
-                }
-                else if (action == ActionPlay)
-                {
-                    Play();
-                }
-                else if (action == ActionPause)
-                {
-                    Pause();
-                }
-                else if (action == ActionStop)
-                {
-                    Stop(intent);
-                }
-                else if (action == ActionRewind)
-                {
-                    Previous();
-                }
-                else if (action == ActionSkip)
-                {
-                    Next();
-                }
-                else if (action == ActionBackward)
-                {
-                    Backward();
-                }
-                else if (action == ActionForward)
-                {
-                    Forward();
-                }
-                else if (action == ActionToggle)
-                {
-                    TogglePlay();
-                }
-                else if (action == ActionPlaybackSpeed)
-                {
-                    PlaybackSpeed(intent.Extras?.GetString("PlaybackSpeed") ?? "Normal");
+                    case var a when a == ActionSeekTo:
+                        SeekTo(intent.Extras?.GetLong("seekTo") ?? 0);
+                        break;
+                    case var a when a == ActionPlay:
+                        Play();
+                        break;
+                    case var a when a == ActionPause:
+                        Pause();
+                        break;
+                    case var a when a == ActionStop:
+                        Stop(intent);
+                        break;
+                    case var a when a == ActionRewind:
+                        Previous();
+                        break;
+                    case var a when a == ActionSkip:
+                        Next();
+                        break;
+                    case var a when a == ActionBackward:
+                        Backward();
+                        break;
+                    case var a when a == ActionForward:
+                        Forward();
+                        break;
+                    case var a when a == ActionToggle:
+                        TogglePlay();
+                        break;
+                    case var a when a == ActionPlaybackSpeed:
+                        PlaybackSpeed(intent.Extras?.GetString("PlaybackSpeed") ?? "Normal");
+                        break;
                 }
 
                 return StartCommandResult.Sticky;
@@ -238,6 +292,7 @@ namespace DeepSound.Helpers.MediaPlayerController
                 return StartCommandResult.NotSticky;
             }
         }
+
 
         private void HandleFirstPlay()
         {
@@ -535,7 +590,14 @@ namespace DeepSound.Helpers.MediaPlayerController
         {
             try
             {
-                StartForeground(101, Notification.Build());
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.Q)
+                {
+                    StartForeground(101, Notification?.Build(), ForegroundService.TypeMediaPlayback);
+                }
+                else
+                {
+                    StartForeground(101, Notification?.Build());
+                }
             }
             catch (Exception e)
             {
@@ -979,8 +1041,8 @@ namespace DeepSound.Helpers.MediaPlayerController
                     }
                     else if (Item.Price != 0 && !string.IsNullOrEmpty(Item.DemoTrack))
                     {
-                        if (!Item.DemoTrack.Contains(InitializeDeepSound.WebsiteUrl))
-                            Item.DemoTrack = InitializeDeepSound.WebsiteUrl + "/" + Item.DemoTrack;
+                        //if (!Item.DemoTrack.Contains(InitializeDeepSound.WebsiteUrl))
+                        //    Item.DemoTrack = InitializeDeepSound.WebsiteUrl + "/" + Item.DemoTrack;
 
                         mediaUri = Uri.Parse(Item.DemoTrack);
                     }
@@ -1003,9 +1065,8 @@ namespace DeepSound.Helpers.MediaPlayerController
 
                 PlayerSource = null;
                 PlayerSource = GetMediaSourceFromUrl(mediaUri, "normal");
-                Constant.Player?.SetMediaSource(PlayerSource);
+                Constant.Player?.SetMediaSource(PlayerSource, true);
                 Constant.Player?.Prepare();
-                Constant.Player?.AddListener(PlayerListener);
 
                 OnPrepared();
             }
@@ -1019,20 +1080,43 @@ namespace DeepSound.Helpers.MediaPlayerController
         {
             try
             {
+                var extension = uri?.Path?.Split('.').LastOrDefault();
+                var mime = MimeTypeMap.GetMimeType(extension);
+                var mediaItem = new MediaItem.Builder()?.SetUri(uri)?.SetMediaId(tag)?.SetMimeType(mime)?.Build();
+
                 IMediaSource src;
                 if (!string.IsNullOrEmpty(uri.Path) && (uri.Path.Contains("file://") || uri.Path.Contains("content://") || uri.Path.Contains("storage") || uri.Path.Contains("/data/user/0/")))
                 {
                     var defaultDataSourceFactory = new FileDataSource.Factory();
-                    src = new ProgressiveMediaSource.Factory(defaultDataSourceFactory).CreateMediaSource(MediaItem.FromUri(uri));
+                    DefaultDataSource.Factory upstreamFactory = new DefaultDataSource.Factory(this, defaultDataSourceFactory);
+                    src = new ProgressiveMediaSource.Factory(upstreamFactory).CreateMediaSource(mediaItem);
                 }
                 else
                 {
-                    var httpDataSourceFactory = new DefaultHttpDataSource.Factory().SetAllowCrossProtocolRedirects(true);
-                    src = new ProgressiveMediaSource.Factory(httpDataSourceFactory).CreateMediaSource(MediaItem.FromUri(uri));
-                }
+                    var httpDataSourceFactory = new DefaultHttpDataSource.Factory();
 
-                if (src?.MediaItem != null)
-                    src.MediaItem.MediaId = tag;
+                    int contentType = Util.InferContentTypeForUriAndMimeType(uri, extension);
+                    switch (contentType)
+                    {
+                        case C.ContentTypeSs:
+                            src = new SsMediaSource.Factory(httpDataSourceFactory).CreateMediaSource(mediaItem);
+                            break;
+                        case C.ContentTypeDash:
+                            src = new DashMediaSource.Factory(httpDataSourceFactory).CreateMediaSource(mediaItem);
+                            break;
+                        case C.ContentTypeRtsp:
+                            src = new RtspMediaSource.Factory().CreateMediaSource(mediaItem);
+                            break;
+                        case C.ContentTypeHls:
+                            DefaultHlsExtractorFactory defaultHlsExtractorFactory = new DefaultHlsExtractorFactory(DefaultTsPayloadReaderFactory.FlagAllowNonIdrKeyframes, true);
+                            src = new HlsMediaSource.Factory(httpDataSourceFactory).SetExtractorFactory(defaultHlsExtractorFactory)?.CreateMediaSource(mediaItem);
+                            break;
+                        default:
+                            DefaultDataSource.Factory upstreamFactory = new DefaultDataSource.Factory(this, httpDataSourceFactory);
+                            src = new ProgressiveMediaSource.Factory(upstreamFactory).CreateMediaSource(mediaItem);
+                            break;
+                    }
+                }
 
                 return src;
             }
@@ -1100,7 +1184,7 @@ namespace DeepSound.Helpers.MediaPlayerController
             {
                 try
                 {
-                    string a = intent.GetStringExtra(TelephonyManager.ExtraState);
+                    string a = intent?.GetStringExtra(TelephonyManager.ExtraState) ?? "";
                     if (Constant.Player.PlayWhenReady)
                     {
                         if (a.Equals(TelephonyManager.ExtraStateOffhook) || a.Equals(TelephonyManager.ExtraStateRinging))
@@ -1146,7 +1230,7 @@ namespace DeepSound.Helpers.MediaPlayerController
             {
                 try
                 {
-                    string intentAction = intent.Action;
+                    string intentAction = intent?.Action;
                     if (!Intent.ActionMediaButton.Equals(intentAction))
                     {
                         return;
@@ -1155,12 +1239,12 @@ namespace DeepSound.Helpers.MediaPlayerController
                     Java.Lang.Object key;
                     if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
                     {
-                        key = intent.GetParcelableExtra(Intent.ExtraKeyEvent, Class.FromType(typeof(Java.Lang.Object)));
+                        key = intent?.GetParcelableExtra(Intent.ExtraKeyEvent, Class.FromType(typeof(Java.Lang.Object)));
                     }
                     else
                     {
 #pragma warning disable CS0618
-                        key = intent.GetParcelableExtra(Intent.ExtraKeyEvent);
+                        key = intent?.GetParcelableExtra(Intent.ExtraKeyEvent);
 #pragma warning restore CS0618
                     }
 

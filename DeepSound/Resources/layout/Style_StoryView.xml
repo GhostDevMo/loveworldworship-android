@@ -16,7 +16,7 @@
 		app:riv_corner_radius="13dp"
 		android:scaleType="centerCrop"/>
 	 
-	<Refractored.Controls.CircleImageView
+	<de.hdodenhof.circleimageview.CircleImageView
 		android:id="@+id/civ_story_avatar"
 		android:layout_width="28dp"
 		android:layout_height="28dp"
@@ -39,7 +39,6 @@
 			android:layout_marginTop="8dp"
 			android:gravity="center"
 			android:layout_gravity="center"
-			android:text="Alexfin"
 			android:textSize="10dp"
 			android:lines="1"
 			android:clickable="false"

@@ -6,6 +6,7 @@ using Android.Widget;
 using AndroidX.AppCompat.Widget;
 using AndroidX.Core.View;
 using AndroidX.ViewPager2.Widget;
+using DE.Hdodenhof.CircleImageViewLib;
 using DeepSound.Activities.MyContacts;
 using DeepSound.Activities.MyProfile;
 using DeepSound.Activities.SettingsUser;
@@ -24,7 +25,6 @@ using Google.Android.Material.Dialog;
 using Google.Android.Material.FloatingActionButton;
 using Google.Android.Material.Tabs;
 using Newtonsoft.Json;
-using Refractored.Controls;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -520,6 +520,15 @@ namespace DeepSound.Activities.Tabbes.Fragments
 
                     IconPro.Visibility = dataUser.IsPro == 1 ? ViewStates.Visible : ViewStates.Gone;
 
+                    if (dataUser.Details != null)
+                    {
+                        DetailsCounter = dataUser.Details;
+
+                        TxtCountFollowers.Text = Methods.FunString.FormatPriceValue(dataUser.Details.Followers);
+                        TxtCountFollowing.Text = Methods.FunString.FormatPriceValue(dataUser.Details.Following);
+                        //TxtCountTracks.Text = Methods.FunString.FormatPriceValue(result.Details.LatestSongs);
+                    }
+
                     if (dataUser.Verified == 1)
                         TxtFullName.SetCompoundDrawablesWithIntrinsicBounds(0, 0, Resource.Drawable.icon_checkmark_small_vector, 0);
 
@@ -556,7 +565,6 @@ namespace DeepSound.Activities.Tabbes.Fragments
 
         private void StartApiService()
         {
-
             if (!Methods.CheckConnectivity())
                 Toast.MakeText(Activity, GetString(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Short)?.Show();
             else
@@ -595,16 +603,13 @@ namespace DeepSound.Activities.Tabbes.Fragments
                                 ListUtils.MyUserInfoList?.Clear();
                                 ListUtils.MyUserInfoList?.Add(result.Data);
 
+                                if (result.Details != null)
+                                    result.Data.Details = result.Details;
+
                                 LoadDataUser(result.Data);
 
-                                if (result.Details != null)
-                                {
-                                    DetailsCounter = result.Details;
-
-                                    TxtCountFollowers.Text = Methods.FunString.FormatPriceValue(result.Details.Followers);
-                                    TxtCountFollowing.Text = Methods.FunString.FormatPriceValue(result.Details.Following);
-                                    //TxtCountTracks.Text = Methods.FunString.FormatPriceValue(result.Details.LatestSongs);
-                                }
+                                SqLiteDatabase dbDatabase = new SqLiteDatabase();
+                                dbDatabase.InsertOrUpdate_DataMyInfo(result.Data);
                             }
                             catch (Exception e)
                             {

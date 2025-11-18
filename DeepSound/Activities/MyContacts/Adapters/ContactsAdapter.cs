@@ -76,7 +76,17 @@ namespace DeepSound.Activities.MyContacts.Adapters
                         if (ShowButtonFollow)
                         {
                             if (!holder.Button.HasOnClickListeners)
-                                holder.Button.Click += (sender, e) => OnFollowButtonClick(new FollowFollowingClickEventArgs { View = holder.ItemView, UserClass = item, Position = position, ButtonFollow = holder.Button });
+                                holder.Button.Click += (sender, e) =>
+                                {
+                                    var item = UsersList[holder.BindingAdapterPosition];
+                                    OnFollowButtonClick(new FollowFollowingClickEventArgs
+                                    {
+                                        View = holder.ItemView,
+                                        UserClass = item,
+                                        Position = position,
+                                        ButtonFollow = holder.Button
+                                    });
+                                };
                         }
                     }
                 }

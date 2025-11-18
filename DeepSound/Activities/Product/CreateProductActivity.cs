@@ -351,6 +351,8 @@ namespace DeepSound.Activities.Product
             {
                 if (e?.Event?.Action != MotionEventActions.Up) return;
 
+                Methods.HideKeyboard(this);
+
                 if (LatestSongsList?.Count > 0)
                 {
                     TypeDialog = "RelatedToSong";
@@ -381,6 +383,8 @@ namespace DeepSound.Activities.Product
             try
             {
                 if (e?.Event?.Action != MotionEventActions.Up) return;
+
+                Methods.HideKeyboard(this);
 
                 if (CategoriesController.ListCategoriesProducts.Count > 0)
                 {
@@ -480,7 +484,7 @@ namespace DeepSound.Activities.Product
                     {
                         if (respond is GetProductDataObject result)
                         {
-                            AndHUD.Shared.Dismiss(this);
+                            AndHUD.Shared.Dismiss();
                             Console.WriteLine(result.Message);
 
                             Intent intent = new Intent();
@@ -498,7 +502,7 @@ namespace DeepSound.Activities.Product
             }
             catch (Exception exception)
             {
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
                 Methods.DisplayReportResultTrack(exception);
             }
         }
@@ -569,7 +573,7 @@ namespace DeepSound.Activities.Product
                     if (result.IsSuccessful)
                     {
                         var resultUri = result.UriContent;
-                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        string filepath = Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu ? result.GetUriFilePath(this, true) : Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
                         if (!string.IsNullOrEmpty(filepath))
                         {
                             //Do something with your Uri 

@@ -24,6 +24,10 @@
 		<attr name="progressCount" format="integer|reference" />
 	</declare-styleable>
 
+	<declare-styleable name="TemplateShimmer">
+		<attr name="template_res" format="reference"/>
+	</declare-styleable>
+
 	<declare-styleable name="DragToClose">
 		<attr name="draggableView" format="reference" />
 		<attr name="draggableContainer" format="reference" />

@@ -1,11 +1,11 @@
 ﻿using Android.App;
-using Android.Content;
 using Android.Content.Res;
 using Android.OS;
 using Android.Util;
 using Android.Views;
 using Android.Widget;
 using AndroidX.RecyclerView.Widget;
+using Com.Applovin.Adview;
 using Com.Applovin.Mediation;
 using Com.Applovin.Mediation.Ads;
 using Com.Applovin.Sdk;
@@ -64,7 +64,7 @@ namespace DeepSound.Helpers.Ads
             }
         }
 
-        private class AdsAdViewListener : Java.Lang.Object, IMaxAdViewAdListener
+        private class AdsAdViewListener : Object, IMaxAdViewAdListener
         {
             private readonly LinearLayout AdContainer;
             private readonly RecyclerView MRecycler;
@@ -93,6 +93,7 @@ namespace DeepSound.Helpers.Ads
             {
                 try
                 {
+                    AdContainer.Visibility = ViewStates.Gone;
                     if (MRecycler != null) Methods.SetMargin(MRecycler, 0, 0, 0, 0);
                 }
                 catch (Exception e)
@@ -110,6 +111,7 @@ namespace DeepSound.Helpers.Ads
             {
                 try
                 {
+                    AdContainer.Visibility = ViewStates.Gone;
                     if (MRecycler != null) Methods.SetMargin(MRecycler, 0, 0, 0, 0);
                 }
                 catch (Exception e)
@@ -122,6 +124,7 @@ namespace DeepSound.Helpers.Ads
             {
                 try
                 {
+                    AdContainer.Visibility = ViewStates.Gone;
                     if (MRecycler != null) Methods.SetMargin(MRecycler, 0, 0, 0, 0);
                 }
                 catch (Exception e)
@@ -134,6 +137,8 @@ namespace DeepSound.Helpers.Ads
             {
                 try
                 {
+                    AdContainer.Visibility = ViewStates.Visible;
+
                     Resources r = Application.Context.Resources;
                     int px = (int)TypedValue.ApplyDimension(ComplexUnitType.Dip, MaxAdView.Height, r.DisplayMetrics);
                     if (MRecycler != null) Methods.SetMargin(MRecycler, 0, 0, 0, px);
@@ -197,7 +202,7 @@ namespace DeepSound.Helpers.Ads
             }
         }
 
-        private class MyInterstitialMaxAdListener : Java.Lang.Object, IMaxAdListener
+        private class MyInterstitialMaxAdListener : Object, IMaxAdListener
         {
             private readonly MaxInterstitialAd InterstitialAd;
             private readonly Activity Activity;
@@ -277,8 +282,8 @@ namespace DeepSound.Helpers.Ads
                 try
                 {
                     // Interstitial ad is ready to be shown. interstitialAd.isReady() will now return 'true'
-                    if (InterstitialAd is { IsReady: true })
-                        InterstitialAd.ShowAd();
+                    //if (InterstitialAd is { IsReady: true })
+                    //    InterstitialAd.ShowAd();
 
                     // Reset retry attempt
                     RetryAttempt = 0;
@@ -330,7 +335,7 @@ namespace DeepSound.Helpers.Ads
             }
         }
 
-        private class MyRewardedAdListener : Java.Lang.Object, IMaxRewardedAdListener
+        private class MyRewardedAdListener : Object, IMaxRewardedAdListener
         {
             private readonly MaxRewardedAd RewardedAd;
             private readonly Activity Activity;
@@ -403,8 +408,8 @@ namespace DeepSound.Helpers.Ads
                 try
                 {
                     // Rewarded ad is ready to be shown. Rewarded.isReady() will now return 'true'
-                    if (RewardedAd is { IsReady: true })
-                        RewardedAd.ShowAd();
+                    //if (RewardedAd is { IsReady: true })
+                    //    RewardedAd.ShowAd();
 
                     // Reset retry attempt
                     RetryAttempt = 0;
@@ -450,17 +455,37 @@ namespace DeepSound.Helpers.Ads
 
         #endregion
 
-        public static void Initialize(Context context)
+        public static void Initialize(Activity context)
         {
             try
             {
                 if (AppSettings.ShowAppLovinBannerAds || AppSettings.ShowAppLovinInterstitialAds || AppSettings.ShowAppLovinRewardAds)
                 {
+                    AppLovinPrivacySettings.SetHasUserConsent(true, context);
+                    //AppLovinPrivacySettings.SetIsAgeRestrictedUser(true, context);
+                    AppLovinPrivacySettings.SetDoNotSell(true, context);
+
+                    var initConfigBuilder = AppLovinSdkInitializationConfiguration.Builder(context.GetText(Resource.String.applovin_key), context);
+                    initConfigBuilder.SetMediationProvider(AppLovinMediationProvider.Max);
+
+                    List<string> adUnitIds = new List<string>
+                    {
+                        AppSettings.AdsAppLovinBannerId,
+                        AppSettings.AdsAppLovinInterstitialId,
+                        AppSettings.AdsAppLovinRewardedId
+                    };
+                    initConfigBuilder.SetAdUnitIds(adUnitIds);
+
                     var ad = AppLovinSdk.GetInstance(context);
                     if (ad != null)
                     {
-                        ad.MediationProvider = AppLovinMediationProvider.Max;
-                        ad.InitializeSdk(new MyAppLovinSdkInitialization());
+                        //ad.Settings.TestDeviceAdvertisingIds = new List<string>() { Methods.GetAdvertisingId(context) };
+                        ad.Settings.SetVerboseLogging(true);
+                        ad.Settings.Muted = true;
+
+                        //ad.ShowMediationDebugger();  
+
+                        ad.Initialize(initConfigBuilder.Build(), new MyAppLovinSdkInitialization(context));
                     }
 
                     AppLovinPrivacySettings.SetHasUserConsent(true, context);
@@ -474,12 +499,92 @@ namespace DeepSound.Helpers.Ads
 
         private class MyAppLovinSdkInitialization : Object, AppLovinSdk.ISdkInitializationListener
         {
+            private readonly Activity Activity;
+
+            public MyAppLovinSdkInitialization(Activity context)
+            {
+                Activity = context;
+            }
+
             public void OnSdkInitialized(IAppLovinSdkConfiguration p0)
             {
-                // AppLovin SDK is initialized, start loading ads now or later if ad gate is reached
+                try
+                {
+                    // AppLovin SDK is initialized, start loading ads now or later if ad gate is reached
 
+                    var instance = AppLovinSdk.GetInstance(Activity);
+                    instance?.AdService?.LoadNextAd(AppLovinAdSize.Interstitial, new MyLoadNextListener(Activity));
+                }
+                catch (Exception e)
+                {
+                    Methods.DisplayReportResultTrack(e);
+                }
             }
-        }
 
+            private class MyLoadNextListener : Object, IAppLovinAdLoadListener, IAppLovinAdDisplayListener, IAppLovinAdClickListener, IAppLovinAdVideoPlaybackListener
+            {
+                private readonly Activity Context;
+                public MyLoadNextListener(Activity context)
+                {
+                    Context = context;
+                }
+
+                public void AdReceived(IAppLovinAd ad)
+                {
+                    try
+                    {
+                        if (AppSettings.ShowAppLovinInterstitialAds)
+                        {
+                            IAppLovinInterstitialAdDialog interstitialAd = AppLovinInterstitialAd.Create(AppLovinSdk.GetInstance(Context), Context);
+
+                            // Optional: Assign listeners
+                            interstitialAd.SetAdDisplayListener(this);
+                            interstitialAd.SetAdClickListener(this);
+                            interstitialAd.SetAdVideoPlaybackListener(this);
+
+                            interstitialAd.ShowAndRender(ad);
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        Methods.DisplayReportResultTrack(exception);
+                    }
+                }
+
+                public void FailedToReceiveAd(int p0)
+                {
+
+                    // Look at AppLovinErrorCodes.java for list of error codes.
+
+                }
+
+
+                public void AdDisplayed(IAppLovinAd p0)
+                {
+
+                }
+
+                public void AdHidden(IAppLovinAd p0)
+                {
+
+                }
+
+                public void AdClicked(IAppLovinAd p0)
+                {
+
+                }
+
+                public void VideoPlaybackBegan(IAppLovinAd p0)
+                {
+
+                }
+
+                public void VideoPlaybackEnded(IAppLovinAd p0, double p1, bool p2)
+                {
+
+                }
+            }
+
+        }
     }
 }

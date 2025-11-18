@@ -328,7 +328,7 @@ namespace DeepSound.Activities.Albums
                             Console.WriteLine(result.Url);
 
                             Toast.MakeText(this, GetText(Resource.String.Lbl_UpdatedSuccessfully), ToastLength.Short)?.Show();
-                            AndHUD.Shared.Dismiss(this);
+                            AndHUD.Shared.Dismiss();
 
                             Finish();
                         }
@@ -342,7 +342,7 @@ namespace DeepSound.Activities.Albums
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
             }
         }
 
@@ -365,6 +365,8 @@ namespace DeepSound.Activities.Albums
             try
             {
                 if (e.Event?.Action != MotionEventActions.Up) return;
+
+                Methods.HideKeyboard(this);
 
                 TypeDialog = "Genres";
 
@@ -390,6 +392,8 @@ namespace DeepSound.Activities.Albums
             try
             {
                 if (e.Event?.Action != MotionEventActions.Up) return;
+
+                Methods.HideKeyboard(this);
 
                 TypeDialog = "Price";
 
@@ -478,7 +482,7 @@ namespace DeepSound.Activities.Albums
                     if (result.IsSuccessful)
                     {
                         var resultUri = result.UriContent;
-                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        string filepath = Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu ? result.GetUriFilePath(this, true) : Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
                         if (!string.IsNullOrEmpty(filepath))
                         {
                             //Do something with your Uri

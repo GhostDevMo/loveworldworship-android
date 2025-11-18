@@ -221,7 +221,10 @@ namespace DeepSound.Activities.Songs
 
                     CountLike.Text = Methods.FunString.FormatPriceValue(Convert.ToInt32(DataObject.CountLikes));
                     CountStars.Text = Methods.FunString.FormatPriceValue(Convert.ToInt32(DataObject.CountFavorite));
-                    CountViews.Text = Methods.FunString.FormatPriceValue(Convert.ToInt32(DataObject.CountViews.Replace("K", "").Replace("M", "")));
+
+                    bool isNumCountViews = long.TryParse(DataObject.CountViews, out var numCountViews);
+                    CountViews.Text = isNumCountViews ? Methods.FunString.FormatPriceValue(numCountViews) : DataObject.CountViews;
+
                     CountShare.Text = Methods.FunString.FormatPriceValue(Convert.ToInt32(DataObject.CountShares));
                     CountComment.Text = Methods.FunString.FormatPriceValue(Convert.ToInt32(DataObject.CountComment));
 

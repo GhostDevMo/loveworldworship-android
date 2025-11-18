@@ -1,31 +1,38 @@
 {
   "format": 1,
   "restore": {
-    "/Users/ojo/Downloads/loveworldworship-android-main/DeepSound/DeepSound.csproj": {}
+    "C:\\Dev\\application\\lw\\DeepSound\\DeepSound.csproj": {}
   },
   "projects": {
-    "/Users/ojo/Downloads/loveworldworship-android-main/DeepSound/DeepSound.csproj": {
+    "C:\\Dev\\application\\lw\\DeepSound\\DeepSound.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/ojo/Downloads/loveworldworship-android-main/DeepSound/DeepSound.csproj",
+        "projectUniqueName": "C:\\Dev\\application\\lw\\DeepSound\\DeepSound.csproj",
         "projectName": "DeepSound",
-        "projectPath": "/Users/ojo/Downloads/loveworldworship-android-main/DeepSound/DeepSound.csproj",
-        "packagesPath": "/Users/ojo/.nuget/packages/",
-        "outputPath": "/Users/ojo/Downloads/loveworldworship-android-main/DeepSound/obj/",
+        "projectPath": "C:\\Dev\\application\\lw\\DeepSound\\DeepSound.csproj",
+        "packagesPath": "C:\\Users\\Busayo Omoniyi\\.nuget\\packages\\",
+        "outputPath": "C:\\Dev\\application\\lw\\DeepSound\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages",
+          "C:\\Program Files\\dotnet\\sdk\\NuGetFallbackFolder"
+        ],
         "configFilePaths": [
-          "/Users/ojo/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\Busayo Omoniyi\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net7.0-android"
+          "net8.0-android34.0"
         ],
         "sources": {
-          "/usr/local/share/dotnet/library-packs": {},
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "C:\\Program Files\\dotnet\\library-packs": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net7.0-android33.0": {
-            "targetAlias": "net7.0-android",
+          "net8.0-android34.0": {
+            "targetAlias": "net8.0-android34.0",
             "projectReferences": {}
           }
         },
@@ -33,175 +40,349 @@
           "warnAsError": [
             "NU1605"
           ]
-        }
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
-        "net7.0-android33.0": {
-          "targetAlias": "net7.0-android",
+        "net8.0-android34.0": {
+          "targetAlias": "net8.0-android34.0",
           "dependencies": {
             "AndHUD": {
               "target": "Package",
-              "version": "[2.0.0, )"
+              "version": "[2.0.2, )"
             },
             "Anjo.Android.Airbnb.Mavericks": {
               "target": "Package",
-              "version": "[3.0.2, )"
+              "version": "[3.0.9, )"
             },
             "Anjo.Android.AppLovin": {
               "target": "Package",
-              "version": "[11.10.0, )"
+              "version": "[13.0.1, )"
+            },
+            "Anjo.Android.AppLovin.Mediation.FacebookAdapter": {
+              "target": "Package",
+              "version": "[6.16.0.2, )"
+            },
+            "Anjo.Android.AppLovin.Mediation.GoogleAdMobAdapter": {
+              "target": "Package",
+              "version": "[23.0.0, )"
+            },
+            "Anjo.Android.BrainTree.BrowserSwitch": {
+              "target": "Package",
+              "version": "[2.6.0, )"
+            },
+            "Anjo.Android.BrainTree.Card": {
+              "target": "Package",
+              "version": "[4.38.2, )"
+            },
+            "Anjo.Android.BrainTree.CardForm": {
+              "target": "Package",
+              "version": "[5.4.0.5, )"
+            },
+            "Anjo.Android.BrainTree.Core": {
+              "target": "Package",
+              "version": "[4.38.2, )"
+            },
+            "Anjo.Android.BrainTree.DataCollector": {
+              "target": "Package",
+              "version": "[4.38.2, )"
+            },
+            "Anjo.Android.BrainTree.DropIn": {
+              "target": "Package",
+              "version": "[6.13.0, )"
+            },
+            "Anjo.Android.BrainTree.GooglePayment": {
+              "target": "Package",
+              "version": "[4.38.2, )"
+            },
+            "Anjo.Android.BrainTree.PayPal": {
+              "target": "Package",
+              "version": "[4.38.2, )"
+            },
+            "Anjo.Android.BrainTree.PayPalDataCollector": {
+              "target": "Package",
+              "version": "[4.38.2, )"
+            },
+            "Anjo.Android.BrainTree.SharedUtilities": {
+              "target": "Package",
+              "version": "[4.38.2, )"
+            },
+            "Anjo.Android.BrainTree.ThreeDSecure": {
+              "target": "Package",
+              "version": "[4.38.2, )"
+            },
+            "Anjo.Android.BrainTree.UnionPay": {
+              "target": "Package",
+              "version": "[4.38.2, )"
+            },
+            "Anjo.Android.BrainTree.Venmo": {
+              "target": "Package",
+              "version": "[4.38.2, )"
             },
             "Anjo.Android.Cashfree.Analytics": {
               "target": "Package",
-              "version": "[1.0.13.1, )"
+              "version": "[1.0.16, )"
             },
             "Anjo.Android.Cashfree.Api": {
               "target": "Package",
-              "version": "[2.0.7, )"
+              "version": "[2.1.18, )"
             },
             "Anjo.Android.Cashfree.Base": {
               "target": "Package",
-              "version": "[1.0.1.1, )"
+              "version": "[1.0.4, )"
             },
             "Anjo.Android.Cashfree.Core": {
               "target": "Package",
-              "version": "[2.0.7, )"
+              "version": "[2.1.18, )"
             },
             "Anjo.Android.Cashfree.ImageCaching": {
               "target": "Package",
-              "version": "[1.0.5.1, )"
+              "version": "[1.0.8, )"
             },
             "Anjo.Android.Cashfree.Network": {
               "target": "Package",
-              "version": "[1.0.4, )"
+              "version": "[1.0.6, )"
             },
             "Anjo.Android.Cashfree.Ui": {
               "target": "Package",
-              "version": "[2.0.7, )"
+              "version": "[2.1.18, )"
             },
             "Anjo.Android.Facebook": {
               "target": "Package",
-              "version": "[16.0.0, )"
+              "version": "[17.0.0, )"
             },
             "Anjo.Android.Facebook.Applinks": {
               "target": "Package",
-              "version": "[16.0.0, )"
+              "version": "[17.0.0, )"
+            },
+            "Anjo.Android.Facebook.AudienceNetwork": {
+              "target": "Package",
+              "version": "[6.17.0, )"
             },
             "Anjo.Android.Facebook.Common": {
               "target": "Package",
-              "version": "[16.0.0, )"
+              "version": "[17.0.0, )"
             },
             "Anjo.Android.Facebook.Core": {
               "target": "Package",
-              "version": "[16.0.0, )"
+              "version": "[17.0.0, )"
             },
             "Anjo.Android.Facebook.Login": {
               "target": "Package",
-              "version": "[16.0.0, )"
+              "version": "[17.0.0, )"
             },
             "Anjo.Android.Facebook.Messenger": {
               "target": "Package",
-              "version": "[16.0.0, )"
+              "version": "[17.0.0, )"
             },
             "Anjo.Android.Facebook.Share": {
               "target": "Package",
-              "version": "[16.0.0, )"
+              "version": "[17.0.0, )"
             },
             "Anjo.Android.Flutterwave": {
               "target": "Package",
-              "version": "[2.1.39.1, )"
+              "version": "[2.1.39.2, )"
             },
             "Anjo.Android.Flutterwave.Cache": {
               "target": "Package",
-              "version": "[2.1.39.1, )"
+              "version": "[2.1.39.2, )"
             },
             "Anjo.Android.Flutterwave.Commons": {
               "target": "Package",
-              "version": "[2.1.39.1, )"
+              "version": "[2.1.39.2, )"
             },
             "Anjo.Android.Flutterwave.Core": {
               "target": "Package",
-              "version": "[2.1.39.1, )"
+              "version": "[2.1.39.2, )"
             },
             "Anjo.Android.Flutterwave.Logger": {
               "target": "Package",
-              "version": "[2.1.39.1, )"
+              "version": "[2.1.39.2, )"
             },
             "Anjo.Android.Flutterwave.Presentation": {
               "target": "Package",
-              "version": "[2.1.39.1, )"
+              "version": "[2.1.39.2, )"
             },
             "Anjo.Android.Flutterwave.Remote": {
               "target": "Package",
-              "version": "[2.1.39.1, )"
+              "version": "[2.1.39.2, )"
             },
             "Anjo.Android.Flutterwave.Utils": {
               "target": "Package",
-              "version": "[2.1.39.1, )"
+              "version": "[2.1.39.2, )"
+            },
+            "Anjo.Android.GoogleAccompanist.ThemeAdapterAppcompat": {
+              "target": "Package",
+              "version": "[0.34.0, )"
+            },
+            "Anjo.Android.GoogleAccompanist.ThemeAdapterCore": {
+              "target": "Package",
+              "version": "[0.34.0, )"
+            },
+            "Anjo.Android.GoogleAccompanist.ThemeAdapterMaterial": {
+              "target": "Package",
+              "version": "[0.34.0, )"
+            },
+            "Anjo.Android.GoogleAccompanist.ThemeAdapterMaterial3": {
+              "target": "Package",
+              "version": "[0.34.0, )"
+            },
+            "Anjo.Android.GoogleAds.Mediation.AppLovinAdapter": {
+              "target": "Package",
+              "version": "[12.1.0.1, )"
+            },
+            "Anjo.Android.GooglePayButton.ComposePayButton": {
+              "target": "Package",
+              "version": "[1.0.0, )"
             },
             "Anjo.Android.GoogleServices.Ads": {
               "target": "Package",
-              "version": "[22.0.0, )"
+              "version": "[23.5.0, )"
             },
             "Anjo.Android.GoogleServices.AdsBase": {
               "target": "Package",
-              "version": "[22.0.0, )"
+              "version": "[23.5.0, )"
             },
             "Anjo.Android.GoogleServices.AdsLite": {
               "target": "Package",
-              "version": "[22.0.0, )"
+              "version": "[23.5.0, )"
             },
             "Anjo.Android.ImageCropper": {
               "target": "Package",
               "version": "[4.5.0.3, )"
             },
+            "Anjo.Android.Lottie": {
+              "target": "Package",
+              "version": "[6.4.1, )"
+            },
+            "Anjo.Android.Media3.Common": {
+              "target": "Package",
+              "version": "[1.4.1, )"
+            },
+            "Anjo.Android.Media3.Container": {
+              "target": "Package",
+              "version": "[1.4.1, )"
+            },
+            "Anjo.Android.Media3.DataSource": {
+              "target": "Package",
+              "version": "[1.4.1, )"
+            },
+            "Anjo.Android.Media3.Database": {
+              "target": "Package",
+              "version": "[1.4.1, )"
+            },
+            "Anjo.Android.Media3.Decoder": {
+              "target": "Package",
+              "version": "[1.4.1, )"
+            },
+            "Anjo.Android.Media3.ExoPlayer": {
+              "target": "Package",
+              "version": "[1.4.1, )"
+            },
+            "Anjo.Android.Media3.ExoPlayer.Dash": {
+              "target": "Package",
+              "version": "[1.4.1, )"
+            },
+            "Anjo.Android.Media3.ExoPlayer.Hls": {
+              "target": "Package",
+              "version": "[1.4.1, )"
+            },
+            "Anjo.Android.Media3.ExoPlayer.Rtsp": {
+              "target": "Package",
+              "version": "[1.4.1, )"
+            },
+            "Anjo.Android.Media3.ExoPlayer.SmoothStreaming": {
+              "target": "Package",
+              "version": "[1.4.1, )"
+            },
+            "Anjo.Android.Media3.Extractor": {
+              "target": "Package",
+              "version": "[1.4.1, )"
+            },
+            "Anjo.Android.Media3.Session": {
+              "target": "Package",
+              "version": "[1.4.1, )"
+            },
+            "Anjo.Android.Media3.Ui": {
+              "target": "Package",
+              "version": "[1.4.1, )"
+            },
             "Anjo.Android.OneSignal": {
               "target": "Package",
-              "version": "[4.8.4.1, )"
+              "version": "[5.1.23, )"
+            },
+            "Anjo.Android.OneSignal.Core": {
+              "target": "Package",
+              "version": "[5.1.23, )"
+            },
+            "Anjo.Android.OneSignal.InAppMessages": {
+              "target": "Package",
+              "version": "[5.1.23, )"
+            },
+            "Anjo.Android.OneSignal.Location": {
+              "target": "Package",
+              "version": "[5.1.23, )"
+            },
+            "Anjo.Android.OneSignal.Notifications": {
+              "target": "Package",
+              "version": "[5.1.23, )"
+            },
+            "Anjo.Android.PixImagePicker": {
+              "target": "Package",
+              "version": "[1.6.3.1, )"
             },
             "Anjo.Android.Razorpay": {
               "target": "Package",
-              "version": "[1.6.32, )"
+              "version": "[1.6.39, )"
             },
             "Anjo.Android.Stripe": {
               "target": "Package",
-              "version": "[20.25.3, )"
+              "version": "[21.0.0, )"
             },
             "Anjo.Android.Stripe.3DSecue": {
               "target": "Package",
-              "version": "[6.1.7.1, )"
+              "version": "[6.1.8.3, )"
             },
             "Anjo.Android.Stripe.Core": {
               "target": "Package",
-              "version": "[20.25.3, )"
+              "version": "[21.0.0, )"
             },
             "Anjo.Android.Stripe.FinancialConnections": {
               "target": "Package",
-              "version": "[20.25.3, )"
+              "version": "[21.0.0, )"
+            },
+            "Anjo.Android.Stripe.Hcaptcha": {
+              "target": "Package",
+              "version": "[21.0.0, )"
             },
             "Anjo.Android.Stripe.Link": {
               "target": "Package",
-              "version": "[20.25.3, )"
+              "version": "[21.0.0, )"
             },
             "Anjo.Android.Stripe.PaymentCore": {
               "target": "Package",
-              "version": "[20.25.3, )"
+              "version": "[21.0.0, )"
             },
             "Anjo.Android.Stripe.PaymentModel": {
               "target": "Package",
-              "version": "[20.25.3, )"
+              "version": "[21.0.0, )"
             },
             "Anjo.Android.Stripe.PaymentSheet": {
               "target": "Package",
-              "version": "[20.25.3, )"
+              "version": "[21.0.0, )"
             },
             "Anjo.Android.Stripe.PaymentsUiCore": {
               "target": "Package",
-              "version": "[20.25.3, )"
+              "version": "[21.0.0, )"
             },
             "Anjo.Android.Stripe.UiCore": {
               "target": "Package",
-              "version": "[20.25.3, )"
+              "version": "[21.0.0, )"
             },
             "Anjo.Google.Android.InstantApps": {
               "target": "Package",
@@ -209,19 +390,27 @@
             },
             "Anjoxam.BillingClient.Droid": {
               "target": "Package",
-              "version": "[6.0.0, )"
+              "version": "[7.0.0, )"
             },
             "AutoMapper": {
               "target": "Package",
-              "version": "[11.0.1, )"
+              "version": "[13.0.1, )"
             },
             "Bubble": {
               "target": "Package",
               "version": "[3.0.1, )"
             },
-            "Com.Airbnb.Android.Lottie": {
+            "Com.Google.Accompanist.AccompanistThemeadapterMaterial3": {
               "target": "Package",
-              "version": "[4.2.2, )"
+              "version": "[0.32.0, )"
+            },
+            "Crc32.NET": {
+              "target": "Package",
+              "version": "[1.2.0, )"
+            },
+            "DrawableToolbox": {
+              "target": "Package",
+              "version": "[1.0.7, )"
             },
             "FlexboxLayout.Xamarin.Android": {
               "target": "Package",
@@ -229,15 +418,19 @@
             },
             "GoogleGson": {
               "target": "Package",
-              "version": "[2.10.1.4, )"
+              "version": "[2.11.0.4, )"
             },
             "HtmlAgilityPack": {
               "target": "Package",
-              "version": "[1.11.50, )"
+              "version": "[1.11.71, )"
             },
             "Karamunting.Android.AmulyaKhare.TextDrawable": {
               "target": "Package",
               "version": "[1.0.1.1, )"
+            },
+            "Karamunting.Android.HDodenhof.CircleImageView": {
+              "target": "Package",
+              "version": "[3.1.0, )"
             },
             "Karamunting.Android.Ongakuer.CircleIndicator": {
               "target": "Package",
@@ -247,129 +440,63 @@
               "target": "Package",
               "version": "[1.0.19, )"
             },
-            "Microsoft.CSharp": {
+            "Microsoft.NET.ILLink.Tasks": {
+              "suppressParent": "All",
               "target": "Package",
-              "version": "[4.7.0, )"
+              "version": "[8.0.22, )",
+              "autoReferenced": true
             },
             "Newtonsoft.Json": {
               "target": "Package",
-              "version": "[13.0.3, )"
+              "version": "[13.0.4, )"
             },
             "PlayCore": {
               "target": "Package",
               "version": "[1.10.2-rc2, )"
             },
-            "Plugin.CurrentActivity": {
-              "target": "Package",
-              "version": "[2.1.0.4, )"
-            },
             "Polly": {
               "target": "Package",
-              "version": "[7.2.4, )"
-            },
-            "Refractored.Controls.CircleImageView": {
-              "target": "Package",
-              "version": "[1.2.0-beta, )"
+              "version": "[8.5.0, )"
             },
             "SQLitePCLRaw.bundle_green": {
               "target": "Package",
-              "version": "[2.1.4, )"
+              "version": "[2.1.10, )"
             },
             "SQLitePCLRaw.core": {
               "target": "Package",
-              "version": "[2.1.4, )"
+              "version": "[2.1.10, )"
             },
             "SQLitePCLRaw.lib.e_sqlite3.android": {
               "target": "Package",
-              "version": "[2.1.4, )"
+              "version": "[2.1.10, )"
             },
             "SQLitePCLRaw.provider.e_sqlite3": {
               "target": "Package",
-              "version": "[2.1.4, )"
+              "version": "[2.1.10, )"
             },
             "Square.OkHttp3": {
               "target": "Package",
-              "version": "[4.11.0.1, )"
+              "version": "[4.12.0.3, )"
             },
             "Square.OkHttp3.LoggingInterceptor": {
               "target": "Package",
-              "version": "[4.9.3, )"
+              "version": "[4.12.0.2, )"
             },
             "Square.Retrofit2": {
               "target": "Package",
-              "version": "[2.9.0.2, )"
+              "version": "[2.9.0.7, )"
             },
             "Square.Retrofit2.ConverterGson": {
               "target": "Package",
-              "version": "[2.9.0.2, )"
+              "version": "[2.9.0.6, )"
             },
             "Square.Retrofit2.ConverterScalars": {
               "target": "Package",
-              "version": "[2.9.0.2, )"
-            },
-            "System.Net.Http": {
-              "target": "Package",
-              "version": "[4.3.4, )"
-            },
-            "Xam.Plugin.Geolocator": {
-              "target": "Package",
-              "version": "[5.0.0-beta, )"
+              "version": "[2.9.0.6, )"
             },
             "Xam.Plugins.Android.AutoLinkTextView": {
               "target": "Package",
               "version": "[0.1.1, )"
-            },
-            "Xam.Plugins.Android.ExoPlayer": {
-              "target": "Package",
-              "version": "[2.18.6, )"
-            },
-            "Xam.Plugins.Android.ExoPlayer.Common": {
-              "target": "Package",
-              "version": "[2.18.6, )"
-            },
-            "Xam.Plugins.Android.ExoPlayer.Core": {
-              "target": "Package",
-              "version": "[2.18.6, )"
-            },
-            "Xam.Plugins.Android.ExoPlayer.Dash": {
-              "target": "Package",
-              "version": "[2.18.6, )"
-            },
-            "Xam.Plugins.Android.ExoPlayer.DataSource": {
-              "target": "Package",
-              "version": "[2.18.6, )"
-            },
-            "Xam.Plugins.Android.ExoPlayer.Database": {
-              "target": "Package",
-              "version": "[2.18.6, )"
-            },
-            "Xam.Plugins.Android.ExoPlayer.Decoder": {
-              "target": "Package",
-              "version": "[2.18.6, )"
-            },
-            "Xam.Plugins.Android.ExoPlayer.Extractor": {
-              "target": "Package",
-              "version": "[2.18.6, )"
-            },
-            "Xam.Plugins.Android.ExoPlayer.Hls": {
-              "target": "Package",
-              "version": "[2.18.6, )"
-            },
-            "Xam.Plugins.Android.ExoPlayer.Rtsp": {
-              "target": "Package",
-              "version": "[2.18.6, )"
-            },
-            "Xam.Plugins.Android.ExoPlayer.SmoothStreaming": {
-              "target": "Package",
-              "version": "[2.18.6, )"
-            },
-            "Xam.Plugins.Android.ExoPlayer.Transformer": {
-              "target": "Package",
-              "version": "[2.18.6, )"
-            },
-            "Xam.Plugins.Android.ExoPlayer.UI": {
-              "target": "Package",
-              "version": "[2.18.6, )"
             },
             "Xam.Plugins.AndroidX.SlidingUpPanel": {
               "target": "Package",
@@ -377,15 +504,23 @@
             },
             "Xamarin.Android.Glide": {
               "target": "Package",
-              "version": "[4.15.1.2, )"
+              "version": "[4.16.0.6, )"
             },
             "Xamarin.Android.Glide.Annotations": {
               "target": "Package",
-              "version": "[4.15.1.2, )"
+              "version": "[4.16.0.6, )"
             },
             "Xamarin.Android.Glide.GifDecoder": {
               "target": "Package",
-              "version": "[4.15.1.2, )"
+              "version": "[4.16.0.6, )"
+            },
+            "Xamarin.Android.Glide.RecyclerViewIntegration": {
+              "target": "Package",
+              "version": "[4.16.0.6, )"
+            },
+            "Xamarin.Android.JetBrains.KotlinX_Serialization_Json_Jvm": {
+              "target": "Package",
+              "version": "[1.3.1, )"
             },
             "Xamarin.Android.JetBrains.Kotlin_Parcelize_Runtime": {
               "target": "Package",
@@ -393,11 +528,11 @@
             },
             "Xamarin.Android.ReactiveX.RxAndroid": {
               "target": "Package",
-              "version": "[2.1.1.5, )"
+              "version": "[2.1.1.13, )"
             },
             "Xamarin.Android.ReactiveX.RxJava": {
               "target": "Package",
-              "version": "[2.2.21.12, )"
+              "version": "[2.2.21.20, )"
             },
             "Xamarin.Android.RoundedImageView": {
               "target": "Package",
@@ -405,223 +540,263 @@
             },
             "Xamarin.AndroidX.Activity": {
               "target": "Package",
-              "version": "[1.7.2.1, )"
+              "version": "[1.9.1, )"
             },
             "Xamarin.AndroidX.Activity.Compose": {
               "target": "Package",
-              "version": "[1.7.2.1, )"
+              "version": "[1.9.1, )"
             },
             "Xamarin.AndroidX.Annotation": {
               "target": "Package",
-              "version": "[1.6.0.4, )"
+              "version": "[1.8.1, )"
             },
             "Xamarin.AndroidX.AppCompat": {
               "target": "Package",
-              "version": "[1.6.1.3, )"
+              "version": "[1.7.0.1, )"
             },
             "Xamarin.AndroidX.AppCompat.AppCompatResources": {
               "target": "Package",
-              "version": "[1.6.1.3, )"
+              "version": "[1.7.0.1, )"
             },
             "Xamarin.AndroidX.Arch.Core.Common": {
               "target": "Package",
-              "version": "[2.2.0.3, )"
+              "version": "[2.2.0.11, )"
             },
             "Xamarin.AndroidX.Arch.Core.Runtime": {
               "target": "Package",
-              "version": "[2.2.0.3, )"
+              "version": "[2.2.0.11, )"
             },
             "Xamarin.AndroidX.AsyncLayoutInflater": {
               "target": "Package",
-              "version": "[1.0.0.19, )"
+              "version": "[1.0.0.27, )"
             },
             "Xamarin.AndroidX.Browser": {
               "target": "Package",
-              "version": "[1.5.0.3, )"
+              "version": "[1.8.0.4, )"
             },
             "Xamarin.AndroidX.Camera.Camera2": {
               "target": "Package",
-              "version": "[1.2.3.1, )"
+              "version": "[1.1.0, )"
             },
             "Xamarin.AndroidX.Camera.Core": {
               "target": "Package",
-              "version": "[1.2.3.1, )"
+              "version": "[1.1.0, )"
             },
             "Xamarin.AndroidX.Camera.Lifecycle": {
               "target": "Package",
-              "version": "[1.2.3.1, )"
+              "version": "[1.1.0, )"
             },
             "Xamarin.AndroidX.Camera.View": {
               "target": "Package",
-              "version": "[1.2.3.1, )"
+              "version": "[1.1.0, )"
             },
             "Xamarin.AndroidX.CardView": {
               "target": "Package",
-              "version": "[1.0.0.21, )"
+              "version": "[1.0.0.29, )"
             },
             "Xamarin.AndroidX.Collection": {
               "target": "Package",
-              "version": "[1.2.0.9, )"
+              "version": "[1.4.2, )"
+            },
+            "Xamarin.AndroidX.Collection.Ktx": {
+              "target": "Package",
+              "version": "[1.4.2, )"
             },
             "Xamarin.AndroidX.Compose.Foundation": {
               "target": "Package",
-              "version": "[1.4.3.2, )"
+              "version": "[1.6.8.1, )"
             },
             "Xamarin.AndroidX.Compose.Material": {
               "target": "Package",
-              "version": "[1.4.3.2, )"
+              "version": "[1.6.8.1, )"
             },
             "Xamarin.AndroidX.Compose.Material.Icons.Core": {
               "target": "Package",
-              "version": "[1.4.3.2, )"
+              "version": "[1.6.8.1, )"
             },
             "Xamarin.AndroidX.Compose.Runtime": {
               "target": "Package",
-              "version": "[1.4.3.2, )"
+              "version": "[1.6.8.1, )"
             },
             "Xamarin.AndroidX.Compose.UI": {
               "target": "Package",
-              "version": "[1.4.3.2, )"
+              "version": "[1.6.8.1, )"
             },
             "Xamarin.AndroidX.Compose.UI.Tooling.Preview": {
               "target": "Package",
-              "version": "[1.4.3.2, )"
+              "version": "[1.6.8.1, )"
             },
             "Xamarin.AndroidX.Compose.UI.ViewBinding": {
               "target": "Package",
-              "version": "[1.4.3.2, )"
+              "version": "[1.6.8.1, )"
             },
             "Xamarin.AndroidX.ConstraintLayout": {
               "target": "Package",
-              "version": "[2.1.4.6, )"
+              "version": "[2.1.4.14, )"
             },
             "Xamarin.AndroidX.ConstraintLayout.Solver": {
               "target": "Package",
-              "version": "[2.0.4.14, )"
+              "version": "[2.0.4.22, )"
             },
             "Xamarin.AndroidX.CoordinatorLayout": {
               "target": "Package",
-              "version": "[1.2.0.7, )"
+              "version": "[1.2.0.15, )"
             },
             "Xamarin.AndroidX.Core": {
               "target": "Package",
-              "version": "[1.10.1.2, )"
+              "version": "[1.13.1.3, )"
             },
             "Xamarin.AndroidX.Core.SplashScreen": {
               "target": "Package",
-              "version": "[1.0.1.2, )"
+              "version": "[1.0.1.10, )"
+            },
+            "Xamarin.AndroidX.Credentials": {
+              "target": "Package",
+              "version": "[1.2.2.4, )"
+            },
+            "Xamarin.AndroidX.Credentials.PlayServicesAuth": {
+              "target": "Package",
+              "version": "[1.2.2.4, )"
             },
             "Xamarin.AndroidX.CursorAdapter": {
               "target": "Package",
-              "version": "[1.0.0.19, )"
+              "version": "[1.0.0.27, )"
             },
             "Xamarin.AndroidX.CustomView": {
               "target": "Package",
-              "version": "[1.1.0.18, )"
+              "version": "[1.1.0.26, )"
             },
             "Xamarin.AndroidX.DataBinding.ViewBinding": {
               "target": "Package",
-              "version": "[8.0.2.1, )"
+              "version": "[8.5.1, )"
             },
             "Xamarin.AndroidX.DocumentFile": {
               "target": "Package",
-              "version": "[1.0.1.19, )"
+              "version": "[1.0.1.27, )"
             },
             "Xamarin.AndroidX.DrawerLayout": {
               "target": "Package",
-              "version": "[1.2.0.3, )"
+              "version": "[1.2.0.11, )"
             },
             "Xamarin.AndroidX.DynamicAnimation": {
               "target": "Package",
-              "version": "[1.0.0.19, )"
+              "version": "[1.0.0.27, )"
             },
             "Xamarin.AndroidX.ExifInterface": {
               "target": "Package",
-              "version": "[1.3.6.3, )"
+              "version": "[1.3.7.5, )"
             },
             "Xamarin.AndroidX.Fragment": {
               "target": "Package",
-              "version": "[1.6.0.1, )"
+              "version": "[1.8.2, )"
+            },
+            "Xamarin.AndroidX.Fragment.Ktx": {
+              "target": "Package",
+              "version": "[1.8.2, )"
             },
             "Xamarin.AndroidX.GridLayout": {
               "target": "Package",
-              "version": "[1.0.0.19, )"
+              "version": "[1.0.0.27, )"
             },
             "Xamarin.AndroidX.Interpolator": {
               "target": "Package",
-              "version": "[1.0.0.19, )"
+              "version": "[1.0.0.27, )"
             },
             "Xamarin.AndroidX.Leanback": {
               "target": "Package",
-              "version": "[1.0.0.21, )"
+              "version": "[1.0.0.29, )"
             },
             "Xamarin.AndroidX.Legacy.Support.Core.UI": {
               "target": "Package",
-              "version": "[1.0.0.20, )"
+              "version": "[1.0.0.28, )"
             },
             "Xamarin.AndroidX.Legacy.Support.Core.Utils": {
               "target": "Package",
-              "version": "[1.0.0.19, )"
+              "version": "[1.0.0.27, )"
             },
             "Xamarin.AndroidX.Legacy.Support.V13": {
               "target": "Package",
-              "version": "[1.0.0.19, )"
+              "version": "[1.0.0.27, )"
             },
             "Xamarin.AndroidX.Legacy.Support.V4": {
               "target": "Package",
-              "version": "[1.0.0.19, )"
+              "version": "[1.0.0.27, )"
             },
             "Xamarin.AndroidX.Lifecycle.Common": {
               "target": "Package",
-              "version": "[2.6.1.3, )"
+              "version": "[2.8.4, )"
+            },
+            "Xamarin.AndroidX.Lifecycle.Common.Jvm": {
+              "target": "Package",
+              "version": "[2.8.4, )"
             },
             "Xamarin.AndroidX.Lifecycle.Extensions": {
               "target": "Package",
-              "version": "[2.2.0.19, )"
+              "version": "[2.2.0.27, )"
             },
             "Xamarin.AndroidX.Lifecycle.LiveData": {
               "target": "Package",
-              "version": "[2.6.1.3, )"
+              "version": "[2.8.4, )"
             },
             "Xamarin.AndroidX.Lifecycle.LiveData.Core": {
               "target": "Package",
-              "version": "[2.6.1.3, )"
+              "version": "[2.8.4, )"
             },
             "Xamarin.AndroidX.Lifecycle.Process": {
               "target": "Package",
-              "version": "[2.6.1.3, )"
+              "version": "[2.8.4, )"
             },
             "Xamarin.AndroidX.Lifecycle.Runtime": {
               "target": "Package",
-              "version": "[2.6.1.3, )"
+              "version": "[2.8.4, )"
+            },
+            "Xamarin.AndroidX.Lifecycle.Runtime.Ktx": {
+              "target": "Package",
+              "version": "[2.8.4, )"
             },
             "Xamarin.AndroidX.Lifecycle.Service": {
               "target": "Package",
-              "version": "[2.6.1.3, )"
+              "version": "[2.8.4, )"
             },
             "Xamarin.AndroidX.Lifecycle.ViewModel": {
               "target": "Package",
-              "version": "[2.6.1.3, )"
+              "version": "[2.8.4, )"
+            },
+            "Xamarin.AndroidX.Lifecycle.ViewModel.Android": {
+              "target": "Package",
+              "version": "[2.8.4, )"
+            },
+            "Xamarin.AndroidX.Lifecycle.ViewModel.Compose": {
+              "target": "Package",
+              "version": "[2.8.4, )"
+            },
+            "Xamarin.AndroidX.Lifecycle.ViewModel.Compose.Android": {
+              "target": "Package",
+              "version": "[2.8.4, )"
+            },
+            "Xamarin.AndroidX.Lifecycle.ViewModel.Ktx": {
+              "target": "Package",
+              "version": "[2.8.4, )"
             },
             "Xamarin.AndroidX.Lifecycle.ViewModelSavedState": {
               "target": "Package",
-              "version": "[2.6.1.3, )"
+              "version": "[2.8.4, )"
             },
             "Xamarin.AndroidX.Loader": {
               "target": "Package",
-              "version": "[1.1.0.19, )"
+              "version": "[1.1.0.27, )"
             },
             "Xamarin.AndroidX.LocalBroadcastManager": {
               "target": "Package",
-              "version": "[1.1.0.7, )"
+              "version": "[1.1.0.15, )"
             },
             "Xamarin.AndroidX.Media": {
               "target": "Package",
-              "version": "[1.6.0.6, )"
+              "version": "[1.7.0.5, )"
             },
             "Xamarin.AndroidX.Media2.Common": {
               "target": "Package",
-              "version": "[1.2.1.7, )"
+              "version": "[1.3.0.5, )"
             },
             "Xamarin.AndroidX.Migration": {
               "target": "Package",
@@ -629,67 +804,67 @@
             },
             "Xamarin.AndroidX.MultiDex": {
               "target": "Package",
-              "version": "[2.0.1.19, )"
+              "version": "[2.0.1.27, )"
             },
             "Xamarin.AndroidX.Palette": {
               "target": "Package",
-              "version": "[1.0.0.19, )"
+              "version": "[1.0.0.27, )"
             },
             "Xamarin.AndroidX.Preference": {
               "target": "Package",
-              "version": "[1.2.0.7, )"
+              "version": "[1.2.1.8, )"
             },
             "Xamarin.AndroidX.Print": {
               "target": "Package",
-              "version": "[1.0.0.19, )"
+              "version": "[1.0.0.27, )"
             },
             "Xamarin.AndroidX.RecyclerView": {
               "target": "Package",
-              "version": "[1.3.0.3, )"
+              "version": "[1.3.2.6, )"
             },
             "Xamarin.AndroidX.SavedState": {
               "target": "Package",
-              "version": "[1.2.1.3, )"
+              "version": "[1.2.1.11, )"
             },
             "Xamarin.AndroidX.Security.SecurityCrypto": {
               "target": "Package",
-              "version": "[1.1.0-alpha05, )"
+              "version": "[1.1.0.2-alpha06, )"
             },
             "Xamarin.AndroidX.SlidingPaneLayout": {
               "target": "Package",
-              "version": "[1.2.0.7, )"
+              "version": "[1.2.0.15, )"
             },
             "Xamarin.AndroidX.SwipeRefreshLayout": {
               "target": "Package",
-              "version": "[1.1.0.14, )"
+              "version": "[1.1.0.22, )"
             },
             "Xamarin.AndroidX.Transition": {
               "target": "Package",
-              "version": "[1.4.1.12, )"
+              "version": "[1.5.1, )"
             },
             "Xamarin.AndroidX.VectorDrawable": {
               "target": "Package",
-              "version": "[1.1.0.19, )"
+              "version": "[1.2.0.1, )"
             },
             "Xamarin.AndroidX.VectorDrawable.Animated": {
               "target": "Package",
-              "version": "[1.1.0.19, )"
+              "version": "[1.2.0.1, )"
             },
             "Xamarin.AndroidX.VersionedParcelable": {
               "target": "Package",
-              "version": "[1.1.1.19, )"
+              "version": "[1.2.0.5, )"
             },
             "Xamarin.AndroidX.ViewPager": {
               "target": "Package",
-              "version": "[1.0.0.19, )"
+              "version": "[1.0.0.27, )"
             },
             "Xamarin.AndroidX.Work.Runtime": {
               "target": "Package",
-              "version": "[2.8.1.3, )"
+              "version": "[2.9.0.5, )"
             },
             "Xamarin.AndroidX.Work.Work.Runtime.Ktx": {
               "target": "Package",
-              "version": "[2.8.1.3, )"
+              "version": "[2.9.0.5, )"
             },
             "Xamarin.BadgeView": {
               "target": "Package",
@@ -701,31 +876,31 @@
             },
             "Xamarin.Essentials": {
               "target": "Package",
-              "version": "[1.7.7, )"
+              "version": "[1.8.1, )"
             },
             "Xamarin.Facebook.Shimmer": {
               "target": "Package",
-              "version": "[1.0.2, )"
+              "version": "[1.0.4, )"
             },
             "Xamarin.Firebase.Common": {
               "target": "Package",
-              "version": "[120.3.3.1, )"
+              "version": "[121.0.0.1, )"
             },
             "Xamarin.Firebase.Messaging": {
               "target": "Package",
-              "version": "[123.1.2.2, )"
+              "version": "[124.0.0.1, )"
             },
             "Xamarin.Google.Accompanist.FlowLayout": {
               "target": "Package",
-              "version": "[0.30.1.3, )"
+              "version": "[0.34.0.5, )"
             },
             "Xamarin.Google.Android.DataTransport.TransportRuntime": {
               "target": "Package",
-              "version": "[3.1.9.2, )"
+              "version": "[3.3.0.1, )"
             },
             "Xamarin.Google.Android.Material": {
               "target": "Package",
-              "version": "[1.9.0.2, )"
+              "version": "[1.11.0, )"
             },
             "Xamarin.Google.Android.Places": {
               "target": "Package",
@@ -733,115 +908,119 @@
             },
             "Xamarin.Google.Android.Play.Integrity": {
               "target": "Package",
-              "version": "[1.1.0.2, )"
+              "version": "[1.2.0.3, )"
             },
             "Xamarin.Google.AutoValue.Annotations": {
               "target": "Package",
-              "version": "[1.10.2.1, )"
+              "version": "[1.11.0.1, )"
             },
             "Xamarin.Google.Dagger": {
               "target": "Package",
-              "version": "[2.46.1.2, )"
+              "version": "[2.51.1.1, )"
             },
             "Xamarin.Google.Guava": {
               "target": "Package",
-              "version": "[31.1.0.8, )"
+              "version": "[33.2.1.1, )"
             },
             "Xamarin.Google.Guava.FailureAccess": {
               "target": "Package",
-              "version": "[1.0.1.12, )"
+              "version": "[1.0.2.6, )"
             },
             "Xamarin.Google.UserMessagingPlatform": {
               "target": "Package",
-              "version": "[2.0.0.5, )"
+              "version": "[3.0.0, )"
             },
             "Xamarin.Google.ZXing.Core": {
               "target": "Package",
-              "version": "[3.5.1.3, )"
+              "version": "[3.5.3.3, )"
+            },
+            "Xamarin.GoogleAndroid.Libraries.Identity.GoogleId": {
+              "target": "Package",
+              "version": "[1.1.0.1, )"
             },
             "Xamarin.GooglePlayServices.Ads.Identifier": {
               "target": "Package",
-              "version": "[118.0.1.5, )"
+              "version": "[118.1.0.1, )"
             },
             "Xamarin.GooglePlayServices.AppSet": {
               "target": "Package",
-              "version": "[16.0.2.5, )"
+              "version": "[116.1.0.1, )"
             },
             "Xamarin.GooglePlayServices.Auth": {
               "target": "Package",
-              "version": "[120.6.0.1, )"
+              "version": "[121.2.0.1, )"
             },
             "Xamarin.GooglePlayServices.Auth.Api.Phone": {
               "target": "Package",
-              "version": "[118.0.1.5, )"
+              "version": "[118.1.0.1, )"
             },
             "Xamarin.GooglePlayServices.Auth.Base": {
               "target": "Package",
-              "version": "[118.0.9.1, )"
+              "version": "[118.0.13.1, )"
             },
             "Xamarin.GooglePlayServices.Base": {
               "target": "Package",
-              "version": "[118.2.0.2, )"
+              "version": "[118.5.0.1, )"
             },
             "Xamarin.GooglePlayServices.Basement": {
               "target": "Package",
-              "version": "[118.2.0.2, )"
+              "version": "[118.4.0.1, )"
             },
             "Xamarin.GooglePlayServices.Cast": {
               "target": "Package",
-              "version": "[121.3.0.2, )"
+              "version": "[121.5.0.1, )"
             },
             "Xamarin.GooglePlayServices.Cast.Framework": {
               "target": "Package",
-              "version": "[121.3.0.2, )"
+              "version": "[121.5.0.1, )"
             },
             "Xamarin.GooglePlayServices.Clearcut": {
               "target": "Package",
-              "version": "[117.0.0.10, )"
+              "version": "[117.0.0.17, )"
             },
             "Xamarin.GooglePlayServices.CloudMessaging": {
               "target": "Package",
-              "version": "[117.0.2.5, )"
+              "version": "[117.3.0.1, )"
             },
             "Xamarin.GooglePlayServices.Gcm": {
               "target": "Package",
-              "version": "[117.0.0.10, )"
+              "version": "[117.0.0.17, )"
             },
             "Xamarin.GooglePlayServices.Iid": {
               "target": "Package",
-              "version": "[117.0.0.10, )"
+              "version": "[117.0.0.17, )"
             },
             "Xamarin.GooglePlayServices.Measurement": {
               "target": "Package",
-              "version": "[121.3.0.1, )"
+              "version": "[121.6.2, )"
             },
             "Xamarin.GooglePlayServices.Measurement.Api": {
               "target": "Package",
-              "version": "[121.3.0.1, )"
+              "version": "[121.6.2, )"
             },
             "Xamarin.GooglePlayServices.Measurement.Base": {
               "target": "Package",
-              "version": "[121.3.0.1, )"
+              "version": "[121.6.2, )"
             },
             "Xamarin.GooglePlayServices.Measurement.Sdk.Api": {
               "target": "Package",
-              "version": "[121.3.0.1, )"
+              "version": "[121.6.2, )"
             },
             "Xamarin.GooglePlayServices.Phenotype": {
               "target": "Package",
-              "version": "[117.0.0.10, )"
+              "version": "[117.0.0.17, )"
             },
             "Xamarin.GooglePlayServices.Stats": {
               "target": "Package",
-              "version": "[117.0.3.5, )"
+              "version": "[117.1.0.1, )"
             },
             "Xamarin.GooglePlayServices.Tasks": {
               "target": "Package",
-              "version": "[118.0.2.3, )"
+              "version": "[118.2.0.1, )"
             },
             "Xamarin.GooglePlayServices.Wallet": {
               "target": "Package",
-              "version": "[119.2.0.1, )"
+              "version": "[119.4.0.1, )"
             },
             "Xamarin.Jakewharton.DiskLruCache": {
               "target": "Package",
@@ -849,15 +1028,27 @@
             },
             "Xamarin.Kotlin.StdLib": {
               "target": "Package",
-              "version": "[1.9.0.1, )"
+              "version": "[2.0.0.1, )"
             },
             "Xamarin.Kotlin.StdLib.Jdk7": {
               "target": "Package",
-              "version": "[1.9.0.1, )"
+              "version": "[2.0.0.1, )"
+            },
+            "Xamarin.KotlinX.Coroutines.Android": {
+              "target": "Package",
+              "version": "[1.8.1.1, )"
+            },
+            "Xamarin.KotlinX.Coroutines.Core": {
+              "target": "Package",
+              "version": "[1.8.1.1, )"
+            },
+            "Xamarin.KotlinX.Coroutines.Play.Services": {
+              "target": "Package",
+              "version": "[1.8.1.1, )"
             },
             "sqlite-net-pcl": {
               "target": "Package",
-              "version": "[1.9.141-beta, )"
+              "version": "[1.9.172, )"
             }
           },
           "imports": [
@@ -871,6 +1062,28 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.Android.Ref.34",
+              "version": "[34.0.154, 34.0.154]"
+            },
+            {
+              "name": "Microsoft.Android.Runtime.34.android-arm",
+              "version": "[34.0.154, 34.0.154]"
+            },
+            {
+              "name": "Microsoft.Android.Runtime.34.android-arm64",
+              "version": "[34.0.154, 34.0.154]"
+            },
+            {
+              "name": "Microsoft.Android.Runtime.34.android-x64",
+              "version": "[34.0.154, 34.0.154]"
+            },
+            {
+              "name": "Microsoft.Android.Runtime.34.android-x86",
+              "version": "[34.0.154, 34.0.154]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.Android": {
               "privateAssets": "all"
@@ -879,7 +1092,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/7.0.307/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.307/PortableRuntimeIdentifierGraph.json"
         }
       },
       "runtimes": {
@@ -887,6 +1100,12 @@
           "#import": []
         },
         "android-arm64": {
+          "#import": []
+        },
+        "android-x64": {
+          "#import": []
+        },
+        "android-x86": {
           "#import": []
         }
       }

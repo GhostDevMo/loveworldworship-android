@@ -111,6 +111,12 @@ namespace DeepSound.Helpers.Utils
                     {
                         sound.AudioLocation = GetTheFinalLink(sound.AudioLocation);
                     }
+
+                    if (sound.Price != 0 && !string.IsNullOrEmpty(sound.DemoTrack))
+                    {
+                        if (!sound.DemoTrack.StartsWith("http"))
+                            sound.DemoTrack = GetTheFinalLink(sound.DemoTrack);
+                    }
                 }
 
                 return new List<SoundDataObject>(result);

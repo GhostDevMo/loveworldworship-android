@@ -10,6 +10,7 @@ using DeepSound.Activities.MyContacts.Adapters;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Model;
+using DeepSound.Helpers.ShimmerUtils;
 using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Global;
@@ -32,8 +33,9 @@ namespace DeepSound.Activities.Tabbes.HomePages
         private SwipeRefreshLayout SwipeRefreshLayout;
         private RecyclerView MRecycler;
         private LinearLayoutManager LayoutManager;
-        private ViewStub EmptyStateLayout;
-        private View Inflated;
+        private ViewStub EmptyStateLayout, ShimmerPageLayout;
+        private View Inflated, InflatedShimmer;
+        private TemplateShimmerInflater ShimmerInflater;
         private RecyclerViewOnScrollListener MainScrollEvent;
 
         private AdView BannerAd;
@@ -73,6 +75,7 @@ namespace DeepSound.Activities.Tabbes.HomePages
                 base.OnViewCreated(view, savedInstanceState);
 
                 InitComponent(view);
+                InitShimmer(view);
                 SetRecyclerViewAdapters();
 
                 var TopLayout = view.FindViewById<RelativeLayout>(Resource.Id.Toplayout);
@@ -163,6 +166,25 @@ namespace DeepSound.Activities.Tabbes.HomePages
                     BannerAd = AdsFacebook.InitAdView(Activity, adContainer, MRecycler);
                 else if (AppSettings.ShowAppLovinBannerAds)
                     AdsAppLovin.InitBannerAd(Activity, adContainer, MRecycler);
+                else
+                    AdsGoogle.InitBannerAdView(Activity, adContainer, MRecycler);
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        private void InitShimmer(View view)
+        {
+            try
+            {
+                ShimmerPageLayout = view.FindViewById<ViewStub>(Resource.Id.viewStubShimmer);
+                InflatedShimmer ??= ShimmerPageLayout.Inflate();
+
+                ShimmerInflater = new TemplateShimmerInflater();
+                ShimmerInflater.InflateLayout(Activity, InflatedShimmer, ShimmerTemplateStyle.SongRowTemplate);
+                ShimmerInflater.Show();
             }
             catch (Exception e)
             {
@@ -236,6 +258,8 @@ namespace DeepSound.Activities.Tabbes.HomePages
         {
             try
             {
+                ShimmerInflater?.Show();
+
                 //Get Data Api
                 MAdapter.UsersList.Clear();
                 MAdapter.NotifyDataSetChanged();
@@ -350,6 +374,8 @@ namespace DeepSound.Activities.Tabbes.HomePages
         {
             try
             {
+                ShimmerInflater?.Hide();
+
                 MainScrollEvent.IsLoading = false;
                 SwipeRefreshLayout.Refreshing = false;
 
@@ -376,6 +402,8 @@ namespace DeepSound.Activities.Tabbes.HomePages
             }
             catch (Exception e)
             {
+                ShimmerInflater?.Hide();
+
                 MainScrollEvent.IsLoading = false;
                 SwipeRefreshLayout.Refreshing = false;
                 Methods.DisplayReportResultTrack(e);

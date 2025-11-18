@@ -17,6 +17,7 @@ using DeepSound.Activities.Search;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Model;
+using DeepSound.Helpers.ShimmerUtils;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Blog;
 using DeepSoundClient.Classes.Event;
@@ -45,8 +46,9 @@ namespace DeepSound.Activities.Tabbes.Fragments
         private ProductAdapter ProductAdapter;
         private HomeActivity GlobalContext;
         private SwipeRefreshLayout SwipeRefreshLayout;
-        private ViewStub EmptyStateLayout, EventViewStub, BlogViewStub, PublicPlaylistViewStub, ProductViewStub;
-        private View Inflated, EventInflated, BlogInflated, PublicPlaylistInflated, ProductInflated;
+        private ViewStub EmptyStateLayout, ShimmerPageLayout, EventViewStub, BlogViewStub, PublicPlaylistViewStub, ProductViewStub;
+        private View Inflated, InflatedShimmer, EventInflated, BlogInflated, PublicPlaylistInflated, ProductInflated;
+        private TemplateShimmerInflater ShimmerInflater;
         private RecyclerViewOnScrollListener EventScrollEvent, PublicPlaylistScrollEvent;
         public PlaylistProfileFragment PlaylistProfileFragment;
         private TemplateRecyclerInflater RecyclerInflaterEvent, RecyclerInflaterBlog, RecyclerInflaterPublicPlaylist, RecyclerInflaterProduct;
@@ -91,6 +93,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 base.OnViewCreated(view, savedInstanceState);
 
                 InitComponent(view);
+                InitShimmer(view);
                 SetRecyclerViewAdapters();
 
                 StartApiService();
@@ -157,6 +160,23 @@ namespace DeepSound.Activities.Tabbes.Fragments
             }
         }
 
+        private void InitShimmer(View view)
+        {
+            try
+            {
+                ShimmerPageLayout = view.FindViewById<ViewStub>(Resource.Id.viewStubShimmer);
+                InflatedShimmer ??= ShimmerPageLayout.Inflate();
+
+                ShimmerInflater = new TemplateShimmerInflater();
+                ShimmerInflater.InflateLayout(Activity, InflatedShimmer, ShimmerTemplateStyle.SongTemplate);
+                ShimmerInflater.Show();
+            }
+            catch (Exception e)
+            {
+                Methods.DisplayReportResultTrack(e);
+            }
+        }
+
         private void SetRecyclerViewAdapters()
         {
             try
@@ -192,6 +212,8 @@ namespace DeepSound.Activities.Tabbes.Fragments
         {
             try
             {
+                ShimmerInflater?.Show();
+
                 EventAdapter.EventsList.Clear();
                 EventAdapter.NotifyDataSetChanged();
 
@@ -304,7 +326,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
 
         private async Task GetEvent(string offset = "0")
         {
-            if (!AppSettings.ShowEvent)
+            if (!UserDetails.IsLogin || !AppSettings.ShowEvent)
                 return;
 
             if (EventScrollEvent != null && EventScrollEvent.IsLoading)
@@ -422,7 +444,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
 
         private async Task LoadProduct(string offsetProduct = "0")
         {
-            if (!AppSettings.ShowProduct)
+            if (!UserDetails.IsLogin || !AppSettings.ShowProduct)
                 return;
 
             int countList = ProductAdapter.ProductsList.Count;
@@ -480,6 +502,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 if (PublicPlaylistScrollEvent != null) PublicPlaylistScrollEvent.IsLoading = false;
                 if (EventScrollEvent != null) EventScrollEvent.IsLoading = false;
 
+                ShimmerInflater?.Hide();
                 SwipeRefreshLayout.Refreshing = false;
 
                 if (type == "PublicPlaylist")
@@ -545,6 +568,7 @@ namespace DeepSound.Activities.Tabbes.Fragments
                 if (PublicPlaylistScrollEvent != null) PublicPlaylistScrollEvent.IsLoading = false;
                 if (EventScrollEvent != null) EventScrollEvent.IsLoading = false;
 
+                ShimmerInflater?.Hide();
                 SwipeRefreshLayout.Refreshing = false;
                 Methods.DisplayReportResultTrack(e);
             }
@@ -824,6 +848,9 @@ namespace DeepSound.Activities.Tabbes.Fragments
         {
             try
             {
+                if (!UserDetails.IsLogin || !AppSettings.ShowPaypal)
+                    return;
+
                 var (apiStatus, respond) = await RequestsAsync.Product.GetCartsAsync("8").ConfigureAwait(false);
                 if (apiStatus == 200)
                 {

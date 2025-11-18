@@ -1,9 +1,5 @@
-﻿using Com.Google.Android.Exoplayer2;
-using Com.Google.Android.Exoplayer2.Audio;
-using Com.Google.Android.Exoplayer2.Metadata;
-using Com.Google.Android.Exoplayer2.Text;
-using Com.Google.Android.Exoplayer2.Trackselection;
-using Com.Google.Android.Exoplayer2.Video;
+﻿using Androidx.Media3.Common;
+using Androidx.Media3.Common.Text;
 using DeepSound.Helpers.Utils;
 using System;
 using Object = Java.Lang.Object;

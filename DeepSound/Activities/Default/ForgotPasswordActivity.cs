@@ -214,7 +214,7 @@ namespace DeepSound.Activities.Default
                                     ProgressBar.Visibility = ViewStates.Gone;
                                     BtnSend.Visibility = ViewStates.Visible;
 
-                                    Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_VerificationFailed), result.Message, GetText(Resource.String.Lbl_Ok));
+                                    Methods.DialogPopup.InvokeAndShowDialog(this, GetText(Resource.String.Lbl_ConfirmationEmailSent), result.Message, GetText(Resource.String.Lbl_Ok));
                                 }
                             }
                             else if (apiStatus == 400)

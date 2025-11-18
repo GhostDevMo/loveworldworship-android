@@ -15,6 +15,7 @@ using DeepSound.Activities.SettingsUser.General;
 using DeepSound.Activities.Tabbes;
 using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
+using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSound.Library.Anjo.IntegrationRecyclerView;
 using DeepSoundClient.Classes.Address;
@@ -477,6 +478,9 @@ namespace DeepSound.Activities.Product
 
         private async Task LoadCarts(string offset = "0")
         {
+            if (!UserDetails.IsLogin || !AppSettings.ShowPaypal)
+                return;
+
             if (Methods.CheckConnectivity())
             {
                 int countList = MAdapter.CartsList.Count;

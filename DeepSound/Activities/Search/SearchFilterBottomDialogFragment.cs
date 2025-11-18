@@ -24,7 +24,7 @@ namespace DeepSound.Activities.Search
         private RelativeLayout PriceLayout, GenresLayout;
         private AppCompatButton ButtonApply;
         //private HomeActivity GlobalContext;
-        private string TypeDialog, CurrencySymbol, TotalIdGenresChecked = "", TotalIdPriceChecked = "";
+        private string CurrencySymbol, TotalIdGenresChecked = "", TotalIdPriceChecked = "";
 
         #endregion
 
@@ -138,8 +138,6 @@ namespace DeepSound.Activities.Search
         {
             try
             {
-                TypeDialog = "Genres";
-
                 var listItems = ListUtils.GenresList.Select(item => item.CateogryName).ToList();
 
                 var checkedItems = new bool[listItems.Count];
@@ -201,8 +199,6 @@ namespace DeepSound.Activities.Search
         {
             try
             {
-                TypeDialog = "Price";
-
                 var listItems = new List<string>();
                 foreach (var item in ListUtils.PriceList)
                     if (item.Price is "0.00" or "0")
@@ -269,8 +265,11 @@ namespace DeepSound.Activities.Search
         {
             try
             {
-                UserDetails.FilterGenres = TotalIdGenresChecked.Remove(TotalIdGenresChecked.Length - 1, 1);
-                UserDetails.FilterPrice = TotalIdPriceChecked.Remove(TotalIdPriceChecked.Length - 1, 1);
+                if (TotalIdGenresChecked?.Length > 0)
+                    UserDetails.FilterGenres = TotalIdGenresChecked.Remove(TotalIdGenresChecked.Length - 1, 1);
+
+                if (TotalIdPriceChecked?.Length > 0)
+                    UserDetails.FilterPrice = TotalIdPriceChecked.Remove(TotalIdPriceChecked.Length - 1, 1);
 
                 Dismiss();
             }

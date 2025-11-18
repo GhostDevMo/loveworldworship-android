@@ -264,6 +264,9 @@ namespace DeepSound.Activities.Address
             {
                 if (e.Event?.Action != MotionEventActions.Up) return;
 
+                Methods.HideKeyboard(this);
+
+
                 var countriesArray = DeepSoundTools.GetCountryList(this);
                 var arrayAdapter = countriesArray.Select(item => item.Value).ToList();
 
@@ -312,7 +315,7 @@ namespace DeepSound.Activities.Address
                         if (respond is CreateAddressObject result)
                         {
                             Toast.MakeText(this, GetText(Resource.String.Lbl_CreatedSuccessfully), ToastLength.Short)?.Show();
-                            AndHUD.Shared.Dismiss(this);
+                            AndHUD.Shared.Dismiss();
 
                             Finish();
                         }
@@ -326,7 +329,7 @@ namespace DeepSound.Activities.Address
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
             }
         }
 

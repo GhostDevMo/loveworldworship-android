@@ -64,7 +64,7 @@
         app:arrowHeight="10dp"
         app:arrowPosition="14dp"
         app:arrowLocation="left"
-        app:bubbleColor="@color/lightcolor"
+        app:bubbleColor="@color/LightColor"
         android:layout_marginEnd="8dp"
         android:padding="10dp" />-->
 </LinearLayout>

@@ -149,6 +149,8 @@ namespace DeepSound.Activities.Playlist
             {
                 if (e?.Event?.Action != MotionEventActions.Up) return;
 
+                Methods.HideKeyboard(Activity);
+
                 var dialogList = new MaterialAlertDialogBuilder(Context);
 
                 var arrayAdapter = new List<string>
@@ -205,7 +207,7 @@ namespace DeepSound.Activities.Playlist
                         if (respond is CreatePlaylistObject result)
                         {
                             Toast.MakeText(Context, Context.GetText(Resource.String.Lbl_CreatedSuccessfully), ToastLength.Short)?.Show();
-                            AndHUD.Shared.Dismiss(Context);
+                            AndHUD.Shared.Dismiss();
 
                             var playlistData = ListUtils.PlaylistList.FirstOrDefault(a => a.Id == PlaylistObject?.Id);
                             if (playlistData != null)
@@ -242,7 +244,7 @@ namespace DeepSound.Activities.Playlist
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                AndHUD.Shared.Dismiss(Context);
+                AndHUD.Shared.Dismiss();
             }
         }
 

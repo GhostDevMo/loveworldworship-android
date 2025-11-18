@@ -104,7 +104,8 @@
                         android:hint="@string/Lbl_Amount"
                         android:textSize="15sp"
                         android:inputType="number"
-                        android:gravity="start"
+                        android:singleLine="true"
+                    	android:gravity="start|center"
                         android:background="@drawable/EditTextStyleOne"
                         android:layout_alignParentEnd="true"
                         android:layout_marginStart="3dp" />
@@ -136,7 +137,8 @@
                         android:hint="@string/Lbl_PayPalEmail"
                         android:inputType="textWebEmailAddress"
                         android:textSize="15sp"
-                        android:gravity="start"
+                        android:singleLine="true"
+                    	android:gravity="start|center"
                         android:background="@drawable/EditTextStyleOne"
                         android:layout_alignParentEnd="true"
                         android:layout_marginStart="3dp" />

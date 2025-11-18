@@ -9,11 +9,13 @@ using Android.Widget;
 using AndroidHUD;
 using AndroidX.Activity;
 using AndroidX.AppCompat.Widget;
+using Com.Google.Android.Gms.Ads.Admanager;
 using Com.Stripe.Android;
 using Com.Stripe.Android.Model;
 using Com.Stripe.Android.Payments.Paymentlauncher;
 using Com.Stripe.Android.View;
 using DeepSound.Activities.SettingsUser.General;
+using DeepSound.Helpers.Ads;
 using DeepSound.Helpers.Controller;
 using DeepSound.Helpers.Utils;
 using DeepSoundClient.Classes.Payment;
@@ -34,10 +36,11 @@ namespace DeepSound.Payment
         private EditText EtName;
         private AppCompatButton BtnApply;
         private CardMultilineWidget MultilineWidget;
+        private AdManagerAdView AdManagerAdView;
 
         private IPaymentLauncher StripePaymentLauncher;
         private Stripe Stripe;
-        private string Price, TokenId, ClientSecret, HashId, SessionId;
+        private string Price, TokenId, ClientSecret, HashId;
 
         #endregion
 
@@ -75,6 +78,7 @@ namespace DeepSound.Payment
             {
                 base.OnResume();
                 AddOrRemoveEvent(true);
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Resume");
             }
             catch (Exception e)
             {
@@ -88,6 +92,7 @@ namespace DeepSound.Payment
             {
                 base.OnPause();
                 AddOrRemoveEvent(false);
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Pause");
             }
             catch (Exception e)
             {
@@ -118,6 +123,19 @@ namespace DeepSound.Payment
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
+            }
+        }
+
+        protected override void OnDestroy()
+        {
+            try
+            {
+                AdsGoogle.LifecycleAdManagerAdView(AdManagerAdView, "Destroy");
+                base.OnDestroy();
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
             }
         }
 
@@ -156,6 +174,9 @@ namespace DeepSound.Payment
                 BtnApply = (AppCompatButton)FindViewById(Resource.Id.ApplyButton);
 
                 Methods.SetColorEditText(EtName, DeepSoundTools.IsTabDark() ? Color.White : Color.Black);
+
+                AdManagerAdView = FindViewById<AdManagerAdView>(Resource.Id.multiple_ad_sizes_view);
+                AdsGoogle.InitAdManagerAdView(AdManagerAdView);
             }
             catch (Exception e)
             {
@@ -208,7 +229,7 @@ namespace DeepSound.Payment
 
         #region Events
 
-        private void CvcEditTextOnAfterTextChanged(object sender, AfterTextChangedEventArgs e)
+        private void CvcEditTextOnAfterTextChanged(object sender, StripeEditText.AfterTextChangedEventArgs e)
         {
             try
             {
@@ -265,7 +286,7 @@ namespace DeepSound.Payment
             }
             catch (Exception exception)
             {
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
                 Methods.DisplayReportResultTrack(exception);
             }
         }
@@ -348,7 +369,7 @@ namespace DeepSound.Payment
                                 tabbedWallet.TxtAmount.Text = string.Empty;
                                 Toast.MakeText(this, GetText(Resource.String.Lbl_PaymentSuccessfully), ToastLength.Long)?.Show();
 
-                                AndHUD.Shared.Dismiss(this);
+                                AndHUD.Shared.Dismiss();
                                 Finish();
                                 break;
                             default:
@@ -360,13 +381,13 @@ namespace DeepSound.Payment
                 else
                 {
                     Toast.MakeText(this, GetText(Resource.String.Lbl_CheckYourInternetConnection), ToastLength.Long)?.Show();
-                    AndHUD.Shared.Dismiss(this);
+                    AndHUD.Shared.Dismiss();
                 }
             }
             catch (Exception e)
             {
                 Methods.DisplayReportResultTrack(e);
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
             }
         }
 
@@ -381,7 +402,7 @@ namespace DeepSound.Payment
                 }
                 else if (paymentResult is PaymentResult.Canceled canceled)
                 {
-                    AndHUD.Shared.Dismiss(this);
+                    AndHUD.Shared.Dismiss();
                     message = "Canceled!";
                 }
                 else if (paymentResult is PaymentResult.Failed failed)
@@ -390,7 +411,7 @@ namespace DeepSound.Payment
                     // See here: https://stripe.com/docs/api/payment_intents/object#payment_intent_object-last_payment_error-message
                     message = "Failed: " + failed.Throwable.Message;
 
-                    AndHUD.Shared.Dismiss(this);
+                    AndHUD.Shared.Dismiss();
                 }
 
                 if (!string.IsNullOrEmpty(message))

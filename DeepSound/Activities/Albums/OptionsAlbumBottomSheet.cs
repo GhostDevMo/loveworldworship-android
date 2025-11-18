@@ -23,7 +23,6 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Exception = System.Exception;
@@ -225,7 +224,7 @@ namespace DeepSound.Activities.Albums
                 AndHUD.Shared.Show(Context, GetText(Resource.String.Lbl_Downloading));
 
                 Methods.Path.Chack_MyFolder();
-                 
+
                 foreach (var item in ListSong)
                 {
                     var SoundDownload = new SoundDownloadAsyncController(item.AudioLocation, item.Title, Activity);
@@ -235,12 +234,12 @@ namespace DeepSound.Activities.Albums
                     }
                 }
 
-                AndHUD.Shared.Dismiss(Context);
-                Dismiss(); 
+                AndHUD.Shared.Dismiss();
+                Dismiss();
             }
             catch (Exception exception)
             {
-                AndHUD.Shared.Dismiss(Context);
+                AndHUD.Shared.Dismiss();
                 Dismiss();
                 Methods.DisplayReportResultTrack(exception);
             }
@@ -284,7 +283,7 @@ namespace DeepSound.Activities.Albums
                         result.Data.Songs = ListSong.Count;
                         ListUtils.PlaylistList.Add(result.Data);
 
-                        AndHUD.Shared.Dismiss(Context);
+                        AndHUD.Shared.Dismiss();
                         Dismiss();
                     }
                 }
@@ -295,7 +294,7 @@ namespace DeepSound.Activities.Albums
             }
             catch (Exception exception)
             {
-                AndHUD.Shared.Dismiss(Context);
+                AndHUD.Shared.Dismiss();
                 Methods.DisplayReportResultTrack(exception);
             }
         }

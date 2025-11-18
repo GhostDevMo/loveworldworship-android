@@ -291,18 +291,10 @@ namespace DeepSound.Activities.MyProfile
                             }
 
                             Toast.MakeText(this, GetText(Resource.String.Lbl_UpdatedSuccessfully), ToastLength.Short)?.Show();
-                            AndHUD.Shared.Dismiss(this);
-
+                            AndHUD.Shared.Dismiss();
 
                             Intent returnIntent = new Intent();
-
-                            returnIntent.PutExtra("name", dictionary["name"]);
-                            returnIntent.PutExtra("about_me", dictionary["about_me"]);
-                            returnIntent.PutExtra("facebook", dictionary["facebook"]);
-                            returnIntent.PutExtra("website", dictionary["website"]);
-
                             SetResult(Result.Ok, returnIntent);
-
                             Finish();
                         }
                     }
@@ -319,7 +311,7 @@ namespace DeepSound.Activities.MyProfile
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
             }
         }
 

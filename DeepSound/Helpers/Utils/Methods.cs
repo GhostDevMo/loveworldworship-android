@@ -9,20 +9,22 @@ using Android.Net;
 using Android.OS;
 using Android.Provider;
 using Android.Runtime;
+using Android.Text;
 using Android.Util;
 using Android.Views;
+using Android.Views.InputMethods;
 using Android.Widget;
 using AndroidHUD;
 using AndroidX.Core.Content;
 using AndroidX.Lifecycle;
 using AndroidX.RecyclerView.Widget;
 using DeepSound.Helpers.Controller;
-using DeepSoundClient;
 using DeepSoundClient.Classes.Global;
 using Google.Android.Material.Dialog;
 using HtmlAgilityPack;
 using Java.IO;
 using Java.Lang;
+using Java.Nio.Channels;
 using Java.Security;
 using Java.Text;
 using System;
@@ -44,9 +46,14 @@ using Environment = System.Environment;
 using Exception = System.Exception;
 using File = Java.IO.File;
 using IOException = System.IO.IOException;
+using Math = System.Math;
+using MimeTypeMap = DeepSoundClient.MimeTypeMap;
+using Object = Java.Lang.Object;
 using Process = Android.OS.Process;
 using Random = System.Random;
 using Stream = System.IO.Stream;
+using TimeZone = Java.Util.TimeZone;
+using Trace = System.Diagnostics.Trace;
 using TransportType = Android.Net.TransportType;
 using Uri = Android.Net.Uri;
 
@@ -54,7 +61,7 @@ namespace DeepSound.Helpers.Utils
 {
     public static partial class Methods
     {
-        //########################## IMethods Application Version 5.0 ##########################
+        //########################## IMethods Application Version 6.1 ##########################
     }
 
     public static partial class Methods
@@ -149,17 +156,18 @@ namespace DeepSound.Helpers.Utils
                     {
                         return "Mobile";
                     }
-                    else if (capabilities.HasTransport(TransportType.Wifi))
+
+                    if (capabilities.HasTransport(TransportType.Wifi))
                     {
                         return "Wifi";
                     }
                 }
-                return null;
+                return null!;
             }
             catch (Exception exception)
             {
                 DisplayReportResultTrack(exception);
-                return null;
+                return null!;
             }
         }
 
@@ -198,9 +206,30 @@ namespace DeepSound.Helpers.Utils
                         return;
                     default:
                         v.SetTextColor(color);
-                        v.SetHintTextColor(DeepSoundTools.IsTabDark() ? Color.ParseColor("#9E9E9E") : Color.ParseColor("#444444"));
+                        v.SetHintTextColor(DeepSoundTools.IsTabDark() ? Color.ParseColor("#9E9E9E") : Color.ParseColor("#A1A6B2"));
                         break;
                 }
+            }
+            catch (Exception e)
+            {
+                DisplayReportResultTrack(e);
+            }
+        }
+
+        public static void SetTextColorGradient(TextView view, Resources.Theme theme)
+        {
+            try
+            {
+                TypedValue typedValuePrimary = new TypedValue();
+                TypedValue typedValueAccent = new TypedValue();
+
+                theme?.ResolveAttribute(Resource.Attribute.colorPrimary, typedValuePrimary, true);
+                theme?.ResolveAttribute(Resource.Attribute.colorAccent, typedValueAccent, true);
+                var colorPrimary = new Color(typedValuePrimary.Data);
+                var colorAccent = new Color(typedValueAccent.Data);
+
+                var textShader = new LinearGradient(0, 0, view.Paint.MeasureText(view.Text), view.TextSize, new int[] { colorAccent, colorPrimary }, new float[] { 0, 1 }, Shader.TileMode.Clamp);
+                view.Paint.SetShader(textShader);
             }
             catch (Exception e)
             {
@@ -399,7 +428,7 @@ namespace DeepSound.Helpers.Utils
 
         public static void DisplayReportResult(Activity activityContext, dynamic respond, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            string errorText;
+            string errorText = "";
             switch (respond)
             {
                 case ErrorObject error:
@@ -411,18 +440,18 @@ namespace DeepSound.Helpers.Utils
                         break;
                     }
                 default:
-                    errorText = respond.ToString();
+                    errorText = respond?.ToString() ?? "";
                     break;
             }
 
             if (!errorText.Contains("com.android.okhttp") || !errorText.Contains("while sending the request"))
             {
-                System.Diagnostics.Trace.WriteLine("\n ========================= ReportMode Start ========================= \n");
-                System.Diagnostics.Trace.WriteLine("ReportMode >> Message: " + errorText);
-                System.Diagnostics.Trace.WriteLine("ReportMode >> Member name: " + memberName);
-                System.Diagnostics.Trace.WriteLine("ReportMode >> Source file path: " + sourceFilePath);
-                System.Diagnostics.Trace.WriteLine("ReportMode >> Source line number: " + sourceLineNumber);
-                System.Diagnostics.Trace.WriteLine("\n ========================= ReportMode End ========================= \n");
+                Trace.WriteLine("\n ========================= ReportMode Start ========================= \n");
+                Trace.WriteLine("ReportMode >> Message: " + errorText);
+                Trace.WriteLine("ReportMode >> Member name: " + memberName);
+                Trace.WriteLine("ReportMode >> Source file path: " + sourceFilePath);
+                Trace.WriteLine("ReportMode >> Source line number: " + sourceLineNumber);
+                Trace.WriteLine("\n ========================= ReportMode End ========================= \n");
             }
 
             if (AppSettings.SetApisReportMode && !errorText.Contains("com.android.okhttp") && !errorText.Contains("while sending the request"))
@@ -431,12 +460,12 @@ namespace DeepSound.Helpers.Utils
             //Crashes.TrackError(new Exception(errorText));
             //Analytics.TrackEvent(errorText);
 
-            throw new Exception(errorText);
+            //throw new Exception(errorText);
         }
 
         public static void DisplayAndHudErrorResult(Activity activityContext, dynamic respond, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFilePath = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
-            string errorText = respond.ToString();
+            string errorText = respond?.ToString() ?? "";
             try
             {
                 switch (respond)
@@ -450,7 +479,7 @@ namespace DeepSound.Helpers.Utils
                             break;
                         }
                     default:
-                        errorText = respond.ToString();
+                        errorText = respond?.ToString() ?? "";
                         break;
                 }
                 //Show a Error 
@@ -458,12 +487,12 @@ namespace DeepSound.Helpers.Utils
 
                 if (!errorText.Contains("com.android.okhttp") || !errorText.Contains("while sending the request"))
                 {
-                    System.Diagnostics.Trace.WriteLine("\n ========================= ReportMode Start ========================= \n");
-                    System.Diagnostics.Trace.WriteLine("ReportMode >> Message: " + errorText);
-                    System.Diagnostics.Trace.WriteLine("ReportMode >> Member name: " + memberName);
-                    System.Diagnostics.Trace.WriteLine("ReportMode >> Source file path: " + sourceFilePath);
-                    System.Diagnostics.Trace.WriteLine("ReportMode >> Source line number: " + sourceLineNumber);
-                    System.Diagnostics.Trace.WriteLine("\n ========================= ReportMode End ========================= \n");
+                    Trace.WriteLine("\n ========================= ReportMode Start ========================= \n");
+                    Trace.WriteLine("ReportMode >> Message: " + errorText);
+                    Trace.WriteLine("ReportMode >> Member name: " + memberName);
+                    Trace.WriteLine("ReportMode >> Source file path: " + sourceFilePath);
+                    Trace.WriteLine("ReportMode >> Source line number: " + sourceLineNumber);
+                    Trace.WriteLine("\n ========================= ReportMode End ========================= \n");
                 }
                 //Crashes.TrackError(new Exception(errorText));
                 //Analytics.TrackEvent(errorText);
@@ -471,7 +500,7 @@ namespace DeepSound.Helpers.Utils
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-                AndHUD.Shared.Dismiss(activityContext);
+                AndHUD.Shared.Dismiss();
             }
 
             switch (AppSettings.SetApisReportMode)
@@ -489,12 +518,13 @@ namespace DeepSound.Helpers.Utils
             {
                 if (!exception.Message.Contains("com.android.okhttp") || !exception.Message.Contains("while sending the request"))
                 {
-                    System.Diagnostics.Trace.WriteLine("\n ========================= ReportMode Start ========================= \n");
-                    System.Diagnostics.Trace.WriteLine("ReportMode >> Message: " + exception.Message + " \n  " + exception.StackTrace);
-                    System.Diagnostics.Trace.WriteLine("ReportMode >> Member name: " + memberName);
-                    System.Diagnostics.Trace.WriteLine("ReportMode >> Source file path: " + sourceFilePath);
-                    System.Diagnostics.Trace.WriteLine("ReportMode >> Source line number: " + sourceLineNumber);
-                    System.Diagnostics.Trace.WriteLine("\n ========================= ReportMode End ========================= \n");
+                    Trace.WriteLine("\n ========================= ReportMode Start ========================= \n");
+                    Trace.WriteLine("ReportMode >> Exception Message: " + exception?.Message + " \n" + exception?.StackTrace);
+                    Trace.WriteLine("ReportMode >> InnerException Message: " + exception?.InnerException?.Message + " \n" + exception?.InnerException?.StackTrace);
+                    Trace.WriteLine("ReportMode >> Member name: " + memberName);
+                    Trace.WriteLine("ReportMode >> Source file path: " + sourceFilePath);
+                    Trace.WriteLine("ReportMode >> Source line number: " + sourceLineNumber);
+                    Trace.WriteLine("\n ========================= ReportMode End ========================= \n");
                 }
 
                 string text = "ReportMode >> message: " + exception.Message + " \n  " + exception.StackTrace;
@@ -529,6 +559,19 @@ namespace DeepSound.Helpers.Utils
             catch (Exception exception)
             {
                 DisplayReportResultTrack(exception);
+            }
+        }
+
+        public static void HideKeyboard(Activity activityContext)
+        {
+            try
+            {
+                var inputManager = (InputMethodManager)activityContext.GetSystemService(Context.InputMethodService);
+                inputManager?.HideSoftInputFromWindow(activityContext.CurrentFocus?.WindowToken, HideSoftInputFlags.None);
+            }
+            catch (Exception exception)
+            {
+                Methods.DisplayReportResultTrack(exception);
             }
         }
 
@@ -616,7 +659,7 @@ namespace DeepSound.Helpers.Utils
                 catch (Exception e)
                 {
                     DisplayReportResultTrack(e);
-                    return null;
+                    return null!;
                 }
             }
 
@@ -695,7 +738,7 @@ namespace DeepSound.Helpers.Utils
                         Recorder.Reset();
                         Recorder.Release();
 
-                        Recorder = null;
+                        Recorder = null!;
                     }
 
                     AudioFileFullPathReleased = SoundFileFullPath.AbsolutePath;
@@ -738,7 +781,7 @@ namespace DeepSound.Helpers.Utils
                     return stream;
                 }
 
-                return null;
+                return null!;
             }
 
             public string Delete_Sound_Path(string path)
@@ -793,7 +836,7 @@ namespace DeepSound.Helpers.Utils
                                 {
                                     PlayerStatic?.Stop();
                                     PlayerStatic?.Reset();
-                                    PlayerStatic = null;
+                                    PlayerStatic = null!;
                                 }
                             }
                             catch (Exception exception)
@@ -809,7 +852,15 @@ namespace DeepSound.Helpers.Utils
                                 PlayerStatic.Looping = true;
 
                                 mAudioMgr = (AudioManager)Application.Context.GetSystemService(Context.AudioService);
-                                mAudioMgr.SpeakerphoneOn = false;
+                                if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+                                {
+                                    // Turn speakerphone OFF.
+                                    mAudioMgr.ClearCommunicationDevice();
+                                }
+                                else
+                                {
+                                    mAudioMgr.SpeakerphoneOn = false;
+                                }
                                 mAudioMgr.Mode = Mode.InCall;
 
                                 break;
@@ -817,12 +868,31 @@ namespace DeepSound.Helpers.Utils
                                 PlayerStatic.Looping = true;
 
                                 mAudioMgr.Mode = Mode.Normal;
-                                mAudioMgr.SpeakerphoneOn = true;
-
+                                if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+                                {
+                                    // Turn speakerphone ON. 
+                                    var devices = mAudioMgr.AvailableCommunicationDevices;
+                                    AudioDeviceInfo speakerDevice = devices.FirstOrDefault(device => device.Type == AudioDeviceType.BuiltinSpeaker);
+                                    mAudioMgr.SetCommunicationDevice(speakerDevice);
+                                }
+                                else
+                                {
+                                    mAudioMgr.SpeakerphoneOn = true;
+                                }
                                 break;
                             default:
                                 mAudioMgr.Mode = Mode.Normal;
-                                mAudioMgr.SpeakerphoneOn = true;
+                                if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+                                {
+                                    // Turn speakerphone ON. 
+                                    var devices = mAudioMgr.AvailableCommunicationDevices;
+                                    AudioDeviceInfo speakerDevice = devices.FirstOrDefault(device => device.Type == AudioDeviceType.BuiltinSpeaker);
+                                    mAudioMgr.SetCommunicationDevice(speakerDevice);
+                                }
+                                else
+                                {
+                                    mAudioMgr.SpeakerphoneOn = true;
+                                }
                                 break;
                         }
 
@@ -881,7 +951,7 @@ namespace DeepSound.Helpers.Utils
                         {
                             PlayerStatic.Stop();
                             PlayerStatic.Reset();
-                            PlayerStatic = null;
+                            PlayerStatic = null!;
                         }
                         catch (Exception exception)
                         {
@@ -934,9 +1004,9 @@ namespace DeepSound.Helpers.Utils
 
                     var millis = Convert.ToInt32(millisString);
 
-                    int hours = (int)(millis / (1000 * 60 * 60));
-                    int minutes = (int)(millis % (1000 * 60 * 60) / (1000 * 60));
-                    int seconds = (int)(millis % (1000 * 60 * 60) % (1000 * 60) / 1000);
+                    int hours = millis / (1000 * 60 * 60);
+                    int minutes = millis % (1000 * 60 * 60) / (1000 * 60);
+                    int seconds = millis % (1000 * 60 * 60) % (1000 * 60) / 1000;
 
                     finalTimerString = hours switch
                     {
@@ -1297,11 +1367,11 @@ namespace DeepSound.Helpers.Utils
                 switch (mediaFile)
                 {
                     case null:
-                        return null;
+                        return null!;
                     default:
                         try
                         {
-                            Bitmap bitmap = null;
+                            Bitmap bitmap = null!;
                             switch ((int)Build.VERSION.SdkInt)
                             {
                                 case >= 29 when mediaFile.Contains("http://") || mediaFile.Contains("https://"):
@@ -1340,7 +1410,7 @@ namespace DeepSound.Helpers.Utils
                         catch (Exception exception)
                         {
                             DisplayReportResultTrack(exception);
-                            return null;
+                            return null!;
                         }
                 }
             }
@@ -1379,7 +1449,7 @@ namespace DeepSound.Helpers.Utils
                 catch (Exception exception)
                 {
                     DisplayReportResultTrack(exception);
-                    return null;
+                    return null!;
                 }
             }
 
@@ -1512,15 +1582,13 @@ namespace DeepSound.Helpers.Utils
                             _ => null!
                         };
                     }
-                    else
-                    {
-                        return null;
-                    }
+
+                    return null!;
                 }
                 catch (Exception exception)
                 {
                     DisplayReportResultTrack(exception);
-                    return null;
+                    return null!;
                 }
             }
 
@@ -1813,7 +1881,7 @@ namespace DeepSound.Helpers.Utils
                 {
                     if (string.IsNullOrEmpty(s))
                     {
-                        s = "Empty";
+                        s = "-----";
                     }
 
                     return s;
@@ -2290,22 +2358,22 @@ namespace DeepSound.Helpers.Utils
 
         public static class Time
         {
-            public static string LblJustNow = Application.Context.GetText(Resource.String.Lbl_justNow);
-            public static string LblHours = Application.Context.GetText(Resource.String.Lbl_Hours);
-            public static string LblDays = Application.Context.GetText(Resource.String.Lbl_Days);
-            public static string LblMonth = Application.Context.GetText(Resource.String.Lbl_Month);
-            public static string LblMinutes = Application.Context.GetText(Resource.String.Lbl_Minutes);
+            public static readonly string LblJustNow = Application.Context.GetText(Resource.String.Lbl_justNow);
+            public static readonly string LblHours = Application.Context.GetText(Resource.String.Lbl_Hours);
+            public static readonly string LblDays = Application.Context.GetText(Resource.String.Lbl_Days);
+            public static readonly string LblMonth = Application.Context.GetText(Resource.String.Lbl_Month);
+            public static readonly string LblMinutes = Application.Context.GetText(Resource.String.Lbl_Minutes);
             public static string LblSeconds = Application.Context.GetText(Resource.String.Lbl_Seconds);
-            public static string LblYear = Application.Context.GetText(Resource.String.Lbl_Year);
-            public static string LblCutHours = Application.Context.GetText(Resource.String.Lbl_CutHours);
-            public static string LblCutDays = Application.Context.GetText(Resource.String.Lbl_CutDays);
-            public static string LblCutMonth = Application.Context.GetText(Resource.String.Lbl_CutMonth);
-            public static string LblCutMinutes = Application.Context.GetText(Resource.String.Lbl_CutMinutes);
-            public static string LblCutSeconds = Application.Context.GetText(Resource.String.Lbl_CutSeconds);
-            public static string LblCutYear = Application.Context.GetText(Resource.String.Lbl_CutYear);
+            public static readonly string LblYear = Application.Context.GetText(Resource.String.Lbl_Year);
+            public static readonly string LblCutHours = Application.Context.GetText(Resource.String.Lbl_CutHours);
+            public static readonly string LblCutDays = Application.Context.GetText(Resource.String.Lbl_CutDays);
+            public static readonly string LblCutMonth = Application.Context.GetText(Resource.String.Lbl_CutMonth);
+            public static readonly string LblCutMinutes = Application.Context.GetText(Resource.String.Lbl_CutMinutes);
+            public static readonly string LblCutSeconds = Application.Context.GetText(Resource.String.Lbl_CutSeconds);
+            public static readonly string LblCutYear = Application.Context.GetText(Resource.String.Lbl_CutYear);
             public static string LblAboutMinute = Application.Context.GetText(Resource.String.Lbl_about_minute);
             public static string LblAboutHour = Application.Context.GetText(Resource.String.Lbl_about_hour);
-            public static string LblYesterday = Application.Context.GetText(Resource.String.Lbl_yesterday);
+            public static readonly string LblYesterday = Application.Context.GetText(Resource.String.Lbl_yesterday);
             public static string LblAboutMonth = Application.Context.GetText(Resource.String.Lbl_about_month);
             public static string LblAboutYear = Application.Context.GetText(Resource.String.Lbl_about_year);
 
@@ -2372,7 +2440,7 @@ namespace DeepSound.Helpers.Utils
                     var tz = cal.TimeZone;
                     Console.WriteLine("Time zone", "=" + tz.DisplayName);
 
-                    var time = Java.Util.TimeZone.Default.DisplayName;
+                    var time = TimeZone.Default.DisplayName;
                     return !string.IsNullOrEmpty(time) ? time : "UTC";
                 }
                 catch (Exception e)
@@ -2900,7 +2968,7 @@ namespace DeepSound.Helpers.Utils
                 catch (NoSuchMethodException ex)
                 {
                     DisplayReportResultTrack(ex);
-                    return null;
+                    return null!;
                 }
             }
 
@@ -2918,7 +2986,7 @@ namespace DeepSound.Helpers.Utils
                             launchIntent.AddFlags(ActivityFlags.NewTask | ActivityFlags.ClearTask);
 
                             launchIntent.PutExtra("App", "Timeline");
-                            launchIntent.PutExtra("type", type); // SendMsgProduct , OpenChat , OpenChatPage
+                            launchIntent.PutExtra("type", type); // OpenProfile
 
                             launchIntent.AddFlags(ActivityFlags.SingleTop);
                             context.StartActivity(launchIntent);
@@ -3102,7 +3170,7 @@ namespace DeepSound.Helpers.Utils
 
         #region AttachmentFiles
 
-        public static class AttachmentFiles
+        public class AttachmentFiles
         {
             /// <summary>
             /// Main feature. Return actual path for file from uri. 
@@ -3114,188 +3182,479 @@ namespace DeepSound.Helpers.Utils
             {
                 try
                 {
-                    bool isKitKat = Build.VERSION.SdkInt >= BuildVersionCodes.Kitkat;
                     string filePath = "";
-                    switch (isKitKat)
+
+                    if (Build.VERSION.SdkInt >= BuildVersionCodes.R)
                     {
-                        // DocumentProvider
-                        // MediaStore (and general)
-                        case true when DocumentsContract.IsDocumentUri(context, uri):
+                        filePath = GetPathFileSdk11(context, uri);
+                        if (!string.IsNullOrEmpty(filePath))
+                        {
+                            return filePath;
+                        }
+                    }
+
+                    bool isKitKat = Build.VERSION.SdkInt >= BuildVersionCodes.Kitkat;
+                    if (isKitKat && DocumentsContract.IsDocumentUri(context, uri))
+                    {
+                        // ExternalStorageProvider
+                        if (IsExternalStorageDocument(uri))
+                        {
+                            string docId = DocumentsContract.GetDocumentId(uri);
+                            string[] split = docId?.Split(":");
+                            string type = split[0];
+
+                            if (Build.VERSION.SdkInt >= BuildVersionCodes.R)
                             {
-                                // ExternalStorageProvider
-                                if (IsExternalStorageDocument(uri))
+                                filePath = WriteFileContent(uri, context);
+                                if (!string.IsNullOrEmpty(filePath))
                                 {
-                                    string docId = DocumentsContract.GetDocumentId(uri);
-                                    string[] split = docId?.Split(":");
-                                    string type = split[0];
-
-                                    if ("primary".Equals(type, StringComparison.OrdinalIgnoreCase))
+                                    return filePath;
+                                }
+                                else
+                                {
+                                    filePath = GetPathFromExtSd(split);
+                                    if (!string.IsNullOrEmpty(filePath))
                                     {
-                                        return Path.AndroidDcimFolder + "/" + split[1];
-                                    }
-                                    else
-                                    {
-                                        switch ((int)Build.VERSION.SdkInt)
-                                        {
-                                            case > 20:
-                                                {
-                                                    //getExternalMediaDirs() added in API 21
-#pragma warning disable CS0618
-                                                    var extenal = context.GetExternalMediaDirs();
-#pragma warning restore CS0618
-                                                    switch (extenal?.Length)
-                                                    {
-                                                        case > 1:
-                                                            filePath = extenal[1].AbsolutePath;
-                                                            filePath = filePath.Substring(0, filePath.IndexOf("Android")) + split[1];
-                                                            break;
-                                                    }
-
-                                                    break;
-                                                }
-                                            default:
-                                                filePath = "/storage/" + type + "/" + split[1];
-                                                break;
-                                        }
-
                                         return filePath;
                                     }
                                 }
-
-                                // DownloadsProvider 
-                                if (IsDownloadsDocument(uri))
+                            }
+                            else
+                            {
+                                string fullPath = GetPathFromExtSd(split);
+                                if (!string.IsNullOrEmpty(fullPath))
                                 {
-                                    string column = "_data";
-                                    string[] projection = { column };
+                                    return fullPath;
+                                }
+                            }
 
-                                    try
+                            if (IsGoogleDriveUri(uri))
+                            {
+                                return GetDriveFilePath(uri, context);
+                            }
+
+                            if ((int)Build.VERSION.SdkInt > 20)
+                            {
+                                //getExternalMediaDirs() added in API 21
+#pragma warning disable CS0618
+                                var extenal = context.GetExternalMediaDirs();
+#pragma warning restore CS0618
+                                if (extenal?.Length > 1)
+                                {
+                                    filePath = extenal[1].AbsolutePath;
+                                    filePath = filePath.Substring(0, filePath.IndexOf("Android")) + split[1];
+                                    return filePath;
+                                }
+                            }
+                            else
+                            {
+                                filePath = "/storage/" + type + "/" + split[1];
+                                return filePath;
+                            }
+                        }
+
+                        // DownloadsProvider 
+                        if (IsDownloadsDocument(uri))
+                        {
+                            if (Build.VERSION.SdkInt >= BuildVersionCodes.M)
+                            {
+                                string id;
+                                ICursor cursor = null;
+                                try
+                                {
+                                    cursor = context.ContentResolver.Query(uri, new string[] { "_display_name" }, null, null, null);
+                                    if (cursor != null && cursor.MoveToFirst())
                                     {
-                                        using ICursor cursor = context.ContentResolver?.Query(uri, projection, null, null, null);
-                                        if (cursor != null && cursor.MoveToFirst())
+                                        string fileName = cursor.GetString(0);
+                                        string path = Android.OS.Environment.ExternalStorageDirectory + "/Download/" + fileName;
+                                        if (!TextUtils.IsEmpty(path))
                                         {
-                                            int index = cursor.GetColumnIndexOrThrow(column);
-                                            filePath = cursor.GetString(index);
-                                            cursor.Close();
-                                            if (filePath != null)
-                                                return filePath;
+                                            return path;
                                         }
                                     }
-                                    catch (Exception e)
-                                    {
-                                        DisplayReportResultTrack(e);
-                                    }
-
-                                    string id = DocumentsContract.GetDocumentId(uri);
-                                    long sssss = Long.ValueOf(id).LongValue();
-
-                                    Uri contentUri = ContentUris.WithAppendedId(Uri.Parse("content://downloads/public_downloads"), sssss);
-                                    return GetDataColumn(context, contentUri, null, null);
                                 }
-
-                                // MediaProvider 
-                                if (IsMediaDocument(uri))
+                                finally
                                 {
-                                    string docId = DocumentsContract.GetDocumentId(uri);
-                                    string[] split = docId.Split(":");
-                                    string type = split[0];
-
-                                    Uri contentUri = type switch
-                                    {
-                                        "image" => MediaStore.Images.Media.ExternalContentUri,
-                                        "video" => MediaStore.Video.Media.ExternalContentUri,
-                                        "audio" => MediaStore.Audio.Media.ExternalContentUri,
-                                        _ => null
-                                    };
-
-                                    string selection = "_id=?";
-                                    string[] selectionArgs = new string[]
-                                    {
-                                    split[1]
-                                    };
-
-                                    return GetDataColumn(context, contentUri, selection, selectionArgs);
+                                    if (cursor != null)
+                                        cursor.Close();
                                 }
 
-                                if ("content".Equals(uri.Scheme, StringComparison.OrdinalIgnoreCase))
+                                id = DocumentsContract.GetDocumentId(uri);
+                                if (!TextUtils.IsEmpty(id))
                                 {
-                                    // Return the remote address
-                                    if (IsGooglePhotosUri(uri))
-                                        return uri.LastPathSegment;
-                                    try
+                                    if (id.StartsWith("raw:"))
                                     {
-
-                                        return GetDataColumn(context, uri, null, null);
+                                        return id.Replace("raw:", "");
                                     }
-                                    catch (Exception e)
+                                    string[] contentUriPrefixesToTry = new string[]{
+                                        "content://downloads/public_downloads",
+                                        "content://downloads/my_downloads"
+                                    };
+                                    foreach (var contentUriPrefix in contentUriPrefixesToTry)
                                     {
-                                        DisplayReportResultTrack(e);
-                                        return null;
+                                        try
+                                        {
+                                            Uri contentUri = ContentUris.WithAppendedId(Uri.Parse(contentUriPrefix), Long.ValueOf(id).LongValue());
+                                            return GetDataColumn(context, contentUri, null, null);
+                                        }
+                                        catch (NumberFormatException e)
+                                        {
+                                            Console.WriteLine(e);
+                                            //In Android 8 and Android P the id is not a number
+                                            return uri.Path.Replace("^/document/raw:", "").Replace("^raw:", "");
+                                        }
                                     }
                                 }
-                                // Other Providers
+                            }
+                            else
+                            {
+                                string id = DocumentsContract.GetDocumentId(uri);
+                                if (id.StartsWith("raw:"))
+                                {
+                                    return id.Replace("raw:", "");
+                                }
+
+                                try
+                                {
+                                    Uri contentUri = ContentUris.WithAppendedId(Uri.Parse("content://downloads/public_downloads"), Long.ValueOf(id).LongValue());
+                                    if (contentUri != null)
+                                    {
+                                        return GetDataColumn(context, contentUri, null, null);
+                                    }
+                                }
+                                catch (NumberFormatException e)
+                                {
+                                    Console.WriteLine(e);
+                                }
+                            }
+                        }
+
+                        // MediaProvider 
+                        if (IsMediaDocument(uri))
+                        {
+                            string docId = DocumentsContract.GetDocumentId(uri);
+                            string[] split = docId.Split(":");
+                            string type = split[0];
+
+                            Uri contentUri = type switch
+                            {
+                                "image" => MediaStore.Images.Media.ExternalContentUri,
+                                "video" => MediaStore.Video.Media.ExternalContentUri,
+                                "audio" => MediaStore.Audio.Media.ExternalContentUri,
+                                _ => MediaStore.Files.GetContentUri("external")
+                            };
+
+                            string selection = "_id=?";
+                            string[] selectionArgs = new string[] { split[1] };
+
+                            return GetDataColumn(context, contentUri, selection, selectionArgs);
+                        }
+
+                        if ("content".Equals(uri.Scheme, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Return the remote address
+                            if (IsGooglePhotosUri(uri))
+                                return uri.LastPathSegment;
+
+                            if (IsGoogleDriveUri(uri))
+                            {
+                                return GetMediaFilePathForN(uri, context);
+                            }
+
+                            if (Build.VERSION.SdkInt == BuildVersionCodes.N)
+                            {
+                                return GetMediaFilePathForN(uri, context);
+                            }
+                            else
+                            {
+                                return CopyFromSource(uri, context);
+                            }
+
+                            //try
+                            //{
+                            //    return GetDataColumn(context, uri, null, null);
+                            //}
+                            //catch (Exception e)
+                            //{
+                            //    DisplayReportResultTrack(e);
+                            //    return null!;
+                            //}
+                        }
+                        else if ("file".Equals(uri.Scheme, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return uri.Path;
+                        }
+                        // Other Providers
+                        else
+                        {
+                            try
+                            {
+                                var attachment = context.ContentResolver?.OpenInputStream(uri);
+                                if (attachment != null)
+                                {
+                                    string filename = GetContentName(context.ContentResolver, uri);
+                                    if (filename != null)
+                                    {
+                                        File file = new File(context.CacheDir, filename);
+                                        FileOutputStream tmp = new FileOutputStream(file);
+                                        byte[] buffer = new byte[1024];
+                                        while (attachment.Read(buffer) > 0)
+                                        {
+                                            tmp.Write(buffer);
+                                        }
+
+                                        tmp.Close();
+                                        attachment.Close();
+                                        return file.AbsolutePath;
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                DisplayReportResultTrack(e);
+                                return null!;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        if ("content".Equals(uri.Scheme, StringComparison.OrdinalIgnoreCase))
+                        {
+                            // Return the remote address
+                            if (IsGooglePhotosUri(uri))
+                                return uri.LastPathSegment;
+
+                            if (IsGoogleDriveUri(uri))
+                            {
+                                return GetDriveFilePath(uri, context);
+                            }
+
+                            // External 
+                            if (uri.ToString().Contains("media/external/file"))
+                            {
+                                return GetDataColumn(context, uri, null, null);
+                            }
+
+                            if (Build.VERSION.SdkInt == BuildVersionCodes.N)
+                            {
+                                return GetMediaFilePathForN(uri, context);
+                            }
+                            else
+                            {
+                                var path = CopyDocumentToCache(context, uri);
+                                if (path != null)
+                                {
+                                    return path;
+                                }
                                 else
                                 {
-                                    try
-                                    {
-                                        var attachment = context.ContentResolver?.OpenInputStream(uri);
-                                        if (attachment != null)
-                                        {
-                                            string filename = GetContentName(context.ContentResolver, uri);
-                                            if (filename != null)
-                                            {
-                                                File file = new File(context.CacheDir, filename);
-                                                FileOutputStream tmp = new FileOutputStream(file);
-                                                byte[] buffer = new byte[1024];
-                                                while (attachment.Read(buffer) > 0)
-                                                {
-                                                    tmp.Write(buffer);
-                                                }
-                                                tmp.Close();
-                                                attachment.Close();
-                                                return file.AbsolutePath;
-                                            }
-                                        }
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        DisplayReportResultTrack(e);
-                                        return null;
-                                    }
-                                }
+                                    return CopyFromSource(uri, context);
 
-                                break;
+                                }
                             }
-                        default:
-                            {
-                                if ("content".Equals(uri.Scheme, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    // Return the remote address
-                                    if (IsGooglePhotosUri(uri))
-                                        return uri.LastPathSegment;
-
-                                    var path = CopyDocumentToCache(context, uri);
-                                    if (path != null)
-                                    {
-                                        return path;
-                                    }
-                                }
-
-                                // File 
-                                if ("file".Equals(uri.Scheme, StringComparison.OrdinalIgnoreCase))
-                                {
-                                    return uri.Path;
-                                }
-
-                                break;
-                            }
+                        }
+                        // File 
+                        else if ("file".Equals(uri.Scheme, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return uri.Path;
+                        }
                     }
+
+                    return null!;
                 }
                 catch (Exception e)
                 {
                     DisplayReportResultTrack(e);
+                    return null!;
+                }
+            }
+
+            public static string GetPathFileSdk11(Context context, Uri uri)
+            {
+                try
+                {
+                    bool isKitKatOrAbove = Build.VERSION.SdkInt >= BuildVersionCodes.Kitkat;
+                    string filePath = "";
+
+                    // Check if the URI is from a DocumentProvider
+                    if (isKitKatOrAbove && DocumentsContract.IsDocumentUri(context, uri))
+                    {
+                        // ExternalStorageProvider
+                        if (IsExternalStorageDocument(uri))
+                        {
+                            string docId = DocumentsContract.GetDocumentId(uri);
+                            string[] split = docId.Split(":");
+                            string type = split[0];
+
+                            if ("primary".Equals(type, StringComparison.OrdinalIgnoreCase))
+                            {
+                                return Android.OS.Environment.ExternalStorageDirectory + "/" + split[1];
+                            }
+
+                        }
+                        else if (IsDownloadsDocument(uri))
+                        { // DownloadsProvider
+                            string id = DocumentsContract.GetDocumentId(uri);
+                            if (id.StartsWith("raw:"))
+                            {
+                                return id.Replace("raw:", "");
+                            }
+                            string[] contentUriPrefixes = new string[]{
+                                "content://downloads/public_downloads",
+                                "content://downloads/my_downloads"
+                            };
+                            foreach (var prefix in contentUriPrefixes)
+                            {
+                                try
+                                {
+                                    Uri contentUri = ContentUris.WithAppendedId(Uri.Parse(prefix), Long.ParseLong(id));
+                                    filePath = GetDataColumn(context, contentUri, null, null);
+                                    if (filePath != null) return filePath;
+                                }
+                                catch (NumberFormatException e)
+                                {
+                                    // Handle exception
+                                    Console.WriteLine(e);
+                                }
+                            }
+                        }
+                        else if (IsMediaDocument(uri))
+                        { // MediaProvider
+                            string docId = DocumentsContract.GetDocumentId(uri);
+                            string[] split = docId.Split(":");
+                            string type = split[0];
+
+                            Uri contentUri = null;
+                            if ("image".Equals(type))
+                            {
+                                contentUri = MediaStore.Images.Media.ExternalContentUri;
+                            }
+                            else if ("video".Equals(type))
+                            {
+                                contentUri = MediaStore.Video.Media.ExternalContentUri;
+                            }
+                            else if ("audio".Equals(type))
+                            {
+                                contentUri = MediaStore.Audio.Media.ExternalContentUri;
+                            }
+
+                            string selection = "_id=?";
+                            string[] selectionArgs = new string[] { split[1] };
+
+                            filePath = GetDataColumn(context, contentUri, selection, selectionArgs);
+                            if (filePath != null) return filePath;
+                        }
+                    }
+                    // For Google Drive files or other remote URIs
+                    if ("content".Equals(uri.Scheme, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // Google Photos content
+                        if (IsGooglePhotosUri(uri)) return uri.LastPathSegment;
+
+                        return CopyFileToCache(context, uri); // Copy to a cache file for safe access
+                    }
+                    else if ("file".Equals(uri.Scheme, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return uri.Path;
+                    }
+
                     return null;
                 }
-                return null;
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    return null;
+                }
+            }
+
+            // Helper method to copy file to cache for compatibility with Android 11+
+            private static string CopyFileToCache(Context context, Uri uri)
+            {
+                var inputStream = context.ContentResolver.OpenInputStream(uri);
+                try
+                {
+                    string fileName = GetFileName(context, uri);
+                    File cacheFile = new File(context.CacheDir, fileName);
+
+                    // Use Channels to speed up the transfer
+                    var sourceChannel = Channels.NewReadableChannel(inputStream);
+                    FileOutputStream outputStream = new FileOutputStream(cacheFile);
+                    var destChannel = outputStream.Channel;
+
+                    // Transfer up to 16 MB at a time, or adjust as needed
+                    outputStream.Channel.TransferFrom(sourceChannel, 0, Long.MaxValue);
+                    return cacheFile.AbsolutePath;
+
+                }
+                catch (IOException e)
+                {
+                    DisplayReportResultTrack(e);
+                    return null;
+                }
+            }
+
+            // Helper method to get file name from URI
+            private static string GetFileName(Context context, Uri uri)
+            {
+
+                string result = null;
+                if (uri.Scheme.Equals("content"))
+                {
+                    using (var cursor = context.ContentResolver.Query(uri, null, null, null, null))
+                    {
+                        if (cursor != null && cursor.MoveToFirst())
+                        {
+                            result = cursor.GetString(cursor.GetColumnIndex("_display_name"));
+                        }
+                    }
+                }
+                if (result == null)
+                {
+                    result = uri.Path;
+                    int cut = result.LastIndexOf('/');
+                    if (cut != -1)
+                    {
+                        result = result.Substring(cut + 1);
+                    }
+                }
+                return result;
+
+            }
+
+            private static string GetPathFromExtSd(string[] pathData)
+            {
+                string type = pathData[0];
+                string relativePath = "/" + pathData[1];
+                string fullPath = "";
+
+                if ("primary".Equals(type, StringComparison.OrdinalIgnoreCase))
+                {
+                    fullPath = Android.OS.Environment.ExternalStorageDirectory + relativePath;
+                    if (FileExists(fullPath))
+                    {
+                        return fullPath;
+                    }
+                }
+
+                fullPath = Environment.GetEnvironmentVariable("SECONDARY_STORAGE") + relativePath;
+                if (FileExists(fullPath))
+                {
+                    return fullPath;
+                }
+
+                fullPath = Environment.GetEnvironmentVariable("EXTERNAL_STORAGE") + relativePath;
+                if (FileExists(fullPath))
+                {
+                    return fullPath;
+                }
+
+                return fullPath;
+            }
+
+            private static bool FileExists(string filePath)
+            {
+                File file = new File(filePath);
+                return file.Exists();
             }
 
             /// <summary>
@@ -3306,9 +3665,9 @@ namespace DeepSound.Helpers.Utils
             /// <param name="selection">Args names</param>
             /// <param name="selectionArgs">Args values</param>
             /// <returns>Data</returns>
-            private static string GetDataColumn(Context context, Uri uri, string selection, string[] selectionArgs)
+            public static string GetDataColumn(Context context, Uri uri, string selection, string[] selectionArgs)
             {
-                ICursor cursor = null;
+                ICursor cursor = null!;
                 string column = "_data";
                 string[] projection = { column };
 
@@ -3330,74 +3689,14 @@ namespace DeepSound.Helpers.Utils
                 {
                     cursor?.Close();
                 }
-                return null;
-            }
-
-            //public static bool IsGoogleDrive(Uri uri)
-            //{
-            //    return "com.google.android.apps.docs.storage".Equals(uri.Authority);
-            //}
-
-            //Whether the Uri authority is ExternalStorageProvider.
-            public static bool IsExternalStorageDocument(Uri uri)
-            {
-                return "com.android.externalstorage.documents".Equals(uri.Authority);
-            }
-
-            //Whether the Uri authority is DownloadsProvider.
-            public static bool IsDownloadsDocument(Uri uri)
-            {
-                return "com.android.providers.downloads.documents".Equals(uri.Authority);
-            }
-
-            //Whether the Uri authority is MediaProvider.
-            public static bool IsMediaDocument(Uri uri)
-            {
-                return "com.android.providers.media.documents".Equals(uri.Authority);
-            }
-
-            public static bool IsGooglePhotosUri(Uri uri)
-            {
-                return "com.google.android.apps.photos.content".Equals(uri.Authority);
-            }
-
-            //Functions Check File Extension */Audio, Image, Video\*
-            public static string Check_FileExtension(string filename)
-            {
-                if (string.IsNullOrEmpty(filename))
-                    return "Forbidden";
-
-                var mime = MimeTypeMap.GetMimeType(filename.Split('.').LastOrDefault());
-                if (string.IsNullOrEmpty(mime)) return "Forbidden";
-                if (mime.Contains("audio"))
-                {
-                    return "Audio";
-                }
-
-                if (mime.Contains("video"))
-                {
-                    return "Video";
-                }
-
-                if (mime.Contains("image") || mime.Contains("drawing"))
-                {
-                    return "Image";
-                }
-
-                if (mime.Contains("application") || mime.Contains("text") || mime.Contains("x-world") ||
-                    mime.Contains("message"))
-                {
-                    return "File";
-                }
-
-                return "Forbidden";
+                return null!;
             }
 
             private static string CopyDocumentToCache(Context context, Uri uri)
             {
-                ParcelFileDescriptor parcelFd = null;
-                FileInputStream input = null;
-                FileOutputStream output = null;
+                ParcelFileDescriptor parcelFd = null!;
+                FileInputStream input = null!;
+                FileOutputStream output = null!;
                 ContentResolver contentResolver = context.ContentResolver;
                 try
                 {
@@ -3406,7 +3705,7 @@ namespace DeepSound.Helpers.Utils
                     input = new FileInputStream(parcelFd?.FileDescriptor);
 
                     string extension = MimeTypeMap.GetExtension(contentResolver?.GetType(uri));
-                    File f = new File(Path.FolderDiskMyApp, timeStamp + "_" + extension);
+                    File f = new File(context.CacheDir, timeStamp + "_" + extension);
                     output = new FileOutputStream(f);
 
                     var size = input?.Channel?.Size() ?? 0;
@@ -3442,9 +3741,91 @@ namespace DeepSound.Helpers.Utils
                         DisplayReportResultTrack(exception);
                     }
                 }
+                return null!;
+            }
+
+            private static string CopyFromSource(Uri uri, Context context)
+            {
+                ContentResolver contentResolver = context.ContentResolver;
+                string fileExtension = GetFileExtension(uri, contentResolver);
+
+                string fileName = QueryName(uri, contentResolver);
+                if (fileName == null)
+                    fileName = Time.CurrentTimeMillis() + fileExtension + "";
+
+                // the file which will be the new cached file
+                File filePath = context.GetExternalFilesDir(Android.OS.Environment.DirectoryDocuments);
+                File outputFile = new File(filePath, fileName);
+                try
+                {
+                    var stream = context.ContentResolver.OpenInputStream(uri);
+                    InputStream inputStream = new DataInputStream(stream);
+
+                    FileOutputStream outputStream = new FileOutputStream(outputFile);
+                    int read = 0;
+                    int maxBufferSize = 1 * 1024 * 1024;
+                    int bytesAvailable = inputStream.Available();
+
+                    //int bufferSize = 1024;
+                    int bufferSize = Math.Min(bytesAvailable, maxBufferSize);
+
+                    byte[] buffers = new byte[bufferSize];
+                    while ((read = inputStream.Read(buffers)) != -1)
+                    {
+                        outputStream.Write(buffers, 0, read);
+                    }
+                    inputStream.Close();
+                    outputStream.Close();
+                }
+                catch (Exception e)
+                {
+                    DisplayReportResultTrack(e);
+                }
+                return outputFile.AbsolutePath;
+            }
+
+            private static string WriteFileContent(Uri uri, Context context)
+            {
+                var selectedFileInputStream = context.ContentResolver.OpenInputStream(uri);
+                if (selectedFileInputStream != null)
+                {
+                    File certCacheDir = new File(Path.FolderDiskMyApp, "File");
+                    bool isCertCacheDirExists = certCacheDir.Exists();
+                    if (!isCertCacheDirExists)
+                    {
+                        isCertCacheDirExists = certCacheDir.Mkdirs();
+                    }
+                    if (isCertCacheDirExists)
+                    {
+                        string filePath = certCacheDir.AbsolutePath + "/" + GetFileDisplayName(uri, context);
+                        OutputStream selectedFileOutPutStream = new FileOutputStream(filePath);
+                        byte[] buffer = new byte[1024];
+                        int length;
+                        while ((length = selectedFileInputStream.Read(buffer)) > 0)
+                        {
+                            selectedFileOutPutStream.Write(buffer, 0, length);
+                        }
+                        selectedFileOutPutStream.Flush();
+                        selectedFileOutPutStream.Close();
+                        return filePath;
+                    }
+                    selectedFileInputStream.Close();
+                }
                 return null;
             }
 
+            private static string GetFileDisplayName(Uri uri, Context context)
+            {
+                string displayName = null;
+                ICursor cursor = context.ContentResolver.Query(uri, null, null, null, null, null);
+                if (cursor != null && cursor.MoveToFirst())
+                {
+                    displayName = cursor.GetString(cursor.GetColumnIndex("_display_name"));
+                    Console.WriteLine("Display Name {}" + displayName);
+                }
+
+                return displayName;
+            }
             private static string GetContentName(ContentResolver resolver, Uri uri)
             {
                 try
@@ -3452,26 +3833,187 @@ namespace DeepSound.Helpers.Utils
                     ICursor cursor = resolver.Query(uri, null, null, null, null);
                     cursor?.MoveToFirst();
                     int nameIndex = cursor.GetColumnIndex(MediaStore.IMediaColumns.DisplayName);
-                    switch (nameIndex)
+                    if (nameIndex >= 0)
                     {
-                        case >= 0:
-                            {
-                                string name = cursor.GetString(nameIndex);
-                                cursor.Close();
-                                return name;
-                            }
-                        default:
-                            return null;
+                        string name = cursor.GetString(nameIndex);
+                        cursor.Close();
+                        return name;
+                    }
+                    else
+                    {
+                        return null!;
                     }
                 }
                 catch (Exception e)
                 {
                     DisplayReportResultTrack(e);
-                    return null;
+                    return null!;
                 }
             }
 
+            private static string GetDriveFilePath(Uri uri, Context context)
+            {
+                Uri returnUri = uri;
+                ICursor returnCursor = context.ContentResolver.Query(returnUri, null, null, null, null);
+
+                int nameIndex = returnCursor.GetColumnIndex("_display_name");
+                int sizeIndex = returnCursor.GetColumnIndex("_size");
+                returnCursor.MoveToFirst();
+                string name = (returnCursor.GetString(nameIndex));
+                string size = (Long.ToString(returnCursor.GetLong(sizeIndex)));
+                File file = new File(context.CacheDir, name);
+                try
+                {
+                    var stream = context.ContentResolver.OpenInputStream(uri);
+                    InputStream inputStream = new DataInputStream(stream);
+
+                    FileOutputStream outputStream = new FileOutputStream(file);
+                    int read = 0;
+                    int maxBufferSize = 1 * 1024 * 1024;
+                    int bytesAvailable = inputStream.Available();
+
+                    //int bufferSize = 1024;
+                    int bufferSize = Math.Min(bytesAvailable, maxBufferSize);
+                    byte[] buffers = new byte[bufferSize];
+                    while ((read = inputStream.Read(buffers)) != -1)
+                    {
+                        outputStream.Write(buffers, 0, read);
+                    }
+                    inputStream.Close();
+                    outputStream.Close();
+                }
+                catch (Exception e)
+                {
+                    DisplayReportResultTrack(e);
+                }
+                return file.Path;
+            }
+
+            private static string GetMediaFilePathForN(Uri uri, Context context)
+            {
+                Uri returnUri = uri;
+                ICursor returnCursor = context.ContentResolver.Query(returnUri, null, null, null, null);
+
+                int nameIndex = returnCursor.GetColumnIndex("_display_name");
+                int sizeIndex = returnCursor.GetColumnIndex("_size");
+                returnCursor.MoveToFirst();
+                string name = (returnCursor.GetString(nameIndex));
+                string size = (Long.ToString(returnCursor.GetLong(sizeIndex)));
+                File file = new File(context.FilesDir, name);
+                try
+                {
+                    var stream = context.ContentResolver.OpenInputStream(uri);
+                    InputStream inputStream = new DataInputStream(stream);
+
+                    FileOutputStream outputStream = new FileOutputStream(file);
+                    int read = 0;
+                    int maxBufferSize = 1 * 1024 * 1024;
+                    int bytesAvailable = inputStream.Available();
+
+                    //int bufferSize = 1024;
+                    int bufferSize = Math.Min(bytesAvailable, maxBufferSize);
+                    byte[] buffers = new byte[bufferSize];
+                    while ((read = inputStream.Read(buffers)) != -1)
+                    {
+                        outputStream.Write(buffers, 0, read);
+                    }
+                    inputStream.Close();
+                    outputStream.Close();
+                }
+                catch (Exception e)
+                {
+                    DisplayReportResultTrack(e);
+                }
+                return file.Path;
+            }
+
+            private static string QueryName(Uri uri, ContentResolver contentResolver)
+            {
+                ICursor returnCursor = contentResolver.Query(uri, null, null, null, null);
+                if (returnCursor == null)
+                    return null;
+
+                int nameIndex = returnCursor.GetColumnIndex("_display_name");
+                if (nameIndex == -1)
+                    return null;
+
+                returnCursor.MoveToFirst();
+                string name = returnCursor.GetString(nameIndex);
+                returnCursor.Close();
+                return name;
+            }
+
+            private static string GetFileExtension(Uri uri, ContentResolver contentResolver)
+            {
+                return MimeTypeMap.GetExtension(contentResolver.GetType(uri));
+            }
+
+            //Whether the Uri authority is ExternalStorageProvider.
+            public static bool IsExternalStorageDocument(Uri uri)
+            {
+                return "com.android.externalstorage.documents".Equals(uri.Authority);
+            }
+
+            //Whether the Uri authority is DownloadsProvider.
+            public static bool IsDownloadsDocument(Uri uri)
+            {
+                return "com.android.providers.downloads.documents".Equals(uri.Authority);
+            }
+
+            //Whether the Uri authority is MediaProvider.
+            public static bool IsMediaDocument(Uri uri)
+            {
+                return "com.android.providers.media.documents".Equals(uri.Authority);
+            }
+
+            public static bool IsGooglePhotosUri(Uri uri)
+            {
+                return "com.google.android.apps.photos.content".Equals(uri.Authority);
+            }
+
+            private static bool IsGoogleDriveUri(Uri uri)
+            {
+                return "com.google.android.apps.docs.storage".Equals(uri.Authority) || "com.google.android.apps.docs.storage.legacy".Equals(uri.Authority);
+            }
+
+            public static bool IsExternalUri(Uri uri)
+            {
+                return "media/external/file".Contains(uri.Path);
+            }
+
+            //Functions Check File Extension */Audio, Image, Video\*
+            public static string Check_FileExtension(string filename)
+            {
+                if (string.IsNullOrEmpty(filename))
+                    return "Forbidden";
+
+                var mime = MimeTypeMap.GetMimeType(filename.Split('.').LastOrDefault());
+                if (string.IsNullOrEmpty(mime)) return "Forbidden";
+                if (mime.Contains("audio"))
+                {
+                    return "Audio";
+                }
+
+                if (mime.Contains("video"))
+                {
+                    return "Video";
+                }
+
+                if (mime.Contains("image") || mime.Contains("drawing"))
+                {
+                    return "Image";
+                }
+
+                if (mime.Contains("application") || mime.Contains("text") || mime.Contains("x-world") ||
+                    mime.Contains("message"))
+                {
+                    return "File";
+                }
+
+                return "Forbidden";
+            }
         }
+
 
         #endregion
 
@@ -3483,19 +4025,19 @@ namespace DeepSound.Helpers.Utils
 #pragma warning disable 618
             //public static string AndroidDcimFolder = Android.OS.Environment.GetExternalStoragePublicDirectory(Android.OS.Environment.DirectoryDcim).AbsolutePath;
 #pragma warning restore 618
-            internal static string AndroidDcimFolder = GetDirectoryDcim();
+            internal static readonly string AndroidDcimFolder = GetDirectoryDcim();
 
             //DcimFolder 
             public static readonly string FolderDcimMyApp = AndroidDcimFolder + "/" + AppSettings.ApplicationName + "/";
             public static readonly string FolderDcimImage = FolderDcimMyApp + "/Images/";
-            public static readonly string FolderDcimSound = FolderDcimMyApp + "/Sound/";
             public static readonly string FolderDcimStory = FolderDcimMyApp + "/Story/";
+            public static readonly string FolderDcimSound = FolderDcimMyApp + "/Sound/";
 
             //Disk
             public static readonly string FolderDiskMyApp = PersonalFolder + "/" + AppSettings.ApplicationName + "/";
             public static readonly string FolderDiskImage = FolderDiskMyApp + "/Images/";
-            public static readonly string FolderDiskSound = FolderDiskMyApp + "/Sound/";
             public static readonly string FolderDiskStory = FolderDiskMyApp + "/Story/";
+            public static readonly string FolderDiskSound = FolderDiskMyApp + "/Sound/";
 
             public static string GetDirectoryDcim()
             {
@@ -3534,7 +4076,7 @@ namespace DeepSound.Helpers.Utils
                 catch (Exception e)
                 {
                     DisplayReportResultTrack(e);
-                    return null;
+                    return null!;
                 }
             }
 
@@ -3554,23 +4096,22 @@ namespace DeepSound.Helpers.Utils
                     if (!Directory.Exists(FolderDcimImage + "/" + id))
                         Directory.CreateDirectory(FolderDcimImage + "/" + id);
 
+                    if (!Directory.Exists(FolderDcimStory))
+                        Directory.CreateDirectory(FolderDcimStory);
+
                     if (!Directory.Exists(FolderDcimSound + "/" + id))
                         Directory.CreateDirectory(FolderDcimSound + "/" + id);
-
-                    if (!Directory.Exists(FolderDcimStory + "/" + id))
-                        Directory.CreateDirectory(FolderDcimStory + "/" + id);
 
                     //================================================
 
                     if (!Directory.Exists(FolderDiskImage + "/" + id))
                         Directory.CreateDirectory(FolderDiskImage + "/" + id);
 
+                    if (!Directory.Exists(FolderDiskStory))
+                        Directory.CreateDirectory(FolderDiskStory);
+
                     if (!Directory.Exists(FolderDiskSound + "/" + id))
                         Directory.CreateDirectory(FolderDiskSound + "/" + id);
-
-                    if (!Directory.Exists(FolderDiskStory + "/" + id))
-                        Directory.CreateDirectory(FolderDiskStory + "/" + id);
-
                 }
                 catch (Exception e)
                 {
@@ -3588,9 +4129,11 @@ namespace DeepSound.Helpers.Utils
                     if (Directory.Exists(FolderDcimImage + "/" + id))
                         Directory.Delete(FolderDcimImage + "/" + id, true);
 
+                    if (Directory.Exists(FolderDcimStory + "/" + id))
+                        Directory.Delete(FolderDcimStory + "/" + id, true);
+
                     if (Directory.Exists(FolderDcimSound + "/" + id))
                         Directory.Delete(FolderDcimSound + "/" + id, true);
-
 
                     //================================================
 
@@ -3599,6 +4142,9 @@ namespace DeepSound.Helpers.Utils
 
                     if (Directory.Exists(FolderDiskImage + "/" + id))
                         Directory.Delete(FolderDiskImage + "/" + id, true);
+
+                    if (Directory.Exists(FolderDiskStory + "/" + id))
+                        Directory.Delete(FolderDiskStory + "/" + id, true);
 
                     if (Directory.Exists(FolderDiskSound + "/" + id))
                         Directory.Delete(FolderDiskSound + "/" + id, true);
@@ -3639,8 +4185,8 @@ namespace DeepSound.Helpers.Utils
                 values.Put(MediaStore.Images.Media.InterfaceConsts.DateAdded, Time.CurrentTimeMillis() / 1000);
                 values.Put(MediaStore.Images.Media.InterfaceConsts.DateTaken, Time.CurrentTimeMillis());
 
-                Uri url = null;
-                string stringUrl = null;    /* value to be returned */
+                Uri url = null!;
+                string stringUrl = null!;    /* value to be returned */
 
                 try
                 {
@@ -3661,7 +4207,7 @@ namespace DeepSound.Helpers.Utils
                     else
                     {
                         cr.Delete(url, null, null);
-                        url = null;
+                        url = null!;
                     }
 
                 }
@@ -3671,7 +4217,7 @@ namespace DeepSound.Helpers.Utils
                     if (url != null)
                     {
                         cr.Delete(url, null, null);
-                        url = null;
+                        url = null!;
                     }
                 }
 
@@ -3690,7 +4236,7 @@ namespace DeepSound.Helpers.Utils
                 {
                     if (url.Contains("http"))
                     {
-                        if (Methods.CheckConnectivity())
+                        if (CheckConnectivity())
                         {
                             HttpClient client = new HttpClient();
 
@@ -3705,12 +4251,12 @@ namespace DeepSound.Helpers.Utils
                         return await BitmapFactory.DecodeFileAsync(url, bmOptions);
                     }
 
-                    return null;
+                    return null!;
                 }
                 catch (Exception e)
                 {
                     DisplayReportResultTrack(e);
-                    return null;
+                    return null!;
                 }
             }
         }
@@ -3824,7 +4370,7 @@ namespace DeepSound.Helpers.Utils
 
         public static string AppState { set; get; }
 
-        public class AppLifecycleObserver : Java.Lang.Object, ILifecycleEventObserver
+        public class AppLifecycleObserver : Object, ILifecycleEventObserver
         {
             //public enum AppLifeState
             //{
@@ -3842,7 +4388,7 @@ namespace DeepSound.Helpers.Utils
                     {
                         AppState = "Background";
                     }
-                    else if (p1 == Lifecycle.Event.OnStart)
+                    else // if (p1 == Lifecycle.Event.OnStart || p1 == Lifecycle.Event.OnResume || p1 == Lifecycle.Event.OnCreate)
                     {
                         AppState = "Foreground";
                     }

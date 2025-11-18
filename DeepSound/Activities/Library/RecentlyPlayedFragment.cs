@@ -185,6 +185,7 @@ namespace DeepSound.Activities.Library
             {
                 MAdapter = new RowSoundAdapter(Activity, "RecentlyPlayedFragment") { SoundsList = new ObservableCollection<SoundDataObject>() };
                 MAdapter.ItemClick += MAdapterItemClick;
+                MRecycler.SetItemAnimator(null);
                 LayoutManager = new LinearLayoutManager(Activity);
                 MRecycler.SetLayoutManager(LayoutManager);
                 MRecycler.HasFixedSize = true;

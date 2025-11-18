@@ -21,7 +21,6 @@ using AndroidX.AppCompat.App;
 using AndroidX.AppCompat.Content.Res;
 using AndroidX.Core.App;
 using AndroidX.Core.Content;
-using AndroidX.Core.OS;
 using AndroidX.SlidingPaneLayout.Widget;
 using Bumptech.Glide;
 using Bumptech.Glide.Request;
@@ -47,6 +46,7 @@ using DeepSound.Helpers.MediaPlayerController;
 using DeepSound.Helpers.Model;
 using DeepSound.Helpers.Utils;
 using DeepSound.Library.OneSignalNotif;
+using DeepSound.Library.OneSignalNotif.Models;
 using DeepSound.Service;
 using DeepSound.SQLite;
 using DeepSoundClient.Classes.Albums;
@@ -119,13 +119,17 @@ namespace DeepSound.Activities.Tabbes
                 Delegate.SetLocalNightMode(DeepSoundTools.IsTabDark() ? AppCompatDelegate.ModeNightYes : AppCompatDelegate.ModeNightNo);
                 SetTheme(DeepSoundTools.IsTabDark() ? Resource.Style.MyTheme_Dark : Resource.Style.MyTheme);
 
-                AddFlagsWakeLock();
+                //AddFlagsWakeLock();
 
                 // Create your application here
                 SetContentView(Resource.Layout.TabbedMainLayout);
 
                 Instance = this;
                 Constant.Context = this;
+
+                Task.Run(() => { MainApplication.GetInstance().SecondRunExcite(this); });
+
+                GetGeneralAppData();
 
                 LibrarySynchronizer = new LibrarySynchronizer(this);
 
@@ -136,12 +140,6 @@ namespace DeepSound.Activities.Tabbes
 
                 SoundController = new SoundController(this);
                 SoundController.InitializeUi();
-
-                Task.Factory.StartNew(() =>
-                {
-                    MainApplication.GetInstance()?.SecondRunExcite(this);
-                    GetGeneralAppData();
-                });
 
                 GetOneSignalNotification();
                 SetService();
@@ -244,15 +242,15 @@ namespace DeepSound.Activities.Tabbes
         {
             try
             {
-                Intent intent = new Intent(this, typeof(PlayerService));
-                intent.SetAction(PlayerService.ActionStop);
-
                 if (!Constant.IsLoggingOut && !Constant.IsChangingTheme || Constant.IsPlayed)
                 {
-                    ContextCompat.StartForegroundService(this, intent);
-                }
+                    Intent intent = new Intent(this, typeof(PlayerService));
+                    intent.SetAction(PlayerService.ActionStop);
 
-                StopService(intent);
+                    ContextCompat.StartForegroundService(this, intent);
+
+                    StopService(intent);
+                }
 
                 Constant.IsLoggingOut = false;
                 Constant.IsChangingTheme = false;
@@ -370,7 +368,7 @@ namespace DeepSound.Activities.Tabbes
         {
             try
             {
-                if (BuildCompat.IsAtLeastT && Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
+                if (Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu)
                 {
                     OnBackInvokedDispatcher.RegisterOnBackInvokedCallback(0, new BackCallAppBase2(this, pageName));
                 }
@@ -414,37 +412,32 @@ namespace DeepSound.Activities.Tabbes
                         OneSignalNotification.Instance.RegisterNotificationDevice(this);
                 }
 
-                string type = Intent?.GetStringExtra("TypeNotification") ?? "Don't have type";
-                if (!string.IsNullOrEmpty(type) && type != "Don't have type")
+                string osNotificationObject = Intent?.GetStringExtra("OsNotificationObject") ?? "";
+                if (!string.IsNullOrEmpty(osNotificationObject))
                 {
-                    if (type == "User")
+                    var dataNotification = JsonConvert.DeserializeObject<OsObject.OsNotificationObject>(osNotificationObject);
+                    if (dataNotification == null)
+                        return;
+
+                    switch (dataNotification.Type)
                     {
-                        OpenProfile(OneSignalNotification.UserData.Id, OneSignalNotification.UserData);
-                    }
-                    else if (type == "Track")
-                    {
-                        var (apiStatus, respond) = await RequestsAsync.Tracks.GetTrackInfoAsync(OneSignalNotification.TrackId);
-                        if (apiStatus.Equals(200))
-                        {
-                            if (respond is GetTrackInfoObject result)
+                        case "user":
+                            OpenProfile(dataNotification.UserData.Id, dataNotification.UserData);
+                            break;
+                        case "track":
                             {
-                                Constant.PlayPos = 0;
-                                SoundController?.StartPlaySound(result.Data, new ObservableCollection<SoundDataObject> { result.Data });
+                                var (apiStatus, respond) = await RequestsAsync.Tracks.GetTrackInfoAsync(dataNotification.TrackId);
+                                if (apiStatus.Equals(200))
+                                {
+                                    if (respond is GetTrackInfoObject result)
+                                    {
+                                        Constant.PlayPos = 0;
+                                        SoundController?.StartPlaySound(result.Data, new ObservableCollection<SoundDataObject> { result.Data });
+                                    }
+                                }
+
+                                break;
                             }
-                        }
-                    }
-                    else if (type == "RunSong")
-                    {
-                        var trackId = Intent?.GetStringExtra("TrackId");
-                        var (apiStatus, respond) = await RequestsAsync.Tracks.GetTrackInfoAsync(trackId);
-                        if (apiStatus.Equals(200))
-                        {
-                            if (respond is GetTrackInfoObject result)
-                            {
-                                Constant.PlayPos = 0;
-                                SoundController?.StartPlaySound(result.Data, new ObservableCollection<SoundDataObject> { result.Data });
-                            }
-                        }
                     }
                 }
             }
@@ -583,7 +576,7 @@ namespace DeepSound.Activities.Tabbes
             switch (item.ItemId)
             {
                 case Android.Resource.Id.Home:
-                    FragmentNavigatorBack();
+                    BackPressed();
                     return true;
             }
 
@@ -671,10 +664,10 @@ namespace DeepSound.Activities.Tabbes
                     new IntentController(this).OpenIntentAudio(); //505
                 else
                 {
-                    if (PermissionsController.CheckPermissionStorage(this))
+                    if (PermissionsController.CheckPermissionStorage(this, "audio"))
                         new IntentController(this).OpenIntentAudio(); //505
                     else
-                        new PermissionsController(this).RequestPermission(100);
+                        new PermissionsController(this).RequestPermission(100, "audio");
                 }
             }
             catch (Exception exception)
@@ -739,9 +732,9 @@ namespace DeepSound.Activities.Tabbes
                 }
                 else if (requestCode == 200 && resultCode == Result.Ok)
                 {
-                    var name = data.GetStringExtra("name") ?? "";
+                    var name = ListUtils.MyUserInfoList?.FirstOrDefault()?.Name;
                     if (!string.IsNullOrEmpty(name) && ProfileFragment != null && !name.Equals(ProfileFragment.TxtFullName.Text))
-                        ProfileFragment.TxtFullName.Text = data.GetStringExtra("name");
+                        ProfileFragment.TxtFullName.Text = name;
                 }
                 else if (requestCode == 3500 && resultCode == Result.Ok) //Add Product
                 {
@@ -813,6 +806,9 @@ namespace DeepSound.Activities.Tabbes
                         break;
                     case 1325:
                         Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
+                        break;
+                    case 1005 when grantResults.Length > 0 && grantResults[0] == Permission.Granted:
+                        SoundController?.SetDownload();
                         break;
                     case 1005:
                         Toast.MakeText(this, GetText(Resource.String.Lbl_Permission_is_denied), ToastLength.Long)?.Show();
@@ -1090,7 +1086,17 @@ namespace DeepSound.Activities.Tabbes
                         Methods.DisplayReportResultTrack(e);
                     }
                 });
-                dialog.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), new MaterialDialogUtils());
+                dialog.SetNegativeButton(GetText(Resource.String.Lbl_Cancel), (sender, args) =>
+                {
+                    try
+                    {
+                        SoundController?.ChangePlayPauseIcon();
+                    }
+                    catch (Exception e)
+                    {
+                        Methods.DisplayReportResultTrack(e);
+                    }
+                });
 
                 dialog.Show();
             }
@@ -1190,13 +1196,13 @@ namespace DeepSound.Activities.Tabbes
                                         Console.WriteLine(result.Message);
                                         storyObject.Active = 1;
 
-                                        var story = HomeFragment?.LatestHomeTab?.StoryAdapter?.StoryList?.FirstOrDefault(a => a.Id == storyObject.Id);
-                                        if (story != null)
+                                 //      var story = HomeFragment?.LatestHomeTab?.StoryAdapter?.StoryList?.FirstOrDefault(a => a.Id == storyObject.Id);
+                                //        if (story != null)
                                         {
-                                            story.Active = 1;
-                                            HomeFragment.LatestHomeTab.StoryAdapter.NotifyDataSetChanged();
+                                 //          story.Active = 1;
+                                  //          HomeFragment.LatestHomeTab.StoryAdapter.NotifyDataSetChanged();
                                         }
-
+                                        
                                         Toast.MakeText(this, GetText(Resource.String.Lbl_PurchasedSuccessfully), ToastLength.Long)?.Show();
                                     }
                                 }
@@ -1311,7 +1317,7 @@ namespace DeepSound.Activities.Tabbes
                     if (result.IsSuccessful)
                     {
                         var resultUri = result.UriContent;
-                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        string filepath = Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu ? result.GetUriFilePath(this, true) : Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
                         if (!string.IsNullOrEmpty(filepath))
                         {
                             //Do something with your Uri
@@ -1483,6 +1489,7 @@ namespace DeepSound.Activities.Tabbes
             try
             {
                 var sqlEntity = new SqLiteDatabase();
+                sqlEntity.Get_data_Login_Credentials();
 
                 sqlEntity.GetSettings();
                 if (UserDetails.IsLogin)
@@ -1505,17 +1512,7 @@ namespace DeepSound.Activities.Tabbes
                 if (ListUtils.PriceList?.Count == 0 && AppSettings.ShowPrice)
                     PollyController.RunRetryPolicyFunction(new List<Func<Task>> { ApiRequest.GetPrices_Api });
 
-                RunOnUiThread(() =>
-                {
-                    try
-                    {
-                        InAppUpdate();
-                    }
-                    catch (Exception e)
-                    {
-                        Methods.DisplayReportResultTrack(e);
-                    }
-                });
+                InAppUpdate();
             }
             catch (Exception e)
             {

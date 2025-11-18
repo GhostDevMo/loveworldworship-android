@@ -394,7 +394,7 @@ namespace DeepSound.Activities.Upload
                         {
                             Console.WriteLine(result.Link);
                             Toast.MakeText(this, GetText(Resource.String.Lbl_UpdatedSuccessfully), ToastLength.Short)?.Show();
-                            AndHUD.Shared.Dismiss(this);
+                            AndHUD.Shared.Dismiss();
 
                             Finish();
                         }
@@ -404,13 +404,13 @@ namespace DeepSound.Activities.Upload
                         Methods.DisplayAndHudErrorResult(this, respond);
                     }
 
-                    AndHUD.Shared.Dismiss(this);
+                    AndHUD.Shared.Dismiss();
                 }
             }
             catch (Exception exception)
             {
                 Methods.DisplayReportResultTrack(exception);
-                AndHUD.Shared.Dismiss(this);
+                AndHUD.Shared.Dismiss();
             }
         }
 
@@ -470,6 +470,8 @@ namespace DeepSound.Activities.Upload
             {
                 if (e.Event?.Action != MotionEventActions.Up) return;
 
+                Methods.HideKeyboard(this);
+
                 TypeDialog = "Genres";
 
                 var dialogList = new MaterialAlertDialogBuilder(this);
@@ -494,6 +496,8 @@ namespace DeepSound.Activities.Upload
             try
             {
                 if (e.Event?.Action != MotionEventActions.Up) return;
+
+                Methods.HideKeyboard(this);
 
                 TypeDialog = "Price";
 
@@ -525,6 +529,8 @@ namespace DeepSound.Activities.Upload
             {
                 if (e.Event?.Action != MotionEventActions.Up) return;
 
+                Methods.HideKeyboard(this);
+
                 TypeDialog = "AgeRestriction";
 
                 var dialogList = new MaterialAlertDialogBuilder(this);
@@ -553,6 +559,8 @@ namespace DeepSound.Activities.Upload
             try
             {
                 if (e.Event?.Action != MotionEventActions.Up) return;
+
+                Methods.HideKeyboard(this);
 
                 TypeDialog = "AllowDownloads";
 
@@ -619,7 +627,7 @@ namespace DeepSound.Activities.Upload
                     if (result.IsSuccessful)
                     {
                         var resultUri = result.UriContent;
-                        var filepath = Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
+                        string filepath = Build.VERSION.SdkInt >= BuildVersionCodes.Tiramisu ? result.GetUriFilePath(this, true) : Methods.AttachmentFiles.GetActualPathFromFile(this, resultUri);
                         if (!string.IsNullOrEmpty(filepath))
                         {
                             //Do something with your Uri

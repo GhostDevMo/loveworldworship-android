@@ -163,8 +163,8 @@ namespace DeepSound.Activities.Library
                 {
                     MAdapter.PlaylistList = new ObservableCollection<PlaylistDataObject>(ListUtils.PlaylistList);
                     MAdapter.NotifyDataSetChanged();
+                    Activity?.RunOnUiThread(ShowEmptyPage);
                 }
-
             }
             catch (Exception e)
             {
@@ -212,16 +212,6 @@ namespace DeepSound.Activities.Library
             if (Methods.CheckConnectivity())
             {
                 MainScrollEvent.IsLoading = true;
-
-                var addNewPlaylist = new PlaylistDataObject()
-                {
-                    Id = 0,
-                    Name = GetText(Resource.String.Lbl_AddNewPlaylist),
-                    UserId = 0
-                };
-
-                if (!MAdapter.PlaylistList.Contains(addNewPlaylist))
-                    MAdapter.PlaylistList.Insert(0, addNewPlaylist);
 
                 int countList = MAdapter.PlaylistList.Count;
                 var (apiStatus, respond) = await RequestsAsync.Playlist.GetPlaylistAsync(UserDetails.UserId.ToString(), "15", offset);
@@ -285,6 +275,20 @@ namespace DeepSound.Activities.Library
             {
                 MainScrollEvent.IsLoading = false;
                 SwipeRefreshLayout.Refreshing = false;
+
+                var item = MAdapter.PlaylistList.FirstOrDefault(a => a.Name == Context.GetText(Resource.String.Lbl_AddNewPlaylist));
+                if (item == null)
+                {
+                    var addNewPlaylist = new PlaylistDataObject()
+                    {
+                        Id = 0,
+                        Name = GetText(Resource.String.Lbl_AddNewPlaylist),
+                        UserId = 0
+                    };
+
+                    if (!MAdapter.PlaylistList.Contains(addNewPlaylist))
+                        MAdapter.PlaylistList.Insert(0, addNewPlaylist);
+                }
 
                 if (MAdapter.PlaylistList.Count > 1)
                 {
